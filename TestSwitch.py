@@ -1,10 +1,12 @@
 import random
 import unittest
+import mock_switch
 
-class TestSwitch(unittest.TestCase):
+class test_switch(unittest.TestCase):
 
-    def setUp(self):
-        self.seq = range(10)
+    def test_initial_state(self):
+        switch = mock_switch()
+        
 
 
 
