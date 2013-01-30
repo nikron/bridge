@@ -11,3 +11,6 @@ class MockSwitch:
 
     def toggle(self):
         self.on = not self.on
+        
+    def get_state(self):
+        return self.on
