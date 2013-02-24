@@ -11,7 +11,7 @@ class InsteonIMService(bridgeservice.BridgeService):
         self.read_list = [self.hub_connection]
 
     def main(self):
-        while True:
+        while self.spinning:
             (read, write, exception) = select(self.read_list, [], [])
             if self.hub_connection in read:
                 self.do_callback()
