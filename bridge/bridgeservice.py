@@ -28,7 +28,7 @@ class BridgeService(multiprocessing.Process):
             self.callbacks[msg['action']](self, msg)
 
         except KeyError:
-            logging.error("The key " + msg['action'] + "is located in callbacks.")
+            logging.error("The key " + msg['action'] + "is not located in callbacks.")
             
     def close(self):
         self.spinning = False
