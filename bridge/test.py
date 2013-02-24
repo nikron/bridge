@@ -4,9 +4,10 @@
 from services.insteon.command_encode.device import Device, LampLinc
 from services.insteon.command_encode.device import TurnOn
 
-response = Device.encodeCommandForDevice(Device, TurnOn, "010203", LampLinc)
+device = LampLinc()
+response = device.encodeCommand(TurnOn, "010203")
 print(response)
 
-print (Device.decodeCommandFromDevice(Device, response + "06").get("ack"))
-print (Device.decodeCommandFromDevice(Device, response + "15").get("ack"))
+print (device.decodeCommand(response + "06").get("ack"))
+print (device.decodeCommand(response + "15").get("ack"))
 

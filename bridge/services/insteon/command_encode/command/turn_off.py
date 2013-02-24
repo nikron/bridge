@@ -5,7 +5,7 @@ class TurnOff(Command):
         Command.__init__(self)
         
     def getStructure(self):
-        return "0x0262*001400"
+        return "0x0262{deviceId}001400"
     
     def getCommandBytes(self):
         return "1400"

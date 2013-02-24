@@ -1,23 +1,18 @@
 from .device import Device
+import logging
 
 class FanLinc(Device):
-
-    commands = []
-
     def __init__(self):
-        Device.__init__(self)
-        '''initialize commands here'''
+        super().__init__()
 
-    def encodeCommand(self, deviceId, command):
-        global commands
-        
-        if command not in commands:
-            '''probably should throw an exception here'''
-            pass 
+        '''initialize commands here'''
+        self.commands = []
+
+    def encodeCommand(self, command, deviceId):
+        if command not in self.commands:
+            logging.error("{0} is not a valid command for us".format(repr(command)))
         else:
-            return super(Device, self).encodeCommandForDevice(deviceId, command, self)
+            return super().encodeCommand(command, deviceId)
             
     def getCommands(self):
-        global commands
-        return commands
-        
+        return self.commands

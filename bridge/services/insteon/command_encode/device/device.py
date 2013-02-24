@@ -4,8 +4,8 @@ from ..command.turn_on import TurnOn
 from ..command.turn_off import TurnOff
 from ..insteon_exception import InsteonException
 
-class Device(object):
-        __metaclass__ = ABCMeta
+class Device(metaclass = ABCMeta):
+        #__metaclass__ = ABCMeta
         
         byteToCommand = {"1200" : TurnOn, "1400" : TurnOff}
             
@@ -18,12 +18,12 @@ class Device(object):
             '''implement in all sub-classes'''
             
         #deviceType should be a class name, not sure if it will be used yet
-        def encodeCommandForDevice(self, command, deviceId, deviceType):
-            return command.getStructure(Device).replace("*", "" + deviceId)
+        #why pass devicetype as a class name, it is what this method
+        #should be called on
+        def encodeCommand(self, command, deviceId):
+            return command.getStructure(self).format(deviceId=deviceId)
         
-        def decodeCommandFromDevice(self, response):
-            global byteToCommand
-            
+        def decodeCommand(self, response):
             #strip "0x" format from beginning of response string, if necessary
             if (response[0:2] == "0x"):
                 response = response[2:20]
@@ -54,12 +54,3 @@ class Device(object):
             return {"ack" : ("1" if response[16:18] == "06" else "0"), "device" : deviceId,
                     "command" : command}
                     
-        
-        
-        
-        
-        
-        
-        
-        
-        
