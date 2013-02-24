@@ -1,8 +1,8 @@
 #from ..device import Device, LampLinc
 #from ..command import TurnOn
 
-from command_encode.device import Device, LampLinc
-from command_encode.command import TurnOn
+from services.insteon.command_encode.device import Device, LampLinc
+from services.insteon.command_encode.device import TurnOn
 
 response = Device.encodeCommandForDevice(Device, TurnOn, "010203", LampLinc)
 print(response)

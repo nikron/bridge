@@ -1,10 +1,10 @@
-import bridgeservice
+from bridgeservice import BridgeService
 import logging
 import time
 import serial
 from select import select
 
-class InsteonIMService(bridgeservice.BridgeService):
+class InsteonIMService(BridgeService):
     def __init__(self, hub_connection, log_queue):
         bridgeservice.BridgeService.__init__(self, 'insteonimservice', hub_connection, log_queue)
         self.im_ser = None #serial.Serial('/dev/ttyUSB0', 19200)
