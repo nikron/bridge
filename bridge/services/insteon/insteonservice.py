@@ -13,10 +13,7 @@ class InsteonIMService(BridgeService):
         self.im_ser = None #serial.Serial('/dev/ttyUSB0', 19200)
         self.read_list = [self.hub_connection]
 
-        #registering the callbacks (all the commands that can be sent over device)
-        self.register_callback('lamp on', self.turn_on_lamp)
-
-    def main(self):
+    def run(self):
         while self.spinning:
             (read, write, exception) = select(self.read_list, [], [])
             if self.hub_connection in read:
@@ -39,6 +36,7 @@ class InsteonIMService(BridgeService):
     def update_model(self, update):
         mupdate = {'to' : 'modelservice', 'action' : 'update', 'update' : update)
         self.hub_connection.send(mupdate)
+
 
     def turn_on_lamp(self, message):
         deviceId = message['id']
