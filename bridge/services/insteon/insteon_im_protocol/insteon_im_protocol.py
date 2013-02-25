@@ -20,3 +20,6 @@ modemCommands = { b'\x60': 7,  # Get IM Info
 
 def get_response_length(byte):
     return modemCommands[byte]
+
+def decode(buf):
+    pass

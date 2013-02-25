@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-from ..command.turn_on import TurnOn
-from ..command.turn_off import TurnOff
+from ..command.command import TurnOn, TurnOff
 from ..insteon_exception import InsteonException
 
 class Device(metaclass = ABCMeta):
