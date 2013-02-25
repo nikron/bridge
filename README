@@ -11,8 +11,10 @@ bridge --
     actually a collection of servies that communicate with each using
     pipes.  There are 4 main services: model, io, network, and event.
 
+insteon_protocol --
+    The library that the bridge process uses to communicate with the device
 
-TODO: test suite
+TODO: finish test suite
 TODO: finish io service
 TODO: create model service
 TODO: create event service
