@@ -1,13 +1,12 @@
 from abc import ABCMeta, abstractmethod
 
-class Command(object):
+class Command():
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def getStructure(self):
-        '''test'''
+    def encode(self):
+        pass
         
     @abstractmethod
     def getCommandBytes(self):
-        '''test'''
-                
+        pass

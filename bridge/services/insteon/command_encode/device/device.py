@@ -21,7 +21,11 @@ class Device(metaclass = ABCMeta):
         #why pass devicetype as a class name, it is what this method
         #should be called on
         def encodeCommand(self, command, deviceId):
-            return command.getStructure(self).format(deviceId=deviceId)
+            #return command.getStructure(self).format(deviceId=deviceId)
+
+            #I figure it's much easier to send an individual command the id and it
+            #handling how it should work out
+            return command(deviceId).encode()
         
         def decodeCommand(self, response):
             #strip "0x" format from beginning of response string, if necessary
@@ -51,6 +55,6 @@ class Device(metaclass = ABCMeta):
             command = self.byteToCommand.get(response[12:16])
        
             #pack up ack/nak and deviceId into a dictionary
-            return {"ack" : ("1" if response[16:18] == "06" else "0"), "device" : deviceId,
+            return {"ack" : (True if response[16:18] == "06" else False), "device" : deviceId,
                     "command" : command}
                     
