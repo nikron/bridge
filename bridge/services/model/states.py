@@ -13,7 +13,7 @@ class Trigger():
         else:
             return False
 
-    def trigger():
+    def trigger(self):
         self.func()
 
 class States():
@@ -34,14 +34,14 @@ class States():
     def orient_trigger(self, trigger):
         edge = self.find_edge(trigger.state1, trigger.state2)
 
-        if edge in self.triggers_mesh:
-            self.events_mesh[edge].append(trigger)
+        if edge in self.trigger_mesh:
+            self.trigger_mesh[edge].append(trigger)
         else:
-            self.events_mesh[edge] = [trigger]
+            self.trigger_mesh[edge] = [trigger]
 
     def orient(self):
         for trigger in self.triggers:
-            self.orient_trigger(self, trigger)
+            self.orient_trigger(trigger)
 
     def transition(self, state):
         #mildy sure taking a 2^n - 2^k where n and k are nonzero are unique
@@ -63,9 +63,9 @@ class States():
     def remove_trigger(self, trigger):
         edge = self.find_edge(trigger.state1, trigger.state2)
 
-        for trigger in self.triggers_mesh[edge]:
+        for trigger in self.trigger_mesh[edge]:
             if trigger.key == trigger:
-                triggers_mesh[edge].remove(trigger)
+                self.trigger_mesh[edge].remove(trigger)
 
         self.triggers.remove(trigger)
 
