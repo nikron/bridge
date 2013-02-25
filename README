@@ -1,5 +1,7 @@
 requirements:
 python3
+python3-serial
+python3-bitstring
 
 to run:
 python3 bridge.py

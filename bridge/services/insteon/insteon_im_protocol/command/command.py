@@ -8,10 +8,6 @@ class Command():
     @abstractmethod
     def encode(self):
         pass
-        
-    @abstractmethod
-    def getCommandBytes(self):
-        pass
 
 class InsteonCommand(Command):
     def __init__(self, address, broadcast, group, ack, extended, max_hops, cmd1, cmd2):
@@ -33,7 +29,7 @@ class InsteonCommand(Command):
     def encode(self):
         return self.cmd
         
-
+#Create a command where cmd1 and cmd2 are static, and our message flag is 0x0f
 def _create_direct_static_standard_command(name, cmd1, cmd2):
     def __init__(self, address):
         InsteonCommand.__init__(self, address, False, False, False, False, 3, cmd1, cmd2)
