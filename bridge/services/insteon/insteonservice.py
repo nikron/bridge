@@ -23,6 +23,7 @@ class InsteonIMService(BridgeService):
                 self.do_callback()
             if self.im_ser in read:
                 self.handle_im_communication()
+
     def handle_im_communication(self):
         rsp = self.im_ser.read(1)
 

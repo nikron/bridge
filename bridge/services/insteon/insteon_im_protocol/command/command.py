@@ -67,9 +67,15 @@ GetINSTEONVersion = _create_direct_static_standard_command('GetINSTEONVersion', 
 
 Ping = _create_direct_static_standard_command('Ping', b'\x0F', b'\x00') 
 IDRequest = _create_direct_static_standard_command('IDRequest', b'\x10', b'\x00') 
+
 TurnOn = _create_direct_static_standard_command('TurnOn', b'\x11', b'\x00') 
-TurnOnFast = _create_direct_static_standard_command('TurnOnFast', b'\x12', b'\x00') 
+TurnOnLevel = _create_direct_variable_standard_command('TurnOnLevel', b'\x11') 
+
+TurnOnFast= _create_direct_static__standard_command('TurnOnFast', b'\x12', b'\x00') 
+TurnOnFastLevel = _create_direct_variable__standard_command('TurnOnFastLevel', b'\x12',) 
+
 TurnOff = _create_direct_static_standard_command('TurnOff', b'\x13', b'\x00') 
+TurnOffFast = _create_direct_static_standard_command('TurnOffFast', b'\x14', b'\x00') 
 
 
 #EXTENDED COMMANDS
