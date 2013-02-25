@@ -1,7 +1,7 @@
 import multiprocessing
 import bridgelogging
 from bridgeservice import CLOSE_MESSAGE
-from services.insteon.insteonservice import InsteonIMService
+from services.im.im_service import InsteonIMService
 from select import select
 
 class BridgeHub():

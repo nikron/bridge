@@ -4,8 +4,7 @@ import serial
 from select import select
 
 from bridgeservice import BridgeService
-from services.insteon.insteon_im_protocol import command, insteon_im_protocol
-from services.insteon.insteon_im_protocol import device
+from insteon_protocol import command, insteon_im_protocol, device
 
 class InsteonIMService(BridgeService):
     def __init__(self, hub_connection, log_queue):

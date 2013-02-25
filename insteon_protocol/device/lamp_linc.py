@@ -1,5 +1,5 @@
 from .device import Device
-from ..command.command import TurnOn, TurnOff
+from ..command.commands import TurnOn, TurnOff
 import logging
 
 class LampLinc(Device):
