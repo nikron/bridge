@@ -1,0 +1,17 @@
+requirements:
+python3
+
+to run:
+python3 bridge.py
+
+bridge --
+    This is the process(s) to handle communications with the IM.  It is
+    actually a collection of servies that communicate with each using
+    pipes.  There are 4 main services: model, io, network, and event.
+
+
+TODO: test suite
+TODO: finish io service
+TODO: create model service
+TODO: create event service
+TODO: create network service
