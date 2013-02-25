@@ -2,7 +2,7 @@ import multiprocessing
 import bridgelogging
 import logging
 
-CLOSE_MESSAGE = { 'method' : 'close' }
+CLOSE_MESSAGE = { 'method' : 'close', 'args' : [], 'kwargs' : {}}
 
 class BridgeService(multiprocessing.Process):
     def __init__(self, name, hub_connection, log_queue):
@@ -15,13 +15,20 @@ class BridgeService(multiprocessing.Process):
 
         bridgelogging.service_configure_logging(self.log_queue)
 
-    def do_callback(self):
+    def do_remote_request(self):
         try:
             msg = self.hub_connection.recv()
-            self.__dict__[msg['method']](self, msg)
+            self.__dict__[msg['method']](self, *msg['args'], **msg['kwargs'])
 
         except KeyError:
             logging.error("The method " + msg['method'] + "is not in the object.")
             
-    def close(self, msg):
+    def close(self):
+        logging.debug("Service " + self.name + "is closing.")
         self.spinning = False
+
+    def remote_service_method(self, to, *args, **kwargs):
+        msg = {'from' : self.name, 'to' : to, 'args' : args, 'kwargs' : kwargs}
+
+        self.hub_connection.send(msg)
+        

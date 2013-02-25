@@ -17,7 +17,7 @@ class InsteonIMService(BridgeService):
         while self.spinning:
             (read, write, exception) = select(self.read_list, [], [])
             if self.hub_connection in read:
-                self.do_callback()
+                self.do_remote_request()
             if self.im_ser in read:
                 self.handle_im_communication()
 
@@ -34,15 +34,11 @@ class InsteonIMService(BridgeService):
             logging.error("Didn't get a start of text for first byte, commmunications messed up.")
 
     def update_model(self, update):
-        mupdate = {'to' : 'modelservice', 'action' : 'update', 'update' : update)
-        self.hub_connection.send(mupdate)
+        self.remote_service_method('model', 'update', update)
 
 
-    def turn_on_lamp(self, message):
-        deviceId = message['id']
-
+    def turn_on_lamp(self, deviceId):
         device = device.LampLinc()
-        cmd = device.encodeCommand(command.TurnOn, deviceID)
+        cmd = device.encodeCommand(command.TurnOn, deviceId)
 
         self.im_ser.write(cmd)
-

@@ -38,6 +38,8 @@ class BridgeHub():
                     to = msg['to']
                     self.services[to][0].send(msg)
             except KeyboardInterrupt:
+                #they should already be killed because the interrupt
+                #should propgrate because of the os
                 for con in self.connections:
                     con.send(CLOSE_MESSAGE)
 
