@@ -4,8 +4,7 @@ import serial
 from select import select
 
 from bridgeservice import BridgeService
-from services.insteon.command_encode import device
-from services.insteon.command_encode import command
+from services.insteon.insteon_im_protocol import device, command, insteon_im_protocol
 
 class InsteonIMService(BridgeService):
     def __init__(self, hub_connection, log_queue):
@@ -32,5 +31,10 @@ class InsteonIMService(BridgeService):
 
         self.im_ser.write(cmd)
 
-    def handle_im_communication():
-        pass
+    def handle_im_communication(self):
+        rsp = self.im_ser.read(1)
+
+        to_read = insteon_im_protocol.get_response_length(rsp)
+
+        buf = self.im_ser.read(to_read)
+        #TODO: write code to handle this buf

@@ -2,8 +2,8 @@
 #from ..command import TurnOn
 
 import unittest
-from bridge.services.insteon.command_encode.device import Device, LampLinc
-from bridge.services.insteon.command_encode.device import TurnOn
+from bridge.services.insteon.insteon_im_protocol.device import Device, LampLinc
+from bridge.services.insteon.insteon_im_protocol.device import TurnOn
 
 class TestInsteonProtocol(unittest.TestCase):
     def setUp(self):
