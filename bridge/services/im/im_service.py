@@ -13,6 +13,8 @@ class InsteonIMService(BridgeService):
         self.read_list = [self.hub_connection]
 
     def run(self):
+        super().run()
+
         self.spinning = True
 
         while self.spinning:

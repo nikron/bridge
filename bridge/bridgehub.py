@@ -30,7 +30,6 @@ class BridgeHub():
     #now we just pass messages between processes
     def main_loop(self):
         spinning = True
-        self.connections[0].send(DEBUG_MESSAGE)
         while spinning:
             try:
                 (read, write, exception) = select(self.connections, [], [])
