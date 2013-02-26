@@ -59,10 +59,10 @@ def read_command(im):
             else:
                 left = self.im_ser.read(2) #two bytes left for a sd insteon    
                 buf = im_cmd + control + left
-            else: 
-                to_read = modemCommands[b]
-                buf = self.im_ser.read(to_read)
-                buf = im_cmd + buf
+        else: 
+            to_read = modemCommands[b]
+            buf = self.im_ser.read(to_read)
+            buf = im_cmd + buf
     else:
         logging.error("Didn't get a start of text for first byte, communications messed up.")
 

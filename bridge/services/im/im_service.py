@@ -13,6 +13,8 @@ class InsteonIMService(BridgeService):
         self.read_list = [self.hub_connection]
 
     def run(self):
+        self.spinning = True
+
         while self.spinning:
             (read, write, exception) = select(self.read_list, [], [])
             if self.hub_connection in read:

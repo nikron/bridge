@@ -1,6 +1,6 @@
 import multiprocessing
 import bridgelogging
-from bridgeservice import CLOSE_MESSAGE
+from bridgeservice import CLOSE_MESSAGE, DEBUG_MESSAGE
 from services.im.im_service import InsteonIMService
 from select import select
 
@@ -30,6 +30,7 @@ class BridgeHub():
     #now we just pass messages between processes
     def main_loop(self):
         spinning = True
+        self.connections[0].send(DEBUG_MESSAGE)
         while spinning:
             try:
                 (read, write, exception) = select(self.connections, [], [])
