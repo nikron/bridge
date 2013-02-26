@@ -43,6 +43,10 @@ class States():
         for trigger in self.triggers:
             self.orient_trigger(trigger)
 
+    def find_edge(self, state1, state2):
+        edge = self.states[state1] - self.states[state2]
+        return edge
+
     def transition(self, state):
         #mildy sure taking a 2^n - 2^k where n and k are nonzero are unique
         edge = self.find_edge(self.current,state)
@@ -51,9 +55,9 @@ class States():
         for trigger in self.trigger_mesh[edge]:
             trigger.trigger() #suck it
 
-    def find_edge(self, state1, state2):
-        edge = self.states[state1] - self.states[state2]
-        return edge
+    #change state without triggering anything
+    def sudden(self, state):
+        self.current = state
 
     def add_trigger(self, trigger):
         self.orient_trigger(self, trigger)

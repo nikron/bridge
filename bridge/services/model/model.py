@@ -1,20 +1,8 @@
-import uuid
-class Asset():
-    def __init__(self, real_id, current, states, triggers):
-        self.states = States(current, states, triggers)
-        self.uuid = uuid.uuid1()
-        self.real_id = real_id
+class AssetModel():
+    def __init__(self, default_configuration=True):
+        self.r2u = {} #real id to uuid
+        self.u2r = {} #uuid to real
+        self.assets = []
 
-    def state_transition(state):
-        self.states.transition(state)
+    #def update_from_io(self, update):
 
-class OnOffAsset(Asset):
-    state_names = ['unknown', 'on', 'off', 'pending on', 'pending off']
-    def __init__(self, real_id, events, current='unknown', None):
-        super().__init__(real_id, current, self.state_names, events)
-
-    def turn_off(self):
-        self.state_transition('pending off')
-
-    def turn_on(self):
-        self.state_transition('pending on')
