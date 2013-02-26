@@ -40,4 +40,7 @@ def get_response_length(byte):
     return modemCommands[byte]
 
 def decode(buf):
+    
+    
+    
     return None

@@ -1,5 +1,6 @@
 import logging
 import serial
+import bitstring
 from select import select
 
 from bridgeservice import BridgeService
@@ -23,13 +24,26 @@ class InsteonIMService(BridgeService):
         rsp = self.im_ser.read(1)
 
         if rsp == b'\x02':
-            to_read = insteon_im_protocol.get_response_length(rsp)
+            
+            b = self.im_ser.read(1)
+            
+            if b == b'\x62':
+                c = self.im_ser.read(4)
+                
+                bs = bitstring.bitstring(c[3])
+                
+                if bs[7] == True:
+                    '''extended'''
+                else:
+                    '''standard'''
+            
+            to_read = insteon_im_protocol.get_response_length(b)
             buf = self.im_ser.read(to_read)
             update = insteon_im_protocol.decode(buf)
-            self.update_model(update)
+            self.update_model(update) #{'id' : b'\asdfsadf\', 'status' : 100 }
 
         else:
-            logging.error("Didn't get a start of text for first byte, commmunications messed up.")
+            logging.error("Didn't get a start of text for first byte, communications messed up.")
 
     def update_model(self, update):
         self.remote_service_method('model', 'update', update)
