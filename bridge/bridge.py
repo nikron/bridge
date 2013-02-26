@@ -1,4 +1,10 @@
+import sys
+import os.path
+#hack to add top directory to import searching path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
+
 import bridgehub
+
 
 def configuration():
     return {}
