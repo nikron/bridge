@@ -20,23 +20,12 @@ def parse_opts(default):
 
     return config
 
-#have to dynamcially read this from a file and rutime options in future
-def configuration():
-    return { 'Model Driver' : 'file',
-            'IO Services' : [{ 
-                'driver' : InsteonIMService,
-                'name' : 'insteon io service',
-                'interface' : ('none', '/dev/ttyUSB0', [])}],
-            }
-
 def main():
     #TODO: reading in options
     #TODO: reading in configuration
-    default_config_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'bridge.config')
+    default_config_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'bridge.ini')
 
     config = parse_opts(default_config_file)
-
-    config = configuration()
 
     hub = bridgehub.BridgeHub(config)
     hub.run()

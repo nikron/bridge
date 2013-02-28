@@ -1,7 +1,7 @@
 import multiprocessing
 import bridgelogging
 from bridgeservice import CLOSE_MESSAGE, DEBUG_MESSAGE
-from services.io.interfaces import create_interface
+from services.io.io_types import IOConfig
 from services.model.model_service import ModelService
 from select import select
 
@@ -13,7 +13,7 @@ class BridgeHub():
         self.services = {}
 
         self.model_config = { 
-                                'storage' : configuration['Model Driver'],
+                                'storage' : configuration.model_driver,
                                 'io_services' : []
                              }
 
@@ -31,17 +31,16 @@ class BridgeHub():
         self.add_service(conn, service)
 
     def start_io_services(self):
-        for io_config in self.configuration['IO Services']:
+        for io_config_args in self.configuration.io_services:
             conn = self.create_connection() 
-            interface = create_interface(io_config['interface'])
 
-            io_service = io_config['driver']
-            inited = io_service(interface, io_config['name'], conn, self.logging_service.queue)
+            io_config = IOConfig(*io_config_args)
+            io_service =  io_config.create_service(conn, self.logging_service.queue)
 
-            self.add_service(conn, inited)
-            self.model_config['io_services'].append(io_config)
+            self.add_service(conn, io_service)
+            self.model_config['io_services'].append(io_config.model_information())
 
-            inited.start()
+            io_service.start()
 
     def run(self):
         #start the logging process immediately

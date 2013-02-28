@@ -6,7 +6,7 @@ from bridgeservice import BridgeService
 #An ioservice should be passed an interface, something that you can
 #call select on
 class IOService(BridgeService):
-    def __init__(self, interface, name, hub_connection, log_queue):
+    def __init__(self, name, interface, hub_connection, log_queue):
         super().__init__(name, hub_connection, log_queue)
         self.interface = interface
 
