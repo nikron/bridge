@@ -19,17 +19,22 @@ class Trigger():
 class States():
     def __init__(self, current, states, triggers):
         self.states = {}
-        i = 1
 
-        for state in states:
-            self.states[state] = i
-            i = i * 2
+        _internal_states(self, states)
 
         self.current = current
 
         self.triggers = triggers
         self.trigger_mesh = {}
         self.orient()
+
+    #create the internal representative of a state
+    def _internal_state(self, states)
+        i = 1
+
+        for state in states:
+            self.states[state] = i
+            i = i * 2
 
     def orient_trigger(self, trigger):
         edge = self.find_edge(trigger.state1, trigger.state2)
@@ -44,11 +49,12 @@ class States():
             self.orient_trigger(trigger)
 
     def find_edge(self, state1, state2):
+        #mildy sure taking a 2^n - 2^k where n and k are nonzero are unique
+        #and n does not equal k
         edge = self.states[state1] - self.states[state2]
         return edge
 
     def transition(self, state):
-        #mildy sure taking a 2^n - 2^k where n and k are nonzero are unique
         edge = self.find_edge(self.current,state)
         self.current = state
 
