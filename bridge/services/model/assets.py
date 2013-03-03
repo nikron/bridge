@@ -19,6 +19,9 @@ class Asset():
         else:
             logging.error("State " + repr(state) + " not in allowable outside states.")
 
+    def update(self, up):
+        pass
+
 class OnOffAsset(Asset):
     state_names = ['unknown', 'on', 'off', 'pending on', 'pending off']
     allowable = ['pending on', 'pending off']
