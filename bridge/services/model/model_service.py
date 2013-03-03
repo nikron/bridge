@@ -3,14 +3,15 @@ from select import select
 
 from bridgeservice import BridgeService
 from .model import Model
+from .model_storage import get_storage
 
 class ModelService(BridgeService):
-    def __init__(self, io_services, driver_name,  hub_connection, log_queue):
+    def __init__(self, io_services, file_name, driver_name,  hub_connection, log_queue):
         super().__init__('model', hub_connection, log_queue)
         self.read_list = [self.hub_connection]
 
-        #self.storage = config.storage_driver()
-        #self.model = self.storage.read_saved_model()
+        self.storage = get_storage(file_name, driver_name)
+        self.model = self.storage.read_saved_model()
 
     def run(self):
         super().run()

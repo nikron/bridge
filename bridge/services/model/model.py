@@ -1,7 +1,7 @@
 import logging
 
 class Model():
-    def __init__(self, default_configuration=True):
+    def __init__(self):
         self.r2u = {} #real id to uuid
         self.u2r = {} #uuid to real
         self.assets = {}

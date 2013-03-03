@@ -11,7 +11,7 @@ class BridgeConfiguration():
         config = configparser.ConfigParser()
         config.read(self.file)
 
-        self.model_dir = config['model']['dir'].format(this_dir=self.conf_dir)
+        self.model_file = config['model']['file'].format(this_dir=self.conf_dir)
         self.model_driver = config['model']['driver']
 
 
