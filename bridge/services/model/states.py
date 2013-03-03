@@ -20,7 +20,7 @@ class States():
     def __init__(self, current, states, triggers):
         self.states = {}
 
-        _internal_states(self, states)
+        self._internal_states(states)
 
         self.current = current
 
@@ -29,7 +29,7 @@ class States():
         self.orient()
 
     #create the internal representative of a state
-    def _internal_state(self, states)
+    def _internal_states(self, states):
         i = 1
 
         for state in states:
