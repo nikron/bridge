@@ -1,7 +1,7 @@
 import logging
 from select import select
 
-from bridgeservice import BridgeService
+from bridge.service import BridgeService
 
 #An ioservice should be passed an interface, something that you can
 #call select on

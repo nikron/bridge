@@ -1,6 +1,6 @@
 import serial
 import logging
-from .insteon_service import InsteonIMService
+from .insteon import InsteonIMService
 
 class IOConfig():
     def __init__(self, name, protocol, con, con_arg):

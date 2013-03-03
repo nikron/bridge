@@ -1,9 +1,9 @@
 import logging
 from select import select
 
-from bridgeservice import BridgeService
+from bridge.service import BridgeService
 from .model import Model
-from .model_storage import get_storage
+from .storage import get_storage
 
 class ModelService(BridgeService):
     def __init__(self, io_idioms, file_name, driver_name,  hub_connection, log_queue):

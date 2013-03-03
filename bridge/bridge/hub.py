@@ -1,13 +1,15 @@
 import multiprocessing
-import bridgelogging
-from bridgeservice import CLOSE_MESSAGE, DEBUG_MESSAGE
-from services.io.io_types import IOConfig
-from services.model.model_service import ModelService
 from select import select
+
+from bridge.service import CLOSE_MESSAGE, DEBUG_MESSAGE
+from bridge.logging import LoggingService, service_configure_logging
+
+from services.io.types import IOConfig
+from services.model.service import ModelService
 
 class BridgeHub():
     def __init__(self, configuration, *args, **kwargs):
-        self.logging_service = bridgelogging.LoggingService()
+        self.logging_service = LoggingService()
         self.configuration = configuration
         self.connections = []
         self.services = {}
@@ -48,7 +50,7 @@ class BridgeHub():
     def run(self):
         #start the logging process immediately
         self.logging_service.start()
-        bridgelogging.service_configure_logging(self.logging_service.queue)
+        service_configure_logging(self.logging_service.queue)
         
         #start each service
         self.start_io_services()

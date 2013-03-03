@@ -6,9 +6,8 @@ sys.path.append(os.path.abspath(os.path.join(current_dir, os.path.pardir)))
 
 import argparse
 
-import bridgehub
-from bridgeconfig import BridgeConfiguration
-from services.io.insteon_service import InsteonIMService
+from bridge.hub import BridgeHub
+from bridge.config import BridgeConfiguration
 
 def parse_opts(default):
     parser = argparse.ArgumentParser(description='Control your devices!')
@@ -27,7 +26,7 @@ def main():
 
     config = parse_opts(default_config_file)
 
-    hub = bridgehub.BridgeHub(config)
+    hub = BridgeHub(config)
     hub.run()
 
     	

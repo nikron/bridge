@@ -1,7 +1,8 @@
 import multiprocessing
-import bridgelogging
 import logging
 import signal
+
+from bridge.logging import service_configure_logging
 
 CLOSE_MESSAGE = { 'method' : 'close', 'args' : [], 'kwargs' : {}}
 DEBUG_MESSAGE = { 'method' : 'debug', 'args' : [], 'kwargs' : {}}
@@ -15,7 +16,7 @@ class BridgeService(multiprocessing.Process):
         self.spinning = False #most services will spin on a select loop, but they aren't
         # right now
 
-        bridgelogging.service_configure_logging(self.log_queue)
+        service_configure_logging(self.log_queue)
 
     def run(self):
         signal.signal(signal.SIGINT, signal.SIG_IGN)

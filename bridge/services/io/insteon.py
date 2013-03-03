@@ -1,7 +1,7 @@
-from services.io import io_service
+from .service import IOService
 from insteon_protocol import command, insteon_im_protocol, device
 
-class InsteonIMService(io_service.IOService):
+class InsteonIMService(IOService):
     def handle_read_interface(self):
         buf = inseon_im_protocol.read_command(self.im_ser)
 
