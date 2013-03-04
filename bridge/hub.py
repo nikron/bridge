@@ -4,8 +4,8 @@ from select import select
 from bridge.service import CLOSE_MESSAGE, DEBUG_MESSAGE
 from bridge.logging import LoggingService, service_configure_logging
 
-from services.io.types import IOConfig
-from services.model.service import ModelService
+from bridge.services.io.types import IOConfig
+from bridge.services.model.service import ModelService
 
 class BridgeHub():
     def __init__(self, configuration, *args, **kwargs):

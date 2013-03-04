@@ -1,8 +1,4 @@
-import sys
 import os.path
-current_dir = os.path.dirname(__file__)
-#hack to add top directory to import searching path
-sys.path.append(os.path.abspath(os.path.join(current_dir, os.path.pardir)))
 
 import argparse
 

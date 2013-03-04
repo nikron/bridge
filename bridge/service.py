@@ -13,8 +13,8 @@ class BridgeService(multiprocessing.Process):
         self.hub_connection = hub_connection
         self.log_queue = log_queue
 
-        self.spinning = False #most services will spin on a select loop, but they aren't
-        # right now
+        #most services will spin on a select loop
+        self.spinning = False 
 
         service_configure_logging(self.log_queue)
 
@@ -28,10 +28,10 @@ class BridgeService(multiprocessing.Process):
             func(*msg['args'], **msg['kwargs'])
 
         else:
-            logging.error("The method " + msg['method'] + " is not in the object.")
+            logging.error("The method {0} is not in the object.".format(msg['method']))
             
     def close(self):
-        logging.debug("Service " + self.name + " is closing.")
+        logging.debug("Service {0}" + self.name + " is closing.")
         self.spinning = False
 
     def debug(self):
