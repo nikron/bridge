@@ -31,11 +31,11 @@ class BridgeService(multiprocessing.Process):
             logging.error("The method {0} is not in the object.".format(msg['method']))
             
     def close(self):
-        logging.debug("Service {0}" + self.name + " is closing.")
+        logging.debug("Service {0} is closing.".format(self.name))
         self.spinning = False
 
     def debug(self):
-        logging.debug("Service " + self.name + " is debugging.")
+        logging.debug("Service {0} is debugging.".format(self.name))
 
     def remote_service_method(self, to, *args, **kwargs):
         msg = {'to' : to, 'args' : args, 'kwargs' : kwargs}

@@ -45,23 +45,23 @@ modemCommands = {
 def read_command(im):
     buf = None
 
-    rsp = self.im_ser.read(1)
+    rsp = im.read(1)
     if rsp == b'\x02':
             
-        im_cmd = self.im_ser.read(1)
+        im_cmd = im.read(1)
         if im_cmd == b'\x62': #62 can be either 6 or 20 bytes left to read
-            control = self.im_ser.read(4) #control bytes of insteon messages
+            control = im.read(4) #control bytes of insteon messages
             bs = bitstring.BitString(control[3])
 
             if bs[7] == True:
-                left = self.im_ser.read(16) #16 bytes left for ed insteon
+                left = im.read(16) #16 bytes left for ed insteon
                 buf = im_cmd + control + left
             else:
-                left = self.im_ser.read(2) #two bytes left for a sd insteon    
+                left = imread(2) #two bytes left for a sd insteon    
                 buf = im_cmd + control + left
         else: 
             to_read = modemCommands[b]
-            buf = self.im_ser.read(to_read)
+            buf = im.read(to_read)
             buf = im_cmd + buf
     else:
         logging.error("Didn't get a start of text for first byte, communications messed up.")
