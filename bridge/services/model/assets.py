@@ -22,6 +22,14 @@ class Asset():
     def update(self, up):
         pass
 
+"""
+An asset placeholder for when you know something exists but you don't
+know what it is.
+"""
+class BlankAsset(Asset):
+    def __init__(self, real_id):
+        super().__init__(self, real_id, None, None, None, None) 
+
 class OnOffAsset(Asset):
     state_names = ['unknown', 'on', 'off', 'pending on', 'pending off']
     allowable = ['pending on', 'pending off']

@@ -1,4 +1,5 @@
 from bridge.services.model.idiom import ModelIdiom
+from bridge.services.model.assets import BlankAsset
 
 class InsteonIdiom(ModelIdiom):
     def guess_asset(self, update):
@@ -7,4 +8,4 @@ class InsteonIdiom(ModelIdiom):
             pass
            
         else:
-            return (None, False)
+            return (BlankAsset(update['id']), False)

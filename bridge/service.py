@@ -1,8 +1,8 @@
 import multiprocessing
 import logging
-#import signal
+import signal
 
-from bridge.logging import service_configure_logging
+from bridge.logging_service import service_configure_logging
 
 CLOSE_MESSAGE = { 'method' : 'close', 'args' : [], 'kwargs' : {}}
 DEBUG_MESSAGE = { 'method' : 'debug', 'args' : [], 'kwargs' : {}}
@@ -19,7 +19,7 @@ class BridgeService(multiprocessing.Process):
         service_configure_logging(self.log_queue)
 
     def run(self):
-        #signal.signal(signal.SIGINT, signal.SIG_IGN)
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
         pass
 
     def do_remote_request(self):

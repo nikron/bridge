@@ -1,4 +1,4 @@
-from .service import IOService
+from bridge.services.io.service import IOService
 from insteon_protocol import command, insteon_im_protocol, device
 
 class InsteonIMService(IOService):

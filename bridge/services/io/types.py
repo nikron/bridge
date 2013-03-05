@@ -1,7 +1,7 @@
 import serial
 import logging
-from bridge.services.io.insteon import InsteonIMService
-from bridge.services.io.insteon_idiom import InsteonIdiom
+from ..io.insteon import InsteonIMService
+from bridge.services.io.insteon.idiom import InsteonIdiom
 
 
 class IOConfig():
