@@ -1,4 +1,4 @@
-from bridge.model.idiom import ModelIdiom
+from bridge.services.model.idiom import ModelIdiom
 
 class InsteonIdiom(ModelIdiom):
     def guess_asset(self, update):

@@ -3,7 +3,7 @@
 
 from abc import ABCMeta, abstractmethod
 
-class ModelIdiom(metaclass=ABCMeta)
+class ModelIdiom(metaclass=ABCMeta):
     @abstractmethod
     def guess_asset(self, update):
         pass

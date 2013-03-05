@@ -15,7 +15,7 @@ class BridgeHub():
         self.services = {}
 
         #to pass to the model later
-        self.io_services = []
+        self.io_idioms = []
 
     def create_connection(self):
         (its, ours) = multiprocessing.Pipe()
@@ -30,7 +30,7 @@ class BridgeHub():
         
         #need to pass in the io services it is going to connect to
         #and the the storage driver name
-        service = ModelService(self.io_services, self.configuration.model_file,
+        service = ModelService(self.io_idioms, self.configuration.model_file,
             self.configuration.model_driver, conn, self.logging_service.queue)
 
         self.add_service(conn, service)
@@ -43,7 +43,8 @@ class BridgeHub():
             io_service =  io_config.create_service(conn, self.logging_service.queue)
 
             self.add_service(conn, io_service)
-            self.io_services.append(io_config.model_idiom())
+
+            self.io_idioms.append(io_config.model_idiom())
 
             io_service.start()
 

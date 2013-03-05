@@ -1,7 +1,7 @@
 import serial
 import logging
-from bridge.io.insteon import InsteonIMService
-from bridge.io.insteon_idiom import InsteonIdiom
+from bridge.services.io.insteon import InsteonIMService
+from bridge.services.io.insteon_idiom import InsteonIdiom
 
 
 class IOConfig():
@@ -34,5 +34,5 @@ class IOConfig():
         return self.service(self.name, io_con, hub_con, log) 
 
     #information the model needs for this process
-    def model_information(self):
+    def model_idiom(self):
         return self.idiom()
