@@ -17,6 +17,7 @@ class Model():
 
     def io_update(self, idiom, update):
         real_id = update['id']
+
         if real_id in self.model.r2u[idiom.name]:
             asset = self.model.r2u[idiom.name][real_id]
 

@@ -1,13 +1,21 @@
 import serial
 import logging
-from .insteon import InsteonIMService
+from bridge.io.insteon import InsteonIMService
+from bridge.io.insteon_idiom import InsteonIdiom
+
 
 class IOConfig():
+    io_types = {
+        'insteon' : (InsteonIMService, InsteonIdiom)
+    }
     def __init__(self, name, protocol, con, con_arg):
         self.name = name
         self.io_type = protocol
         self.con = con
         self.con_arg = con_arg
+        
+        self.service = self.io_types[self.io_type][0]
+        self.idiom = self.io_types[self.io_type][1]
 
     def create_connection(self):
         connections = { 
@@ -21,14 +29,10 @@ class IOConfig():
             return None
 
     def create_service(self, hub_con, log):
-        io_types = {
-            'insteon' : InsteonIMService
-        }
-
         io_con = self.create_connection()
 
-        return io_types[self.io_type](self.name, io_con, hub_con, log) 
+        return self.service(self.name, io_con, hub_con, log) 
 
     #information the model needs for this process
     def model_information(self):
-        pass
+        return self.idiom()

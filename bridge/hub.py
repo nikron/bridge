@@ -43,7 +43,7 @@ class BridgeHub():
             io_service =  io_config.create_service(conn, self.logging_service.queue)
 
             self.add_service(conn, io_service)
-            self.io_services.append(io_config.model_information())
+            self.io_services.append(io_config.model_idiom())
 
             io_service.start()
 
