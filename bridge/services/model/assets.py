@@ -1,5 +1,5 @@
 #assets are classes for individual devices
-from .states import States
+from bridge.services.model.states import States
 import logging
 import uuid
 
@@ -9,6 +9,7 @@ class Asset():
         self.uuid = uuid.uuid1()
         self.real_id = real_id
         self.outside_states = allowable
+        self.failed_transistions = []
 
     def transition(self, state):
         self.states.transition(state)
@@ -29,6 +30,16 @@ know what it is.
 class BlankAsset(Asset):
     def __init__(self, real_id):
         super().__init__(self, real_id, None, None, None, None) 
+
+    def transition(self, state):
+        self.failed_transistions.append(state)
+
+        return False
+
+    def outside_transition(self, state):
+        self.failed_transistions.append(state)
+
+        return False
 
 class OnOffAsset(Asset):
     state_names = ['unknown', 'on', 'off', 'pending on', 'pending off']

@@ -29,12 +29,23 @@ class ModelService(BridgeService):
     
     #io service should call this most of the time
     def io_update(self, service, update):
+        idiom = self.io_idioms[service]
 
-        if service in self.io_idioms:
-            io_idiom = self.io_idioms[io_idiom]
+        if idiom is not None:
+            uuid = self.model.get_uuid(service, update['id'])
 
-            self.model.io_update(io_idiom, update)
-        
+            if uuid is not None:
+                state = idiom.get_state(update)
+
+                if not self.model.io_transistion(uuid, trans):
+                    asset = idiom.guess_asset(update)
+
+                    self.model.transform(uuid, asset)
+
+            else:
+                asset = self.guess_asset(service, update)
+                self.model.add_asset(asset)
+
         else:
             #got an update from a service we don't know about
             #probably should complain to the bridgehub about it failing

@@ -7,3 +7,7 @@ class ModelIdiom(metaclass=ABCMeta):
     @abstractmethod
     def guess_asset(self, update):
         pass
+
+    @abstractmethod
+    def get_state(self, update):
+        pass

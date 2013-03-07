@@ -9,3 +9,6 @@ class InsteonIdiom(ModelIdiom):
            
         else:
             return (BlankAsset(update['id']), False)
+
+    def get_state(self, update):
+        pass

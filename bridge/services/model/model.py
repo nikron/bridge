@@ -7,35 +7,29 @@ class Model():
         self.assets = {}
         self.links = []
 
-    def simple(self, uuid, state):
-        try:
-            asset = self.assets[uuid]
+    def add_service(self, service):
+        self.r2u[service] = {}
+
+    def get_uuid(self, service, real_id):
+        if service in self.r2u:
+            return self.r2u[service].get(real_id)
+
+        return None
+        
+    def net_simple(self, uuid, state):
+        asset = self.assets.get(uuid)
+
+        if asset is not None:
             asset.transition(state)
-
-        except KeyError:
-            logging.error("{0} does not exist in this model.".format(repr(uuid)))
-
-    def io_update(self, idiom, update):
-        real_id = update['id']
-
-        if real_id in self.model.r2u[idiom.name]:
-            asset = self.model.r2u[idiom.name][real_id]
-
-            #sanity check
-            #maybe we shouldn't even check
-            if asset.service.uuid == service:
-                asset.update(update)
-            else:
-                logging.error("An asset isn't mapped to its uuid?!") 
-    
         else:
-            #okay we got an update for a device we don't know about
-            #lets create an asset
+            logging.error("{0} does not exist in this model.".format(repr(uuid)))
+    
+    #attemps to transtiotion asset(uuid) to state
+    #returns false if unsuccessful
+    def io_transition(self, uuid, state):
+        return self.assets[uuid].transistion(state)
 
-            self.create_asset_from_guesswork(service, update)
-
-    def create_asset_from_guesswork(self, idiom, update):
-        (asset, positive) = idiom.guess_asset(update)
-
-        if not positive:
-            idiom.request_more_information(asset)
+    """Hard method where we transform an arbitrary asset into another
+    figure out how to do this"""
+    def transform(self, uuid, asset):
+        pass 

@@ -55,11 +55,16 @@ class States():
         return edge
 
     def transition(self, state):
-        edge = self.find_edge(self.current,state)
+        if state in self.states:
+            return False
+
+        edge = self.find_edge(self.current, state)
         self.current = state
 
         for trigger in self.trigger_mesh[edge]:
             trigger.trigger() #suck it
+
+        return True
 
     #change state without triggering anything
     def sudden(self, state):
