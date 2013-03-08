@@ -40,6 +40,7 @@ class BridgeService(multiprocessing.Process):
             logging.error("The method {0} is not in the object.".format(msg['method']))
 
     def close(self):
+        """Attempt to close the this service if it spinning."""
         logging.debug("Service {0} is closing.".format(self.name))
         self.spinning = False
 

@@ -66,8 +66,8 @@ class States():
 
         return True
 
-    #change state without triggering anything
     def sudden(self, state):
+        """Change the current state without triggering any triggers."""
         self.current = state
 
     def add_trigger(self, trigger):

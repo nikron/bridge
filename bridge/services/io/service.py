@@ -3,9 +3,11 @@ from select import select
 
 from bridge.service import BridgeService
 
-#An ioservice should be passed an interface, something that you can
-#call select on
 class IOService(BridgeService):
+    """
+    An abstraction of a BridgeService, meant to run IO
+    on a paticular interface.
+    """
     def __init__(self, name, interface, hub_connection, log_queue):
         super().__init__(name, hub_connection, log_queue)
         self.interface = interface
@@ -20,14 +22,16 @@ class IOService(BridgeService):
         self.spinning = True
 
         while self.spinning:
-            (read, write, exception) = select(self.read_list, [], [])
+            (read, _, _) = select(self.read_list, [], [])
             if self.hub_connection in read:
                 self.do_remote_request()
             if self.interface in read:
                 self.read_interface()
 
     def update_model(self, update):
+        """Send an upate to model, it will be decoded by an idiom."""
         self.remote_service_method('model', 'update', update)
 
     def read_interface(self):
+        """Read the interface, each IO service must implmeenet this."""
         raise NotImplementedError

@@ -36,8 +36,9 @@ class BridgeHub():
         self.connections.append(ours)
         return its
 
-    def add_service(self, conn, service):
-        self.services[service.name] = (conn, service)
+    def add_service(self, con, service):
+        """Register a connection and a service to its name."""
+        self.services[service.name] = (con, service)
 
     def start_model(self):
         """Start the model service. (Actually forks off process)"""
@@ -67,6 +68,8 @@ class BridgeHub():
             io_service.start()
 
     def run(self):
+        """Effectively `main` method of bridge."""
+
         #start the logging process immediately
         self.logging_service.start()
         service_configure_logging(self.logging_service.queue)
@@ -84,7 +87,7 @@ class BridgeHub():
 
         while spinning:
             try:
-                (read, write, exception) = select(self.connections, [], [])
+                (read, _, _) = select(self.connections, [], [])
                 for ready in read:
                     msg = ready.recv()
                     to = msg['to']
@@ -96,6 +99,5 @@ class BridgeHub():
 
                 spinning = False
 
-        #this errors for some reason
         for service in self.services.values():
             service[1].join()

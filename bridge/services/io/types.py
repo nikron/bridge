@@ -1,13 +1,19 @@
 import serial
 import logging
-from ..io.insteon import InsteonIMService
+from bridge.services.io.insteon import InsteonIMService
 from bridge.services.io.insteon.idiom import InsteonIdiom
 
 
 class IOConfig():
+    """
+    The model recieves one of these for every running IO service, so that
+    it knows how to communicate with it.
+    """
+
     io_types = {
         'insteon' : (InsteonIMService, InsteonIdiom)
     }
+
     def __init__(self, name, protocol, con, con_arg):
         self.name = name
         self.io_type = protocol
@@ -27,7 +33,6 @@ class IOConfig():
             return con
 
         except:
-
             logging.error("Could not create connection {0} with arg {1}".format(
                 repr(self.con), repr(self.con_arg)))
 
@@ -38,6 +43,8 @@ class IOConfig():
 
         return self.service(self.name, io_con, hub_con, log) 
 
-    #information the model needs for this process
     def model_idiom(self):
+        """
+        Create the idiom that the model needs to communicate with the service.
+        """
         return self.idiom()
