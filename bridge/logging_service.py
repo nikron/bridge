@@ -1,3 +1,9 @@
+"""
+Wrapper around python API for a logging thread
+that listens on a queue, our queue is implemented by
+multiprocess Queue.
+"""
+
 import logging
 import logging.handlers
 from multiprocessing import Queue
@@ -15,8 +21,8 @@ class LoggingService():
     def start(self):
         self._queuelistener.start()
 
-
 def service_configure_logging(queue):
+    """Configure the root logger to send log records to a queue."""
     handler = logging.handlers.QueueHandler(queue)
     root = logging.getLogger()
     root.addHandler(handler)

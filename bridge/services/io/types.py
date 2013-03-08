@@ -25,7 +25,12 @@ class IOConfig():
         try:
             con = connections[self.con](self.con_arg)
             return con
+
         except:
+
+            logging.error("Could not create connection {0} with arg {1}".format(
+                repr(self.con), repr(self.con_arg)))
+
             return None
 
     def create_service(self, hub_con, log):

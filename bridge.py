@@ -20,13 +20,14 @@ def parse_opts(default):
 def main():
     #TODO: reading in options
     #TODO: reading in configuration
-    default_config_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'bridge.ini')
+    this_dir = os.path.dirname(__file__)
+    default_config_file = os.path.join(os.path.abspath(this_dir), 'bridge.ini')
 
     config = parse_opts(default_config_file)
 
     hub = BridgeHub(config)
     hub.run()
 
-    	
+
 if __name__ == '__main__':
     main()

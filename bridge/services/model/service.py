@@ -2,7 +2,6 @@ import logging
 from select import select
 
 from bridge.service import BridgeService
-from .model import Model
 from .storage import get_storage
 
 class ModelService(BridgeService):
@@ -25,8 +24,8 @@ class ModelService(BridgeService):
 
     #the network frontend uses this to do most of its work
     def simple_state_change(self, asset_uuid, state):
-        self.model.simple(asset_uuid, state)
-    
+        self.model.net_simple(asset_uuid, state)
+
     #io service should call this most of the time
     def io_update(self, service, update):
         idiom = self.io_idioms[service]
@@ -37,13 +36,16 @@ class ModelService(BridgeService):
             if uuid is not None:
                 state = idiom.get_state(update)
 
-                if not self.model.io_transistion(uuid, trans):
+                if not self.model.io_transistion(uuid, state):
                     asset = idiom.guess_asset(update)
 
                     self.model.transform(uuid, asset)
 
             else:
-                asset = self.guess_asset(service, update)
+                logging.debug("Got an update about device {0} that we don't know about.".format(
+                    update['id']))
+
+                asset = idiom.guess_asset(service, update)
                 self.model.add_asset(asset)
 
         else:
