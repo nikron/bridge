@@ -1,10 +1,10 @@
 from bridge.services.io.service import IOService
-from insteon_protocol import command, insteon_im_protocol, device
+from insteon_protocol import command, insteon_im_protocol
 
 class InsteonIMService(IOService):
     def handle_read_interface(self):
-        buf = inseon_im_protocol.read_command(self.im_ser)
+        buf = insteon_im_protocol.read_command(self.interface)
 
         if buf is not None:
             update = insteon_im_protocol.decode(buf)
-            self.update_model(update) #{'id' : b'\asdfsadf\', 'status' : 100 }
+            self.update_model(update)

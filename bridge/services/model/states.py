@@ -71,9 +71,9 @@ class States():
         self.current = state
 
     def add_trigger(self, trigger):
-        self.orient_trigger(self, trigger)
+        self.orient_trigger(trigger)
 
-        self.trigers.append(trigger)
+        self.triggers.append(trigger)
 
     def remove_trigger(self, trigger):
         edge = self.find_edge(trigger.state1, trigger.state2)

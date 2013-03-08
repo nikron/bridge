@@ -1,3 +1,6 @@
+"""
+Process to hold model and do net and io requests.
+"""
 import logging
 from select import select
 
@@ -22,8 +25,10 @@ class ModelService(BridgeService):
             if self.hub_connection in read:
                 self.do_remote_request()
 
-    #the network frontend uses this to do most of its work
     def simple_state_change(self, asset_uuid, state):
+        """
+        Try to do a simple state change that a non io process can do.
+        """
         self.model.net_simple(asset_uuid, state)
 
     #io service should call this most of the time

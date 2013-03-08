@@ -1,9 +1,14 @@
-#assets are classes for individual devices
+"""
+An asset is the internal representation of a device.
+"""
 from bridge.services.model.states import States
 import logging
 import uuid
 
 class Asset():
+    """
+    Represent a physical device, such as a Keypadlinc.
+    """
     def __init__(self, real_id, current, states, allowable, triggers):
         self.states = States(current, states, triggers)
         self.uuid = uuid.uuid1()
@@ -18,16 +23,18 @@ class Asset():
         if state in self.outside_states:
             self.transition(state)
         else:
-            logging.error("State " + repr(state) + " not in allowable outside states.")
+            logging.error("State {0} not in allowable outside states.".format(
+                repr(state)))
 
-    def update(self, up):
+    def update(self, update):
         pass
 
-"""
-An asset placeholder for when you know something exists but you don't
-know what it is.
-"""
 class BlankAsset(Asset):
+    """
+    An asset placeholder for when you know something exists but you don't
+    know what it is.
+    """
+
     def __init__(self, real_id):
         super().__init__(self, real_id, None, None, None, None) 
 

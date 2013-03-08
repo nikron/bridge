@@ -3,9 +3,17 @@
 
 from abc import ABCMeta, abstractmethod
 
-class ModelIdiom(metaclass=ABCMeta):
+class ModelIdiom():
+    __metaclass__ = ABCMeta
+
     @abstractmethod
     def guess_asset(self, update):
+        """
+        Guess an asset class with the update package the corresponding service 
+        provide.  Then create and return a tuple (asset, positive) where 
+        positive is if the asset is exactly the correct one for the
+        update.
+        """
         pass
 
     @abstractmethod
