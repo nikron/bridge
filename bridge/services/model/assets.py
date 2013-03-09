@@ -17,17 +17,16 @@ class Asset():
         self.failed_transistions = []
 
     def transition(self, state):
+        """Change the asset state to state."""
         self.states.transition(state)
 
     def outside_transition(self, state):
+        """Change the asset state to one allowed by non bridge things."""
         if state in self.outside_states:
             self.transition(state)
         else:
             logging.error("State {0} not in allowable outside states.".format(
                 repr(state)))
-
-    def update(self, update):
-        pass
 
 class BlankAsset(Asset):
     """
@@ -49,13 +48,12 @@ class BlankAsset(Asset):
         return False
 
 class OnOffAsset(Asset):
+    """
+    A device that is either simply on or off.
+    """
+
     state_names = ['unknown', 'on', 'off', 'pending on', 'pending off']
     allowable = ['pending on', 'pending off']
+
     def __init__(self, real_id, triggers, current='unknown'):
         super().__init__(real_id, current, self.state_names, self.allowable, triggers)
-
-    def turn_off(self):
-        self.transition('pending off')
-
-    def turn_on(self):
-        self.transition('pending on')
