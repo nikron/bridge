@@ -1,8 +1,10 @@
+"""
+Types of io services, and their idioms.  Used for configuration.
+"""
 import serial
 import logging
 from bridge.services.io.insteon import InsteonIMService
 from bridge.services.io.insteon.idiom import InsteonIdiom
-
 
 class IOConfig():
     """
@@ -24,21 +26,23 @@ class IOConfig():
         self.idiom = self.io_types[self.io_type][1]
 
     def create_connection(self):
+        """Return the connection/interface used by the service."""
         connections = { 
                 'serial' : serial.Serial 
          }
 
         try:
             con = connections[self.con](self.con_arg)
+
             return con
 
-        except:
-            logging.error("Could not create connection {0} with arg {1}".format(
-                repr(self.con), repr(self.con_arg)))
+        except: 
+            logging.error("Could not create connection {0} with arg {1}".format(repr(self.con), repr(self.con_arg)))
 
             return None
 
     def create_service(self, hub_con, log):
+        """Return initialized service."""
         io_con = self.create_connection()
 
         return self.service(self.name, io_con, hub_con, log) 
