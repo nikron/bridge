@@ -1,11 +1,17 @@
+"""
+Decode messages from an Insteon PLM.
+"""
+
 import logging
 import bitstring
+from insteon_protocol.command.commands import InsteonCommand
+from insteon_protocol.command.im_commands import InsteonCommand
 
 #you can only know how many bytes to read after you read a byte
 #from the device, so here is a dict that tells you how much you
 # need to read
 
-def standard_message(buf):
+def _insteon_standard_message(buf):
     update = {}
     update['id'] = buf[2:5]
     update['to'] = buf[5:8]
@@ -15,7 +21,7 @@ def standard_message(buf):
 
     return update
 
-def extended_message(buf):
+def _insteon_extended_message(buf):
     update = {}
     update['id'] = buf[2:5]
     update['to'] = buf[5:8]
@@ -31,8 +37,8 @@ def send_insteon(buf):
     return None
 
 modem_commands = {
-                    b'\x50': (9, standard_message), # Received Standard Message
-                    b'\x51': (23, extended_message), # Received Extended Message
+                    b'\x50': (9, InsteonCommand.decode), # Received Standard Message
+                    b'\x51': (23, InsteonCommand.decode), # Received Extended Message
                     b'\x52': 2, # Received X10
                     b'\x53': 8, # All Link Complete
                     b'\x54': 1, # SET button action
@@ -43,7 +49,7 @@ modem_commands = {
 
                     b'\x60': 7, # Get IM Info
                     b'\x61': 4, # Send All Link Command
-                    b'\x62': (-1, send_insteon), # Send Standard or Extended Message
+                    b'\x62': (-1, PLMInsteonCommand.decode), # Send Standard or Extended Message
                     b'\x63': 3, # Send X10
                     b'\x64': 3, # Start All Linking
                     b'\x65': 1, # Cancel All Linking
@@ -65,9 +71,8 @@ modem_commands = {
                     }
 
 
-#function to read the command bytes from an im
-#im has to support .read(num)
 def read_command(im):
+    """Read a command from an IM interface, needs to support read(number)"""
     buf = None
 
     rsp = im.read(1)
@@ -76,9 +81,9 @@ def read_command(im):
 
         if im_cmd == b'\x62': #62 can be either 6 or 20 bytes left to read
             control = im.read(4) #control bytes of insteon messages
-            bs = bitstring.BitString(control[3])
+            flag = bitstring.BitString(control[3])
 
-            if bs[7] == True:
+            if flag[7] == True:
                 left = im.read(17) #16 bytes left for ed insteon
                 buf = rsp + im_cmd + control + left
             else:
@@ -97,5 +102,10 @@ def read_command(im):
 
 
 def decode(buf):
-    return modem_commands[buf[1:2]][1](buf)
+    """Decode a buf into a the corresponding object."""
+
+    buf = buf[1:] #Remove the \x02
+
+    return modem_commands[buf[0]][1](buf[1:])
+
 
