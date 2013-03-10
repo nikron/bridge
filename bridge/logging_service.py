@@ -10,13 +10,13 @@ from multiprocessing import Queue
 import sys
 
 class LoggingService():
-    def __init__(self, stderr):
+    def __init__(self, log_file, stderr):
         self.queue = Queue()
 
         if stderr:  
             handler = logging.StreamHandler(sys.stderr)
         else:
-            handler = logging.FileHandler('bridge.log')
+            handler = logging.FileHandler(log_file)
 
         #formatter = logging.Formatter('%(asctime)s: %(pathname)s - %(levelname)s :: %(msg)s')
         formatter = logging.Formatter('%(levelname)s :: %(msg)s')

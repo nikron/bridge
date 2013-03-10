@@ -20,9 +20,9 @@ class BridgeHub():
     log service.  Expects to gain control of process when run() is called.
     """
 
-    def __init__(self, configuration, stderr):
+    def __init__(self, configuration):
         """Requires BridgeConfig to set various options."""
-        self.logging_service = LoggingService(stderr)
+        self.logging_service = LoggingService(configuration.log_file, configuration.stderr)
         self.configuration = configuration
         self.connections = []
         self.services = {}
