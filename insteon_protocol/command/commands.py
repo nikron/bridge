@@ -1,3 +1,7 @@
+"""
+Create an Insteon command by calling the appriate object
+with the correct information.
+"""
 from abc import ABCMeta, abstractmethod
 import bitstring #maybe get rid of this depedance but it makes things easier
 import logging
@@ -11,63 +15,80 @@ class Command():
 
 
 class InsteonCommand(Command):
-    #extended_data is for extended commands
-    def __init__(self, address, broadcast, group, ack, extended, max_hops, cmd1, cmd2, extended_data):
+    """Base class for all insteon commands."""
 
-        self.createFlag(broadcast, group, ack, extended, max_hops)
-        
+    def __init__(self, to_address, from_address, broadcast, group, ack, extended, max_hops, cmd1, cmd2, extended_data):
+        self.to_address = from_address
+        self.from_address = from_address
+
+        self.broadcast = broadcast
+        self.group = group
+        self.ack = ack
+        self.extended = extended
+        self.max_hops = max_hops
+        self.cmd1 = cmd1
+        self.cmd2 = cmd2
+        self.extended_data = extended_data
+
         self.cmd_bytes = cmd1 + cmd2
-        
-        self.cmd = b'\x02\x62' + address + self.msg_flags + self.cmd_bytes + extended_data
-    
-    def createFlag(self, broadcast, group, ack, extended, max_hops):
+
+
+    def create_flag(self):
+        """Create the message flag byte."""
         flag_byte = bitstring.BitString(8)
-        flag_byte[0] = broadcast
-        flag_byte[1] = group
-        flag_byte[2] = ack
-        flag_byte[3] = extended
-        flag_byte[4:6] = max_hops
-        flag_byte[6:8] = max_hops
-        self.msg_flags = flag_byte.tobytes()
-    
-    def encode(self):
-        return self.cmd
+        flag_byte[0] = self.broadcast
+        flag_byte[1] = self.group
+        flag_byte[2] = self.ack
+        flag_byte[3] = self.extended
+        flag_byte[4:6] = self.max_hops
+        flag_byte[6:8] = self.max_hops
 
-class TestInsteonCommand(InsteonCommand):
-    #extended_data is for extended commands
-    def __init__(self, fromAddress, toAddress, broadcast, group, ack, extended, max_hops, cmd1, cmd2, extended_data):
-        
-        super().createFlag(broadcast, group, ack, extended, max_hops)
-        
-        self.cmd_bytes = cmd1 + cmd2
-        
-        self.cmd = b'\x02\x62' + fromAddress + toAddress + self.msg_flags + self.cmd_bytes + extended_data
-        
+        flag = flag_byte.tobytes()
+
+        return flag
+
+    def encode(self):
+        """Encode the command into a byte string."""
+        msg_flag = self.create_flag()
+
+        cmd = self.from_address + self.to_address + msg_flag + self.cmd_bytes + self.extended_data
+
+        return cmd
+
+class PLMInsteonCommand(InsteonCommand):
+    """
+    Base class for commands sent over the PLM, basically attach '\x02\x62' infront of them
+    and strip the from address.
+    """
+
+    def __init__(self, to_address, broadcast, group, ack, extended, max_hops, cmd1, cmd2, extended_data):
+        super().__init__(self, b'\x02\x62', to_address, broadcast, group, ack, extended, max_hops, cmd1, cmd2, extended_data)
+
 #Create a command where cmd1 and cmd2 are static, and our message flag is 0x0f
 def _create_direct_static_standard_command(name, cmd1, cmd2):
     def __init__(self, address):
-        InsteonCommand.__init__(self, address, False, False, False, False, 3, cmd1, cmd2, b'')
+        PLMInsteonCommand.__init__(self, address, False, False, False, False, 3, cmd1, cmd2, b'')
 
-    return type(name, (InsteonCommand,), {'__init__' : __init__})
+    return type(name, (PLMInsteonCommand,), {'__init__' : __init__})
 
 def _create_direct_variable_standard_command(name, cmd1):
     def __init__(self, address, cmd2):
-        InsteonCommand.__init__(self, address, False, False, False, False, 3, cmd1, cmd2, b'')
+        PLMInsteonCommand.__init__(self, address, False, False, False, False, 3, cmd1, cmd2, b'')
 
-    return type(name, (InsteonCommand,), {'__init__' : __init__})
+    return type(name, (PLMInsteonCommand,), {'__init__' : __init__})
 
 #create an extended command where the data is supplied
 def _create_direct_simple_extended_command(name, cmd1, cmd2):
     def __init__(self, address, extended_data):
-        InsteonCommand.__init__(self, address, False, False, False, True, 3, cmd1, cmd2, extended_data)
+        PLMInsteonCommand.__init__(self, address, False, False, False, True, 3, cmd1, cmd2, extended_data)
 
-    return type(name, (InsteonCommand,), {'__init__' : __init__})
+    return type(name, (PLMInsteonCommand,), {'__init__' : __init__})
 
 def _create_interdevice_extended_command(name, cmd1, cmd2):
-    def __init__(self, fromAddress, toAddress, extended_data):
-        TestInsteonCommand.__init__(self, fromAddress, toAddress, False, False, False, True, 3, cmd1, cmd2, extended_data)
+    def __init__(self, from_address, to_address, extended_data):
+        InsteonCommand.__init__(self, from_address, to_address, False, False, False, True, 3, cmd1, cmd2, extended_data)
 
-    return type(name, (TestInsteonCommand,), {'__init__' : __init__})
+    return type(name, (InsteonCommand,), {'__init__' : __init__})
 
 #The long wall of standard insteon commands, names should be self explinatory
 
