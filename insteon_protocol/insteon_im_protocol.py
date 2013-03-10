@@ -5,7 +5,7 @@ Decode messages from an Insteon PLM.
 import logging
 import bitstring
 from insteon_protocol.command.commands import InsteonCommand
-from insteon_protocol.command.im_commands import PLMInsteonCommand
+from insteon_protocol.command.im_commands import IMInsteonCommand
 
 #you can only know how many bytes to read after you read a byte
 #from the device, so here is a dict that tells you how much you
@@ -23,7 +23,7 @@ MODEM_COMMANDS = {
 
                     b'\x60': 7, # Get IM Info
                     b'\x61': 4, # Send All Link Command
-                    b'\x62': (-1, PLMInsteonCommand.decode), # Send Standard or Extended Message
+                    b'\x62': (-1, IMInsteonCommand.decode), # Send Standard or Extended Message
                     b'\x63': 3, # Send X10
                     b'\x64': 3, # Start All Linking
                     b'\x65': 1, # Cancel All Linking

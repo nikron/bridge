@@ -12,9 +12,9 @@ class Command():
     def encode(self):
         pass
 
-    @abstractmethod
     @classmethod
-    def decode(self, buf):
+    @abstractmethod
+    def decode(cls, buf):
         pass
 
 

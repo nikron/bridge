@@ -12,8 +12,8 @@ BridgeMessage = namedtuple('BridgeMessage', ['to', 'method', 'args', 'kwargs'])
 
 from bridge.logging_service import service_configure_logging
 
-CLOSE_MESSAGE = BridgeMessage(None, 'close', [], [])
-DEBUG_MESSAGE = BridgeMessage(None, 'debug', [], [])
+CLOSE_MESSAGE = BridgeMessage(None, 'close', [], {})
+DEBUG_MESSAGE = BridgeMessage(None, 'debug', [], {})
 
 class BridgeService(multiprocessing.Process):
     """Base class of bridge services, needs a connection to hub and log."""
