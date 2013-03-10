@@ -25,14 +25,26 @@ class IOConfig():
         self.service = self.io_types[self.io_type][0]
         self.idiom = self.io_types[self.io_type][1]
 
+    def create_serial(self):
+        """Create a serial connection."""
+        if len(self.con_arg) == 2:
+            args = self.con_arg.split()
+
+            con = serial.Serial(args[0], int(args[1]))
+
+            return con
+
+        else:
+            return None
+
     def create_connection(self):
         """Return the connection/interface used by the service."""
         connections = {
-                'serial' : serial.Serial
+                'serial' : self.create_serial
          }
 
         try:
-            con = connections[self.con](self.con_arg, 19200)
+            con = connections[self.con](self, self.con_arg)
 
             return con
 

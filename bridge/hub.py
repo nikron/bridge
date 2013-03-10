@@ -81,17 +81,17 @@ class BridgeHub():
 
         self.main_loop()
 
-    #now we just pass messages between processes
     def main_loop(self):
         """Loop over pipes to services, relay messages."""
         spinning = True
 
+        #now we just pass messages between processes
         while spinning:
             try:
                 (read, _, _) = select(self.connections, [], [])
                 for ready in read:
                     msg = ready.recv()
-                    to = msg['to']
+                    to = msg.to
                     self.services[to][0].send(msg)
 
             except KeyboardInterrupt:

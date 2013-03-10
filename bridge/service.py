@@ -5,11 +5,15 @@ sets up methods to messages easier.
 import multiprocessing
 import logging
 import signal
+from collections import namedtuple
+
+BridgeMessage = namedtuple('BridgeMessage', ['to', 'method', 'args', 'kwargs'])
+
 
 from bridge.logging_service import service_configure_logging
 
-CLOSE_MESSAGE = { 'method' : 'close', 'args' : [], 'kwargs' : {}}
-DEBUG_MESSAGE = { 'method' : 'debug', 'args' : [], 'kwargs' : {}}
+CLOSE_MESSAGE = BridgeMessage(None, 'close', [], [])
+DEBUG_MESSAGE = BridgeMessage(None, 'debug', [], [])
 
 class BridgeService(multiprocessing.Process):
     """Base class of bridge services, needs a connection to hub and log."""
@@ -32,12 +36,12 @@ class BridgeService(multiprocessing.Process):
         rest of the program.  Automatically calls a function on self.
         """
         msg = self.hub_connection.recv()
-        if hasattr(self, msg['method']):
-            func = getattr(self, msg['method'])
-            func(*msg['args'], **msg['kwargs'])
+        if hasattr(self, msg.method):
+            func = getattr(self, msg.method)
+            func(*msg.args, **msg.kwargs)
 
         else:
-            logging.error("The method {0} is not in the object.".format(msg['method']))
+            logging.error("The method {0} is not in the object.".format(msg.method))
 
     def close(self):
         """Attempt to close the this service if it spinning."""
@@ -45,9 +49,11 @@ class BridgeService(multiprocessing.Process):
         self.spinning = False
 
     def debug(self):
+        """Spit something to log."""
         logging.debug("Service {0} is debugging.".format(self.name))
 
-    def remote_service_method(self, to, method, *args, **kwargs):
-        msg = {'to' : to, 'method' : method, 'args' : args, 'kwargs' : kwargs}
+    def remote_service_method(self, service, method, *args, **kwargs):
+        """Call a method on a remote service."""
+        msg = BridgeMessage(service, method, args, kwargs)
 
         self.hub_connection.send(msg)
