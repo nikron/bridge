@@ -14,6 +14,13 @@ class InsteonCommand(Command):
     #extended_data is for extended commands
     def __init__(self, address, broadcast, group, ack, extended, max_hops, cmd1, cmd2, extended_data):
 
+        self.createFlag(broadcast, group, ack, extended, max_hops)
+        
+        self.cmd_bytes = cmd1 + cmd2
+        
+        self.cmd = b'\x02\x62' + address + self.msg_flags + self.cmd_bytes + extended_data
+    
+    def createFlag(self, broadcast, group, ack, extended, max_hops):
         flag_byte = bitstring.BitString(8)
         flag_byte[0] = broadcast
         flag_byte[1] = group
@@ -21,15 +28,20 @@ class InsteonCommand(Command):
         flag_byte[3] = extended
         flag_byte[4:6] = max_hops
         flag_byte[6:8] = max_hops
-
         self.msg_flags = flag_byte.tobytes()
-
-        self.cmd_bytes = cmd1 + cmd2
-
-        self.cmd = b'\x02\x62' + address + self.msg_flags + self.cmd_bytes + extended_data
     
     def encode(self):
         return self.cmd
+
+class TestInsteonCommand(InsteonCommand):
+    #extended_data is for extended commands
+    def __init__(self, fromAddress, toAddress, broadcast, group, ack, extended, max_hops, cmd1, cmd2, extended_data):
+        
+        super().createFlag(broadcast, group, ack, extended, max_hops)
+        
+        self.cmd_bytes = cmd1 + cmd2
+        
+        self.cmd = b'\x02\x62' + fromAddress + toAddress + self.msg_flags + self.cmd_bytes + extended_data
         
 #Create a command where cmd1 and cmd2 are static, and our message flag is 0x0f
 def _create_direct_static_standard_command(name, cmd1, cmd2):
@@ -50,6 +62,12 @@ def _create_direct_simple_extended_command(name, cmd1, cmd2):
         InsteonCommand.__init__(self, address, False, False, False, True, 3, cmd1, cmd2, extended_data)
 
     return type(name, (InsteonCommand,), {'__init__' : __init__})
+
+def _create_interdevice_extended_command(name, cmd1, cmd2):
+    def __init__(self, fromAddress, toAddress, extended_data):
+        TestInsteonCommand.__init__(self, fromAddress, toAddress, False, False, False, True, 3, cmd1, cmd2, extended_data)
+
+    return type(name, (TestInsteonCommand,), {'__init__' : __init__})
 
 #The long wall of standard insteon commands, names should be self explinatory
 
@@ -75,8 +93,10 @@ TurnOnFast= _create_direct_static_standard_command('TurnOnFast', b'\x12', b'\x00
 TurnOnFastLevel = _create_direct_variable_standard_command('TurnOnFastLevel', b'\x12',) 
 
 TurnOff = _create_direct_static_standard_command('TurnOff', b'\x13', b'\x00') 
-TurnOffFast = _create_direct_static_standard_command('TurnOffFast', b'\x14', b'\x00') 
-
+TurnOffFast = _create_direct_static_standard_command('TurnOffFast', b'\x14', b'\x00')
 
 #EXTENDED COMMANDS
 SetDeviceTextString =  _create_direct_simple_extended_command('SetDeviceTextString', b'\x03', b'\x03')
+
+TestInterdevice = _create_interdevice_extended_command('TestInterdevice',
+    b'\x03', b'\x04')
