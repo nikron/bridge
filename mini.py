@@ -5,10 +5,14 @@ from insteon_protocol.command import commands
 
 #CHANGE THIS FOR NON LINUX SYSTEMS
 #example /dev/cu.usbserial-asdf
-ser = serial.Serial('/dev/ttyUSB0', '19200')
+ser = serial.Serial('/dev/ttyUSB1', '19200')
 buff = b''
 
-cmd = commands.TurnOnFast(b'\x01\x3A\x26')
+#cmd = commands.ProductDataRequest(b'\x01\x3A\x26')
+cmd = commands.TurnOff(b'\x1A\xD9\x8E')
+#cmd = commands.TurnOffFast(b'\x01\x3A\x26')
+#cmd = commands.ProductDataRequest(b'\x00\x00\x01')
+#cmd = commands.TurnOff(b'\x00\x00\x01')
 ser.write(cmd.encode())
 
 while True:

@@ -20,7 +20,7 @@ class IOService(BridgeService):
         self.read_list = [self.hub_connection]
 
         if interface is not None:
-            self.read_list.append(interface)
+            self.read_list.append(self.interface)
 
     def run(self):
         super().run()
@@ -36,8 +36,12 @@ class IOService(BridgeService):
     def update_model(self, update):
         """Send an upate to model, it will be decoded by an idiom."""
         logging.debug("Updating model with {0}".format(repr(update)))
-        self.remote_service_method('model', 'update', update)
+        self.remote_service_method('model', 'io_update', self.name, update)
 
     def read_interface(self):
         """Read the interface, each IO service must implmeenet this."""
+        raise NotImplementedError
+
+    def asset_info(self, real_id):
+        """Get more info about device."""
         raise NotImplementedError

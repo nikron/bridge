@@ -7,13 +7,19 @@ multiprocess Queue.
 import logging
 import logging.handlers
 from multiprocessing import Queue
+import sys
 
 class LoggingService():
-    def __init__(self):
+    def __init__(self, stderr):
         self.queue = Queue()
 
-        handler = logging.FileHandler('bridge.log')
-        formatter = logging.Formatter('%(asctime)s: %(pathname)s - %(levelname)s :: %(msg)s')
+        if stderr:  
+            handler = logging.StreamHandler(sys.stderr)
+        else:
+            handler = logging.FileHandler('bridge.log')
+
+        #formatter = logging.Formatter('%(asctime)s: %(pathname)s - %(levelname)s :: %(msg)s')
+        formatter = logging.Formatter('%(levelname)s :: %(msg)s')
         handler.setFormatter(formatter)
 
         self._queuelistener = logging.handlers.QueueListener(self.queue, handler)

@@ -20,21 +20,23 @@ class BridgeHub():
     log service.  Expects to gain control of process when run() is called.
     """
 
-    def __init__(self, configuration):
+    def __init__(self, configuration, stderr):
         """Requires BridgeConfig to set various options."""
-        self.logging_service = LoggingService()
+        self.logging_service = LoggingService(stderr)
         self.configuration = configuration
         self.connections = []
         self.services = {}
 
         #to pass to the model later
-        self.io_idioms = []
+        self.io_idioms = {}
 
     def create_connection(self):
         """For services to communicate, they needs a pipe."""
         (its, ours) = multiprocessing.Pipe()
+
         self.connections.append(ours)
-        return its
+
+        return (its, ours)
 
     def add_service(self, con, service):
         """Register a connection and a service to its name."""
@@ -42,28 +44,27 @@ class BridgeHub():
 
     def start_model(self):
         """Start the model service. (Actually forks off process)"""
-        con = self.create_connection()
+        (its, ours) = self.create_connection()
 
         #need to pass in the io services it is going to connect to
         #and the the storage driver name
-        service = ModelService(self.io_idioms, self.configuration.model_file,
-                self.configuration.model_driver, con, self.logging_service.queue)
+        service = ModelService(self.io_idioms, self.configuration.model_file, self.configuration.model_driver, its, self.logging_service.queue)
 
-        self.add_service(con, service)
+        self.add_service(ours, service)
 
         service.start()
 
     def start_io_services(self):
         """Fork off IO services."""
         for io_config_args in self.configuration.io_services:
-            conn = self.create_connection()
+            (its, ours) = self.create_connection()
 
             io_config = IOConfig(*io_config_args)
-            io_service =  io_config.create_service(conn, self.logging_service.queue)
+            io_service =  io_config.create_service(its, self.logging_service.queue)
 
-            self.add_service(conn, io_service)
+            self.add_service(ours, io_service)
 
-            self.io_idioms.append(io_config.model_idiom())
+            self.io_idioms[io_service.name] = io_config.model_idiom()
 
             io_service.start()
 

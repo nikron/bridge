@@ -21,22 +21,22 @@ class IOConfig():
         self.io_type = protocol
         self.con = con
         self.con_arg = con_arg
-        
+
         self.service = self.io_types[self.io_type][0]
         self.idiom = self.io_types[self.io_type][1]
 
     def create_connection(self):
         """Return the connection/interface used by the service."""
-        connections = { 
-                'serial' : serial.Serial 
+        connections = {
+                'serial' : serial.Serial
          }
 
         try:
-            con = connections[self.con](self.con_arg)
+            con = connections[self.con](self.con_arg, 19200)
 
             return con
 
-        except: 
+        except:
             logging.error("Could not create connection {0} with arg {1}".format(repr(self.con), repr(self.con_arg)))
 
             return None

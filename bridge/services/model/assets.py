@@ -16,7 +16,7 @@ class Asset():
         self.outside_states = allowable
         self.failed_transistions = []
 
-    def transition(self, state):
+    def tranistion(self, state):
         """Change the asset state to state."""
         self.states.transition(state)
 
@@ -35,9 +35,9 @@ class BlankAsset(Asset):
     """
 
     def __init__(self, real_id):
-        super().__init__(self, real_id, None, None, None, None) 
+        super().__init__(real_id, None, [], [], []) 
 
-    def transition(self, state):
+    def tranistion(self, state):
         self.failed_transistions.append(state)
 
         return False

@@ -31,8 +31,13 @@ class ModelService(BridgeService):
         """
         self.model.net_simple(asset_uuid, state)
 
-    #io service should call this most of the time
     def io_update(self, service, update):
+        if update is None:
+            return
+        """
+        Receive an io update, use the idiom to decipher it, and request
+        more information about asset if nessary.
+        """
         idiom = self.io_idioms[service]
 
         if idiom is not None:
@@ -41,17 +46,19 @@ class ModelService(BridgeService):
             if uuid is not None:
                 state = idiom.get_state(update)
 
-                if not self.model.io_transistion(uuid, state):
+                if not self.model.io_transition(uuid, state):
                     asset = idiom.guess_asset(update)
 
                     self.model.transform(uuid, asset)
 
             else:
-                logging.debug("Got an update about device {0} that we don't know about.".format(
-                    update['id']))
+                logging.debug("Got an update about device {0} that we don't know about.".format(update['id']))
 
-                asset = idiom.guess_asset(service, update)
-                self.model.add_asset(asset)
+                (asset, positive) = idiom.guess_asset(update)
+                self.model.add_asset(service, asset)
+
+                if not positive:
+                    self.remote_service_method(service, 'asset_info', asset.real_id)
 
         else:
             #got an update from a service we don't know about

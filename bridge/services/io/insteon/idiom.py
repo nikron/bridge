@@ -3,9 +3,12 @@ from bridge.services.model.assets import BlankAsset
 
 class InsteonIdiom(ModelIdiom):
     def guess_asset(self, update):
-        #well we can do stuff on this one
-        if update['command'] == 'production description':
-            pass
+        cmd1 = update['cmd1']
+        cmd2 = update['cmd2']
+
+        if cmd1 == b'\x03' and cmd2 == b'\x00':
+            if 'ext' not in update:
+                return (BlankAsset(update['id']), False)
 
         else:
             return (BlankAsset(update['id']), False)

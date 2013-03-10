@@ -47,7 +47,7 @@ class BridgeService(multiprocessing.Process):
     def debug(self):
         logging.debug("Service {0} is debugging.".format(self.name))
 
-    def remote_service_method(self, to, *args, **kwargs):
-        msg = {'to' : to, 'args' : args, 'kwargs' : kwargs}
+    def remote_service_method(self, to, method, *args, **kwargs):
+        msg = {'to' : to, 'method' : method, 'args' : args, 'kwargs' : kwargs}
 
         self.hub_connection.send(msg)

@@ -1,3 +1,6 @@
+"""
+Triggrs happen when an asset changes state.
+"""
 import uuid
 
 class Trigger():
@@ -17,6 +20,10 @@ class Trigger():
         self.func()
 
 class States():
+    """
+    Currently a list of objects as basically enums are states,and the triggers are edges between the states.  This
+    might not work in the future.
+    """
     def __init__(self, current, states, triggers):
         self.states = {}
 
@@ -28,8 +35,8 @@ class States():
         self.trigger_mesh = {}
         self.orient()
 
-    #create the internal representative of a state
     def _internal_states(self, states):
+        """Create the internal representation."""
         i = 1
 
         for state in states:
@@ -49,8 +56,8 @@ class States():
             self.orient_trigger(trigger)
 
     def find_edge(self, state1, state2):
-        #mildy sure taking a 2^n - 2^k where n and k are nonzero are unique
-        #and n does not equal k
+        """Figure out if this triggered anything, this might
+        need to become way more complex."""
         edge = self.states[state1] - self.states[state2]
         return edge
 
