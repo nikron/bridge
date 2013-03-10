@@ -5,38 +5,12 @@ Decode messages from an Insteon PLM.
 import logging
 import bitstring
 from insteon_protocol.command.commands import InsteonCommand
-from insteon_protocol.command.im_commands import InsteonCommand
+from insteon_protocol.command.im_commands import PLMInsteonCommand
 
 #you can only know how many bytes to read after you read a byte
 #from the device, so here is a dict that tells you how much you
 # need to read
-
-def _insteon_standard_message(buf):
-    update = {}
-    update['id'] = buf[2:5]
-    update['to'] = buf[5:8]
-    update['flags'] = buf[8:9]
-    update['cmd1'] = buf[9:10]
-    update['cmd2'] = buf[10:11]
-
-    return update
-
-def _insteon_extended_message(buf):
-    update = {}
-    update['id'] = buf[2:5]
-    update['to'] = buf[5:8]
-    update['flags'] = buf[8:9]
-    update['cmd1'] = buf[9:10]
-    update['cmd2'] = buf[10:11]
-    update['ext'] = buf[11:26]
-
-
-    return update
-
-def send_insteon(buf):
-    return None
-
-modem_commands = {
+MODEM_COMMANDS = {
                     b'\x50': (9, InsteonCommand.decode), # Received Standard Message
                     b'\x51': (23, InsteonCommand.decode), # Received Extended Message
                     b'\x52': 2, # Received X10
@@ -106,6 +80,6 @@ def decode(buf):
 
     buf = buf[1:] #Remove the \x02
 
-    return modem_commands[buf[0]][1](buf[1:])
+    return MODEM_COMMANDS[buf[0]][1](buf[1:])
 
 

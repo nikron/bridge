@@ -31,9 +31,7 @@ class ModelService(BridgeService):
         """
         self.model.net_simple(asset_uuid, state)
 
-    def io_update(self, service, update):
-        if update is None:
-            return
+    def io_update(self, service, real_id, update):
         """
         Receive an io update, use the idiom to decipher it, and request
         more information about asset if nessary.
@@ -41,20 +39,20 @@ class ModelService(BridgeService):
         idiom = self.io_idioms[service]
 
         if idiom is not None:
-            uuid = self.model.get_uuid(service, update['id'])
+            uuid = self.model.get_uuid(service, real_id)
 
             if uuid is not None:
                 state = idiom.get_state(update)
 
                 if not self.model.io_transition(uuid, state):
-                    asset = idiom.guess_asset(update)
+                    asset = idiom.guess_asset(real_id, update)
 
                     self.model.transform(uuid, asset)
 
             else:
-                logging.debug("Got an update about device {0} that we don't know about.".format(update['id']))
+                logging.debug("Got an update about device {0} that we don't know about.".format(real_id))
 
-                (asset, positive) = idiom.guess_asset(update)
+                (asset, positive) = idiom.guess_asset(real_id, update)
                 self.model.add_asset(service, asset)
 
                 if not positive:

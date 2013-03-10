@@ -33,10 +33,10 @@ class IOService(BridgeService):
             if self.interface in read:
                 self.read_interface()
 
-    def update_model(self, update):
+    def update_model(self, real_id, update):
         """Send an upate to model, it will be decoded by an idiom."""
         logging.debug("Updating model with {0}".format(repr(update)))
-        self.remote_service_method('model', 'io_update', self.name, update)
+        self.remote_service_method('model', 'io_update', self.name, real_id, update)
 
     def read_interface(self):
         """Read the interface, each IO service must implmeenet this."""

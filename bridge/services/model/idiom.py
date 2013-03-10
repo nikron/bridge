@@ -10,7 +10,7 @@ class ModelIdiom():
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def guess_asset(self, update):
+    def guess_asset(self, real_id, update):
         """
         Guess an asset class with the update package the corresponding service
         provide.  Then create and return a tuple (asset, positive) where
@@ -20,7 +20,7 @@ class ModelIdiom():
         pass
 
     @abstractmethod
-    def get_state(self, update):
+    def get_state(self, real_id, update):
         """
         Get the state an asset should transition to if it is the
         correct asset.

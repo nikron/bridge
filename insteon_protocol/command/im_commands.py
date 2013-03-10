@@ -4,9 +4,9 @@ Commands used to communicate to the insteon IM.
 from insteon_protocol.command.commands import InsteonCommand
 import bitstring
 
-class PLMInsteonCommand(InsteonCommand):
+class IMInsteonCommand(InsteonCommand):
     """
-    Base class for commands sent over the PLM, basically attach '\x02\x62' infront of them
+    Base class for commands sent over the IM, basically attach '\x02\x62' infront of them
     and strip the from address.
     """
 
@@ -51,22 +51,22 @@ class PLMInsteonCommand(InsteonCommand):
 #Create a command where cmd1 and cmd2 are static, and our message flag is 0x0f
 def _create_direct_static_standard_command(name, cmd1, cmd2):
     def __init__(self, address):
-        PLMInsteonCommand.__init__(self, address, False, False, False, False, 3, 3, cmd1, cmd2, b'')
+        IM.__init__(self, address, False, False, False, False, 3, 3, cmd1, cmd2, b'')
 
-    return type(name, (PLMInsteonCommand,), {'__init__' : __init__})
+    return type(name, (IMInsteonCommand,), {'__init__' : __init__})
 
 def _create_direct_variable_standard_command(name, cmd1):
     def __init__(self, address, cmd2):
-        PLMInsteonCommand.__init__(self, address, False, False, False, False, 3, 3, cmd1, cmd2, b'')
+        IMInsteonCommand.__init__(self, address, False, False, False, False, 3, 3, cmd1, cmd2, b'')
 
-    return type(name, (PLMInsteonCommand,), {'__init__' : __init__})
+    return type(name, (IMInsteonCommand,), {'__init__' : __init__})
 
 #create an extended command where the data is supplied
 def _create_direct_simple_extended_command(name, cmd1, cmd2):
     def __init__(self, address, extended_data):
-        PLMInsteonCommand.__init__(self, address, False, False, False, True, 3, 3, cmd1, cmd2, extended_data)
+        IMInsteonCommand.__init__(self, address, False, False, False, True, 3, 3, cmd1, cmd2, extended_data)
 
-    return type(name, (PLMInsteonCommand,), {'__init__' : __init__})
+    return type(name, (IMInsteonCommand,), {'__init__' : __init__})
 
 def _create_interdevice_extended_command(name, cmd1, cmd2):
     def __init__(self, from_address, to_address, extended_data):
