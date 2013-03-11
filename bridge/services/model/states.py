@@ -52,6 +52,7 @@ class States():
             self.trigger_mesh[edge] = [trigger]
 
     def orient(self):
+        """Put triggers into the mesh."""
         for trigger in self.triggers:
             self.orient_trigger(trigger)
 
@@ -62,7 +63,8 @@ class States():
         return edge
 
     def transition(self, state):
-        if state in self.states:
+        """Attempt to transition to a state."""
+        if state not in self.states:
             return False
 
         edge = self.find_edge(self.current, state)

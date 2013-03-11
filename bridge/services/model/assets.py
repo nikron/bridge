@@ -25,8 +25,7 @@ class Asset():
         if state in self.outside_states:
             self.transition(state)
         else:
-            logging.error("State {0} not in allowable outside states.".format(
-                repr(state)))
+            logging.error("State {0} not in allowable outside states.".format(repr(state)))
 
 class BlankAsset(Asset):
     """
