@@ -11,6 +11,7 @@ class InsteonIMService(IOService):
     """Methods for translating Command classes into state transitions."""
 
     def read_interface(self):
+        logging.debug("Reading the interface of {0}.".format(self.name))
         buf = insteon_im_protocol.read_command(self.interface)
 
         if buf is not None:

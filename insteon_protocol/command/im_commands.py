@@ -11,7 +11,7 @@ class IMInsteonCommand(InsteonCommand):
     """
 
     def __init__(self, to_address, broadcast, group, ack, extended, cur_hops, max_hops, cmd1, cmd2, extended_data, okay=None):
-        super().__init__(self, b'\x02\x62', to_address, broadcast, group, ack, extended, cur_hops, max_hops, cmd1, cmd2, extended_data)
+        InsteonCommand.__init__(self, b'\x02\x62', to_address, broadcast, group, ack, extended, cur_hops, max_hops, cmd1, cmd2, extended_data)
         self.okay = okay
 
     @classmethod
@@ -51,7 +51,7 @@ class IMInsteonCommand(InsteonCommand):
 #Create a command where cmd1 and cmd2 are static, and our message flag is 0x0f
 def _create_direct_static_standard_command(name, cmd1, cmd2):
     def __init__(self, address):
-        IM.__init__(self, address, False, False, False, False, 3, 3, cmd1, cmd2, b'')
+        IMInsteonCommand.__init__(self, address, False, False, False, False, 3, 3, cmd1, cmd2, b'')
 
     return type(name, (IMInsteonCommand,), {'__init__' : __init__})
 

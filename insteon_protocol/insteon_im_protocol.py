@@ -64,7 +64,7 @@ def read_command(im):
                 left = im.read(3) #two bytes left for a sd insteon
                 buf = rsp + im_cmd + control + left
         else:
-            to_read = modem_commands[im_cmd][0]
+            to_read = MODEM_COMMANDS[im_cmd][0]
             buf = im.read(to_read)
             buf = rsp + im_cmd + buf
     else:
@@ -80,6 +80,9 @@ def decode(buf):
 
     buf = buf[1:] #Remove the \x02
 
-    return MODEM_COMMANDS[buf[0]][1](buf[1:])
+    try:
+        return MODEM_COMMANDS[buf[0:1]][1](buf[1:])
+    except KeyError:
+        return None
 
 

@@ -25,10 +25,10 @@ class IOConfig():
         self.service = self.io_types[self.io_type][0]
         self.idiom = self.io_types[self.io_type][1]
 
-    def create_serial(self, args):
+    def create_serial(self):
         """Create a serial connection."""
-        if len(self.con_arg) == 2:
-            args = self.con_arg.split()
+        args = self.con_arg.split()
+        if len(args) == 2:
 
             con = serial.Serial(args[0], int(args[1]))
 
@@ -44,7 +44,9 @@ class IOConfig():
          }
 
         try:
-            con = connections[self.con](self.con_arg)
+            con = connections[self.con]()
+
+            logging.debug("Created connection {0}.".format(repr(con)))
 
             return con
 

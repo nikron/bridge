@@ -22,14 +22,15 @@ class Command():
 class InsteonCommand(Command):
     """Base class for all insteon commands."""
 
-    def __init__(self, to_address, from_address, broadcast, group, ack, extended, cur_hops, max_hops, cmd1, cmd2, extended_data):
-        self.to_address = from_address
+    def __init__(self, from_address, to_address, broadcast, group, ack, extended, cur_hops, max_hops, cmd1, cmd2, extended_data):
         self.from_address = from_address
+        self.to_address = to_address
 
         self.broadcast = broadcast
         self.group = group
         self.ack = ack
         self.extended = extended
+        self.cur_hops = cur_hops
         self.max_hops = max_hops
         self.cmd1 = cmd1
         self.cmd2 = cmd2
@@ -57,6 +58,7 @@ class InsteonCommand(Command):
         msg_flag = self.create_flag()
 
         cmd = self.from_address + self.to_address + msg_flag + self.cmd_bytes + self.extended_data
+        print(self.to_address)
 
         return cmd
 

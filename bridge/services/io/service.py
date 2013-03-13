@@ -23,6 +23,7 @@ class IOService(BridgeService):
             self.read_list.append(self.interface)
 
     def run(self):
+        logging.debug("Starting {0}".format(self.name))
         super().run()
         self.spinning = True
 
@@ -31,6 +32,7 @@ class IOService(BridgeService):
             if self.hub_connection in read:
                 self.do_remote_request()
             if self.interface in read:
+                print("hey")
                 self.read_interface()
 
     def update_model(self, real_id, update):
