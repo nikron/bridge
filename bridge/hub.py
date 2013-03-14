@@ -14,11 +14,16 @@ from bridge.logging_service import LoggingService, service_configure_logging
 from bridge.services.io.types import IOConfig
 from bridge.services.model.service import ModelService
 
+from collections import namedtuple
+
+ServiceInformation = namedtuple('ServiceInformation', ['connection', 'process'])
+
 class BridgeHub():
     """
     Accepts a BridgeConfig to then start and manage processes and a threaded
     log service.  Expects to gain control of process when run() is called.
     """
+
 
     def __init__(self, configuration):
         """Requires BridgeConfig to set various options."""
@@ -40,7 +45,7 @@ class BridgeHub():
 
     def add_service(self, con, service):
         """Register a connection and a service to its name."""
-        self.services[service.name] = (con, service)
+        self.services[service.name] = ServiceInformation(con, service)
 
     def start_model(self):
         """Start the model service. (Actually forks off process)"""
@@ -92,7 +97,7 @@ class BridgeHub():
                 for ready in read:
                     msg = ready.recv()
                     to = msg.to
-                    self.services[to][0].send(msg)
+                    self.services[to].connection.send(msg)
 
             except KeyboardInterrupt:
                 for con in self.connections:
@@ -101,4 +106,4 @@ class BridgeHub():
                 spinning = False
 
         for service in self.services.values():
-            service[1].join()
+            service.process.join()

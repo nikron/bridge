@@ -9,7 +9,6 @@ from collections import namedtuple
 
 BridgeMessage = namedtuple('BridgeMessage', ['to', 'method', 'args', 'kwargs'])
 
-
 from bridge.logging_service import service_configure_logging
 
 CLOSE_MESSAGE = BridgeMessage(None, 'close', [], {})

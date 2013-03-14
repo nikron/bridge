@@ -10,6 +10,10 @@ from multiprocessing import Queue
 import sys
 
 class LoggingService():
+    """
+    Creates a thred that listens for LogRecords and logs them
+    to log_file or stderr.
+    """
     def __init__(self, log_file, stderr):
         self.queue = Queue()
 
@@ -25,6 +29,7 @@ class LoggingService():
         self._queuelistener = logging.handlers.QueueListener(self.queue, handler)
 
     def start(self):
+        """Start the logging service thread."""
         self._queuelistener.start()
 
 def service_configure_logging(queue):

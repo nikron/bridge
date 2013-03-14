@@ -10,6 +10,10 @@ from insteon_protocol.command.commands import InsteonCommand
 import logging
 
 class InsteonIdiom(ModelIdiom):
+    """
+    Decipher InsteonCommand objects.
+    """
+
     def guess_insteon_asset(self, command):
         """
         We know it is an insteon command, let's try to guess what kind of device

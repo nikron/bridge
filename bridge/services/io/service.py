@@ -24,7 +24,7 @@ class IOService(BridgeService):
 
     def run(self):
         logging.debug("Starting {0}".format(self.name))
-        super().run()
+        IOService.run()
         self.spinning = True
 
         while self.spinning:
