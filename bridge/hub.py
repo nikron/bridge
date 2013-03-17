@@ -13,6 +13,7 @@ from bridge.logging_service import LoggingService, service_configure_logging
 
 from bridge.services.io.types import IOConfig
 from bridge.services.model.service import ModelService
+from bridge.services.net.http_service import HTTPAPIService
 
 from collections import namedtuple
 
@@ -59,6 +60,13 @@ class BridgeHub():
 
         service.start()
 
+    def start_http_service(self):
+        (its, ours) = self.create_connection()
+        service = HTTPAPIService(its, self.logging_service.queue)
+        self.add_service(ours, service)
+
+        service.start()
+
     def start_io_services(self):
         """Fork off IO services."""
         for io_config_args in self.configuration.io_services:
@@ -83,6 +91,7 @@ class BridgeHub():
         #start each service
         self.start_io_services()
         self.start_model()
+        self.start_http_service()
 
         self.main_loop()
 

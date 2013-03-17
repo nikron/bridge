@@ -2623,7 +2623,7 @@ def load_app(target):
 
 _debug = debug
 def run(app=None, server='wsgiref', host='127.0.0.1', port=8080,
-        interval=1, reloader=False, quiet=False, plugins=None,
+        interval=1, reloader=False, quiet=True, plugins=None,
         debug=False, **kargs):
     """ Start a server instance. This method blocks until the server terminates.
 
