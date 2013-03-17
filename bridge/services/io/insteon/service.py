@@ -10,9 +10,9 @@ from insteon_protocol.command import im_commands
 class InsteonIMService(IOService):
     """Methods for translating Command classes into state transitions."""
 
-    def read_interface(self):
+    def read_io(self):
         logging.debug("Reading the interface of {0}.".format(self.name))
-        buf = insteon_im_protocol.read_command(self.interface)
+        buf = insteon_im_protocol.read_command(self.io_fd)
 
         if buf is not None:
             update = insteon_im_protocol.decode(buf)
@@ -25,4 +25,4 @@ class InsteonIMService(IOService):
     def asset_info(self, real_id):
         cmd = im_commands.ProductDataRequest(real_id).encode()
         logging.debug("Writing command {0}.".format(repr(cmd)))
-        self.interface.write(cmd)
+        self.io_fd.write(cmd)

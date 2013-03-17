@@ -13,14 +13,14 @@ class IOService(BridgeService):
     on a paticular interface.
     """
 
-    def __init__(self, name, interface, hub_connection, log_queue):
+    def __init__(self, name, io_fd, hub_connection, log_queue):
         super().__init__(name, hub_connection, log_queue)
-        self.interface = interface
+        self.io_fd = io_fd
 
         self.read_list = [self.hub_connection]
 
-        if interface is not None:
-            self.read_list.append(self.interface)
+        if io_fd is not None:
+            self.read_list.append(self.io_fd)
 
     def run(self):
         logging.debug("Starting {0}".format(self.name))
@@ -30,17 +30,16 @@ class IOService(BridgeService):
         while self.spinning:
             (read, _, _) = select(self.read_list, [], [])
             if self.hub_connection in read:
-                self.do_remote_request()
-            if self.interface in read:
-                print("hey")
-                self.read_interface()
+                self.read_and_do_remote_request()
+            if self.io_fd in read:
+                self.read_io()
 
     def update_model(self, real_id, update):
         """Send an upate to model, it will be decoded by an idiom."""
         logging.debug("Updating model with {0}".format(repr(update)))
-        self.remote_service_method('model', 'io_update', self.name, real_id, update)
+        self.remote_async_service_method('model', 'io_update', self.name, real_id, update)
 
-    def read_interface(self):
+    def read_io(self):
         """Read the interface, each IO service must implmeenet this."""
         raise NotImplementedError
 

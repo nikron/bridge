@@ -19,6 +19,6 @@ ser.write(cmd.encode())
 
 while True:
     buf = read_command(ser)
-    print("Read {0} to IM.".format(str(buf)))
+    print("Read {0} from IM.".format(str(buf)))
     obj = decode(buf)
-    print(repr(obj))
+    print(obj)

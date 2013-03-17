@@ -21,9 +21,9 @@ class ModelService(BridgeService):
         self.spinning = True
 
         while self.spinning:
-            (read, write, exception) = select(self.read_list, [], [])
+            (read, _, _) = select(self.read_list, [], [])
             if self.hub_connection in read:
-                self.do_remote_request()
+                self.read_and_do_remote_request()
 
     def simple_state_change(self, asset_uuid, state):
         """
