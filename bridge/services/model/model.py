@@ -29,7 +29,6 @@ class Model():
 
         self.r2u[service][asset.real_id] = asset.uuid
 
-
     def net_simple(self, uuid, state):
         asset = self.assets.get(uuid)
 
@@ -37,6 +36,10 @@ class Model():
             asset.transition(state)
         else:
             logging.error("{0} does not exist in this model.".format(repr(uuid)))
+
+    def summary(self):
+        """Return a json summary of the current state."""
+        return "beep boop bop"
 
     def io_transition(self, uuid, state):
         """
