@@ -15,7 +15,7 @@ def get_storage(file_name, driver):
 
 
 class ModelStorage():
-    __metaclass__ = ABCMeta
+    __metaclass__ =ABCMeta #temporary so pylint can scan file
 
     def __init__(self, file_name):
         self.fd = open(file_name, 'rw')

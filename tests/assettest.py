@@ -21,7 +21,6 @@ class TestAsset(unittest.TestCase):
         trigger = Trigger('bums', 'bust', trigger)
         backing = OnOffBacking(1, flip, floop)
 
-        #States({'bums' : ['boom', 'bust', 'blip']}
         self.asset = OnOffAsset('hi', backing)
 
     def test_on(self):
@@ -31,7 +30,3 @@ class TestAsset(unittest.TestCase):
     def test_off(self):
         self.asset.perform_action('turn_off')
         self.assertTrue(self.flooped)
-
-#    def test_transition(self):
-#        self.asset.outside_transition('main', 'bust')
-#        self.assertTrue(self.trans)
