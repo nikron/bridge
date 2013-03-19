@@ -65,4 +65,4 @@ class IOConfig():
         """
         Create the idiom that the model needs to communicate with the service.
         """
-        return self.idiom()
+        return self.idiom(self.name)

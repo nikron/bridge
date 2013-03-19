@@ -67,6 +67,7 @@ def _e(): return sys.exc_info()[1]
 
 # Workaround for the "print is a keyword/function" Python 2/3 dilemma
 # and a fallback for mod_wsgi (resticts stdout/err attribute access)
+
 try:
     _stdout, _stderr = sys.stdout.write, sys.stderr.write
 except IOError:
@@ -2623,7 +2624,7 @@ def load_app(target):
 
 _debug = debug
 def run(app=None, server='wsgiref', host='127.0.0.1', port=8080,
-        interval=1, reloader=False, quiet=True, plugins=None,
+        interval=1, reloader=False, quiet=False, plugins=None,
         debug=False, **kargs):
     """ Start a server instance. This method blocks until the server terminates.
 

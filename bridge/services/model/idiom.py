@@ -3,11 +3,21 @@
 
 from abc import ABCMeta, abstractmethod
 
-class ModelIdiom():
+class ModelIdiom(metaclass=ABCMeta):
     """
     ModelService uses this class to figure out what an IO update means.
     """
-    __metaclass__ = ABCMeta
+
+    def __init__(self, service):
+        self.service = service
+        self.service_function = None
+
+    @abstractmethod
+    def create_asset(self, name, real_id, asset_type):
+        """
+        Create an asset with real_id
+        """
+        pass
 
     @abstractmethod
     def guess_asset(self, real_id, update):
@@ -26,3 +36,17 @@ class ModelIdiom():
         correct asset.
         """
         pass
+
+    @abstractmethod
+    def asset_types(self):
+        """
+        Return list of strings of accepted asset types.
+        """
+        pass
+
+    def charge(self, func):
+        """
+        Charge the idiom with a function that creates functions that
+        communicate with service.
+        """
+        self.service_function = func

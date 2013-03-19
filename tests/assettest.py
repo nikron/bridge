@@ -1,25 +1,37 @@
 import unittest
 from bridge.services.model.states import States, Trigger
-from bridge.services.model.assets import Asset, OnOffAsset
+from bridge.services.model.assets import OnOffAsset, OnOffBacking
 
 class TestAsset(unittest.TestCase):
     def setUp(self):
         self.flipped = False
+        self.flooped = False
+        self.trans = False
 
         def flip():
             self.flipped = True
 
-        trigger1 = Trigger('boom', 'bust', flip)
-        trigger2 = Trigger('boom', 'blip', flip)
-        self.asset = Asset(1, 'boom', ['boom', 'bust', 'blip'], ['boom', 'bust'], [trigger1, trigger2])
+        def floop():
+            self.flooped = True
 
-    def test_flip_from_transition(self):
-        self.asset.transition('blip')
+        def trigger():
+            self.trans = True
+
+
+        trigger = Trigger('bums', 'bust', trigger)
+        backing = OnOffBacking(1, flip, floop)
+
+        #States({'bums' : ['boom', 'bust', 'blip']}
+        self.asset = OnOffAsset('hi', backing)
+
+    def test_on(self):
+        self.asset.perform_action('turn_on')
         self.assertTrue(self.flipped)
 
-    def test_flip_from_outside_transition(self):
-        self.asset.outside_transition('blip')
-        self.assertFalse(self.flipped)
+    def test_off(self):
+        self.asset.perform_action('turn_off')
+        self.assertTrue(self.flooped)
 
-        self.asset.outside_transition('bust')
-        self.assertTrue(self.flipped)
+#    def test_transition(self):
+#        self.asset.outside_transition('main', 'bust')
+#        self.assertTrue(self.trans)

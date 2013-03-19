@@ -10,8 +10,6 @@ from collections import namedtuple
 
 BridgeMessage = namedtuple('BridgeMessage', ['to', 'type', 'method', 'args', 'kwargs', 'ret'])
 
-from bridge.logging_service import service_configure_logging
-
 CLOSE_MESSAGE = BridgeMessage(None, 'close', None, None, None, None)
 
 class BridgeService(Process):
@@ -23,8 +21,6 @@ class BridgeService(Process):
 
         #most services will spin on a select loop
         self.spinning = False
-
-        service_configure_logging(self.log_queue)
 
         #while blocking, need to keep track of mesages
         self.blocked_messages = []
@@ -65,7 +61,7 @@ class BridgeService(Process):
     def remote_async_service_method(self, service, method, *args, **kwargs):
         """Call a method on a remote service."""
 
-        msg = BridgeMessage(service, 'async', method, args, kwargs)
+        msg = BridgeMessage(service, 'async', method, args, kwargs, None)
         self.hub_connection.send(msg)
 
     def clear_blocked_requests(self):
@@ -79,10 +75,10 @@ class BridgeService(Process):
         Send a blocking call on a service, never use this method easily results in
         deadlocks.
         """
-
-        msg = BridgeMessage(service, 'block', method, args, kwargs)
+        msg = BridgeMessage(service, 'block', method, args, kwargs, self.name)
         self.hub_connection.send(msg)
 
+        self.spinning = True
         while self.spinning:
             msg = self.hub_connection.recv()
             if msg.type == 'close':

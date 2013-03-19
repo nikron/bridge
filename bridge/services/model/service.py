@@ -16,6 +16,12 @@ class ModelService(BridgeService):
         self.model = self.storage.read_saved_model()
         self.io_idioms = io_idioms
 
+        for service in self.io_idioms:
+            def service_function(method, *args, **kwargs):
+                self.remote_async_service_method(service, method, *args, **kwargs)
+
+            self.io_idioms[service].charge(service_function)
+
     def run(self):
         super().run()
         self.spinning = True
@@ -31,6 +37,19 @@ class ModelService(BridgeService):
         """
         self.model.net_simple(asset_uuid, state)
 
+    def get_services(self):
+        return list(self.io_idioms.keys())
+
+    def get_assets(self): 
+        """Return a list of uuids for assets."""
+        return self.model.get_all_asset_uuids()
+
+    def create_asset(self, real_id, service, asset_class):
+        idiom = self.io_idioms[service]
+
+        idiom.create_asset(real_id, asset_class)
+
+
     def io_update(self, service, real_id, update):
         """
         Receive an io update, use the idiom to decipher it, and request
@@ -42,9 +61,9 @@ class ModelService(BridgeService):
             uuid = self.model.get_uuid(service, real_id)
 
             if uuid is not None:
-                state = idiom.get_state(update)
+                (category, state) = idiom.get_state(update)
 
-                if not self.model.io_transition(uuid, state):
+                if not self.model.io_transition(uuid, category, state):
                     asset = idiom.guess_asset(real_id, update)
 
                     self.model.transform(uuid, asset)
@@ -56,7 +75,7 @@ class ModelService(BridgeService):
                 self.model.add_asset(service, asset)
 
                 if not positive:
-                    self.remote_service_method(service, 'asset_info', asset.real_id)
+                    self.remote_async_service_method(service, 'asset_info', asset.real_id)
 
         else:
             #got an update from a service we don't know about

@@ -3,11 +3,13 @@ Triggrs happen when an asset changes state.
 """
 import uuid
 
+from collections import namedtuple
+
 class Trigger():
-    def __init__(self, state1, state2, func):
+    def __init__(self, category, state, func):
         self.key = uuid.uuid1()
-        self.state1 = state1
-        self.state2 = state2
+        self.category = category
+        self.state = state
         self.func = func
 
     def __eq__(self, other):
@@ -19,58 +21,46 @@ class Trigger():
     def trigger(self):
         self.func()
 
+class Category():
+    def __init__(self, current_state, states):
+        self.current_state = current_state
+        self.states = states
+
 class States():
     """
-    Currently a list of objects as basically enums are states,and the triggers are edges between the states.  This
-    might not work in the future.
+    States is effectively a collection of categories that can have different states.
+    Currently can only trigger events when one category changes to a state.
     """
-    def __init__(self, current, states, triggers):
-        self.states = {}
+    def __init__(self, categories, triggers):
 
-        self._internal_states(states)
+        self.categories = {}
+        for category in categories:
+            self.categories[category] = Category('', {})
 
-        self.current = current
+            for state in categories[category]:
+                self.categories[category].states[state] = []
 
         self.triggers = triggers
-        self.trigger_mesh = {}
         self.orient()
 
-    def _internal_states(self, states):
-        """Create the internal representation."""
-        i = 1
-
-        for state in states:
-            self.states[state] = i
-            i = i * 2
-
     def orient_trigger(self, trigger):
-        edge = self.find_edge(trigger.state1, trigger.state2)
-
-        if edge in self.trigger_mesh:
-            self.trigger_mesh[edge].append(trigger)
-        else:
-            self.trigger_mesh[edge] = [trigger]
+        self.categories[trigger.category].states[trigger.state].append(trigger)
 
     def orient(self):
         """Put triggers into the mesh."""
         for trigger in self.triggers:
             self.orient_trigger(trigger)
 
-    def find_edge(self, state1, state2):
-        """Figure out if this triggered anything, this might
-        need to become way more complex."""
-        edge = self.states[state1] - self.states[state2]
-        return edge
-
-    def transition(self, state):
+    def transition(self, category, state):
         """Attempt to transition to a state."""
-        if state not in self.states:
+        if category not in self.categories:
+            return False
+        elif state not in self.categories[category].states:
             return False
 
-        edge = self.find_edge(self.current, state)
-        self.current = state
+        self.categories[category].current_state = state
 
-        for trigger in self.trigger_mesh[edge]:
+        for trigger in self.find_triggers(category, state):
             trigger.trigger() #suck it
 
         return True
@@ -79,17 +69,19 @@ class States():
         """Change the current state without triggering any triggers."""
         self.current = state
 
+    def find_triggers(self, category, state):
+        return self.categories[category].states[state]
+
     def add_trigger(self, trigger):
         self.orient_trigger(trigger)
 
         self.triggers.append(trigger)
 
+    def add_triggers(self, triggers):
+        for trigger in triggers:
+            self.add_trigger(trigger)
+
     def remove_trigger(self, trigger):
-        edge = self.find_edge(trigger.state1, trigger.state2)
-
-        for trigger in self.trigger_mesh[edge]:
-            if trigger.key == trigger:
-                self.trigger_mesh[edge].remove(trigger)
-
         self.triggers.remove(trigger)
 
+        self.categories[trigger.category].states[trigger.state].remove(trigger)

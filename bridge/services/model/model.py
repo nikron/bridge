@@ -13,6 +13,10 @@ class Model():
         """Add an io service to the model."""
         self.r2u[service] = {}
 
+    def get_all_asset_uuids(self):
+        """Get all uuid's of all assets."""
+        return list(self.assets.keys())
+
     def get_uuid(self, service, real_id):
         """Get the uuid corresponding to a particular service + id. """
         if service in self.r2u:
@@ -29,23 +33,20 @@ class Model():
 
         self.r2u[service][asset.real_id] = asset.uuid
 
-    def net_simple(self, uuid, state):
+    def perform_asset_action(self, uuid, action):
+        """Perform an action on uuid asset."""
         asset = self.assets.get(uuid)
 
         if asset is not None:
-            asset.transition(state)
+            asset.perform_action(action)
         else:
-            logging.error("{0} does not exist in this model.".format(repr(uuid)))
+            logging.error("{0} does not exist in this model, can not perform action {1}.".format(repr(uuid), action))
 
-    def summary(self):
-        """Return a json summary of the current state."""
-        return "beep boop bop"
-
-    def io_transition(self, uuid, state):
+    def io_transition(self, uuid, category, state):
         """
         Attempt to change asset to state, return False if failed.
         """
-        return self.assets[uuid].transition(state)
+        return self.assets[uuid].transition(category, state)
 
     def transform(self, uuid, asset):
         """Hard method where we transform an arbitrary asset into another

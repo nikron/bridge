@@ -3,16 +3,35 @@ Idiom for model to communicate with insteon io
 services.
 """
 from bridge.services.model.idiom import ModelIdiom
-from bridge.services.model.assets import BlankAsset
+from bridge.services.model.assets import BlankAsset, OnOffAsset
+from bridge.services.model.states import Trigger 
 
 from insteon_protocol.command.commands import InsteonCommand
 
 import logging
 
+
 class InsteonIdiom(ModelIdiom):
     """
     Decipher InsteonCommand objects.
     """
+
+
+    def create_onoff(self, real_id, name):
+        def turn_on():
+            self.service_function.turn_on(real_id)
+
+        def turn_off():
+            self.service_function.turn_off(real_id)
+
+
+    def create_asset(self, real_id, name, asset_type):
+        create_func = ASSET_TYPES[asset_type]
+
+        asset = create_func(self, real_id, name)
+
+        return asset
+
 
     def guess_insteon_asset(self, command):
         """
@@ -37,3 +56,8 @@ class InsteonIdiom(ModelIdiom):
 
     def get_state(self, real_id, update):
         pass
+
+    def asset_types(self):
+        return list(ASSET_TYPES.keys())
+
+ASSET_TYPES = { 'ApplianceLinc V2' : InsteonIdiom.create_onoff }
