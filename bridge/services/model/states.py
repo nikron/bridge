@@ -85,3 +85,11 @@ class States():
         self.triggers.remove(trigger)
 
         self.categories[trigger.category].states[trigger.state].remove(trigger)
+
+    def current_states(self):
+        current = {}
+
+        for category in self.categories:
+            current[category] = self.categories[category].current_state
+
+        return current

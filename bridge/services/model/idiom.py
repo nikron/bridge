@@ -3,10 +3,20 @@
 
 from abc import ABCMeta, abstractmethod
 
-class ModelIdiom(metaclass=ABCMeta):
+class IdiomError(Exception):
+    """Idiom errors."""
+    def __init__(self, reason):
+        super().__init__()
+        self.reason = reason
+
+    def __str__(self):
+        return self.reason
+
+class ModelIdiom():
     """
     ModelService uses this class to figure out what an IO update means.
     """
+    __metaclass__ = ABCMeta # this doesn't work, but pylint blows up if you do it properly
 
     def __init__(self, service):
         self.service = service

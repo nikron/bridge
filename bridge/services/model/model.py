@@ -13,6 +13,9 @@ class Model():
         """Add an io service to the model."""
         self.r2u[service] = {}
 
+    def get_asset(self, uuid):
+        return self.assets.get(uuid)
+
     def get_all_asset_uuids(self):
         """Get all uuid's of all assets."""
         return list(self.assets.keys())
@@ -31,7 +34,7 @@ class Model():
         if service not in self.r2u:
             self.add_service(service)
 
-        self.r2u[service][asset.real_id] = asset.uuid
+        self.r2u[service][asset.get_real_id()] = asset.uuid
 
     def perform_asset_action(self, uuid, action):
         """Perform an action on uuid asset."""

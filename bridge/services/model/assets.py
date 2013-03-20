@@ -44,6 +44,9 @@ class Asset(metaclass=Actions):
         """Change the asset state to state."""
         return self.states.transition(category, state)
 
+    def current_states(self):
+        return self.states.current_states()
+
     def get_real_id(self):
         return self.backing.real_id
 

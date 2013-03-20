@@ -6,6 +6,7 @@ from select import select
 
 from bridge.service import BridgeService
 from .storage import get_storage
+from bridge.services.model.idiom import IdiomError
 
 class ModelService(BridgeService):
     def __init__(self, io_idioms, file_name, driver_name,  hub_connection, log_queue):
@@ -44,11 +45,43 @@ class ModelService(BridgeService):
         """Return a list of uuids for assets."""
         return self.model.get_all_asset_uuids()
 
-    def create_asset(self, real_id, service, asset_class):
-        idiom = self.io_idioms[service]
+    def create_asset(self, name, real_id, service, asset_class):
+        """
+        Creats an asset, as this method's callers is not trusted to type check,
+        we have to.
+        """
 
-        idiom.create_asset(real_id, asset_class)
+        try:
+            idiom = self.io_idioms[service]
+        except KeyError:
+            return (False, "Service `{0}` not valid.".format(service))
 
+
+        try:
+            asset = idiom.create_asset(name, real_id, asset_class)
+        except IdiomError as err:
+            return (False, err.reason)
+
+        self.model.add_asset(service, asset)
+        logging.debug("Added asset {0}.".format(repr(asset)))
+
+        return (True, asset.uuid)
+
+    def get_asset_info(self, uuid):
+        """Get a representation of an asset in easy to understand dict.""" 
+
+        asset = self.model.get_asset(uuid)
+        if asset:
+            easy = {}
+            easy['name'] = asset.name
+            easy['uuid'] = str(asset.uuid)
+            easy['real id'] = asset.get_real_id()
+            easy['actions'] = list(asset.get_actions())
+            easy['state'] =  asset.current_states()
+
+            return easy
+        else:
+            return None
 
     def io_update(self, service, real_id, update):
         """

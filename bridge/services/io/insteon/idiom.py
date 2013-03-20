@@ -2,12 +2,16 @@
 Idiom for model to communicate with insteon io
 services.
 """
-from bridge.services.model.idiom import ModelIdiom
+from bridge.services.model.idiom import ModelIdiom, IdiomError
 from bridge.services.model.assets import BlankAsset, OnOffAsset, OnOffBacking
 
 from insteon_protocol.command.commands import InsteonCommand
+from insteon_protocol.utils import check_insteon_id
+
 
 import logging
+from binascii import hexlify, unhexlify
+import binascii
 
 
 class InsteonIdiom(ModelIdiom):
@@ -16,17 +20,29 @@ class InsteonIdiom(ModelIdiom):
     """
 
     def create_onoff(self, real_id, name):
+        """Create the onoff assets."""
         def turn_on():
-            self.service_function('turn_on', real_id)
+            self.service_function('turn_on', hexlify(real_id))
 
         def turn_off():
-            self.service_function('turn_off', real_id)
+            self.service_function('turn_off', hexlify(real_id))
 
         return OnOffAsset(name, OnOffBacking(real_id, turn_on, turn_off))
 
+    def create_asset(self, name, real_id, asset_class):
+        if type(real_id) == str:
+            try:
+                check = unhexlify(real_id)
+            except binascii.Error:
+                raise IdiomError("Could not unhexlify `{0}`.".format(real_id))
 
-    def create_asset(self, real_id, name, asset_type):
-        create_func = ASSET_TYPES[asset_type]
+            if not check_insteon_id(check):
+                raise IdiomError("Insteon ID's ore byte string of length 3.")
+
+        try:
+            create_func = ASSET_TYPES[asset_class]
+        except AttributeError:
+            raise IdiomError("Invalid asset class.")
 
         asset = create_func(self, real_id, name)
 
