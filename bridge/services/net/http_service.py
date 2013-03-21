@@ -35,8 +35,8 @@ def accept_only_json(func):
 class HTTPAPIService(BridgeService):
     """Service to provide a http api to bridge."""
 
-    def __init__(self, hub_con, log_queue, addr='127.0.0.1', port='8080', debug=True): 
-        super().__init__('http_api', hub_con, log_queue)
+    def __init__(self, hub_con, addr='0.0.0.0', port='8080', debug=True): 
+        super().__init__('http_api', hub_con)
 
         self.addr = addr
         self.port = port
@@ -44,24 +44,15 @@ class HTTPAPIService(BridgeService):
 
         self.bottle.get('/', callback=self.bridge_information())
         self.bottle.get('/services', callback=self.services())
+        self.bottle.get('/services/:name', callback=self.service_info())
         self.bottle.get('/assets', callback=self.assets())
         self.bottle.get('/assets/:name', callback=self.get_asset_from_uuid())
         self.bottle.post('/assets', callback=self.create_asset())
-
-        self.bottle.set_error_handler(404, self.error_handler())
 
 
     def run(self):
         run(app=self.bottle, host=self.addr, port=self.port, debug=True)
 
-    def error_handler(self):
-        def inner_error_handler(error):
-            if error.body:
-                response.content_type = 'application/json'
-
-                return json.dumps({ 'error' : error.body }, indent=4) + "\n"
-
-        return inner_error_handler
 
     def bridge_information(self):
         """
@@ -85,10 +76,26 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_services():
             servs = self.remote_block_service_method('model', 'get_services')
+            servs_url_list = []
 
-            return { 'services' : servs }
+            for serv in servs:
+                servs_url_list.append(request.url + "/" + serv)
+
+            return { 'services' : servs_url_list }
 
         return inner_services
+
+    def service_info(self):
+        @accept_only_json
+        def inner_service_info(name):
+            service = self.remote_block_service_method('model', 'get_service_info', name)
+
+            if service:
+                return service
+            else:
+                raise HTTPError(404, "Service not found.")
+
+        return inner_service_info
 
     def assets(self):
         """Return a function that outputs JSON of the asset urls."""

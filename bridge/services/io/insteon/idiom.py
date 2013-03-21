@@ -19,7 +19,7 @@ class InsteonIdiom(ModelIdiom):
     Decipher InsteonCommand objects.
     """
 
-    def create_onoff(self, real_id, name):
+    def create_onoff(self, name, real_id, product_name):
         """Create the onoff assets."""
         def turn_on():
             self.service_function('turn_on', hexlify(real_id))
@@ -27,9 +27,9 @@ class InsteonIdiom(ModelIdiom):
         def turn_off():
             self.service_function('turn_off', hexlify(real_id))
 
-        return OnOffAsset(name, OnOffBacking(real_id, turn_on, turn_off))
+        return OnOffAsset(name, OnOffBacking(real_id, product_name, turn_on, turn_off))
 
-    def create_asset(self, name, real_id, asset_class):
+    def create_asset(self, name, real_id, product_name):
         if type(real_id) == str:
             try:
                 check = unhexlify(real_id)
@@ -40,11 +40,11 @@ class InsteonIdiom(ModelIdiom):
                 raise IdiomError("Insteon ID's ore byte string of length 3.")
 
         try:
-            create_func = ASSET_TYPES[asset_class]
+            create_func = PRODUCT_NAMES[product_name]
         except AttributeError:
             raise IdiomError("Invalid asset class.")
 
-        asset = create_func(self, real_id, name)
+        asset = create_func(self, name, real_id, product_name)
 
         return asset
 
@@ -73,7 +73,7 @@ class InsteonIdiom(ModelIdiom):
     def get_state(self, real_id, update):
         pass
 
-    def asset_types(self):
-        return list(ASSET_TYPES.keys())
+    def asset_product_names(self):
+        return list(PRODUCT_NAMES.keys())
 
-ASSET_TYPES = { 'ApplianceLinc V2' : InsteonIdiom.create_onoff }
+PRODUCT_NAMES = { 'ApplianceLinc V2' : InsteonIdiom.create_onoff }

@@ -7,6 +7,8 @@ from bridge.services.io.service import IOService
 from insteon_protocol import insteon_im_protocol
 from insteon_protocol.command import im_commands
 
+import serial
+
 class InsteonIMService(IOService):
     """Methods for translating Command classes into state transitions."""
 
@@ -21,6 +23,13 @@ class InsteonIMService(IOService):
                 #If it's an im command, we should probably handle it
                 logging.debug("Updating model with {0}.".format(repr(update)))
                 self.update_model(update.from_address, update)
+    
+    def create_fd(self, filename):
+        try:
+            return serial.Serial(filename, 192000)
+        except:
+            return None
+
 
     def asset_info(self, real_id):
         cmd = im_commands.ProductDataRequest(real_id).encode()

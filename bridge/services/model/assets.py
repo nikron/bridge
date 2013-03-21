@@ -24,8 +24,9 @@ class Actions(type):
         return cls
 
 class Backing():
-    def __init__(self, real_id):
+    def __init__(self, real_id, product_name):
         self.real_id = real_id
+        self.product_name = product_name
 
 class Asset(metaclass=Actions):
     """
@@ -49,6 +50,9 @@ class Asset(metaclass=Actions):
 
     def get_real_id(self):
         return self.backing.real_id
+
+    def get_product_name(self):
+        return self.backing.product_name
 
     def get_actions(self):
         return self.__actions__
@@ -76,8 +80,8 @@ class BlankAsset(Asset):
         return False
 
 class OnOffBacking(Backing):
-    def __init__(self, real_id, on_func, off_func):
-        super().__init__(real_id)
+    def __init__(self, real_id, product_name, on_func, off_func):
+        super().__init__(real_id, product_name)
         self.on_func = on_func
         self.off_func = off_func
 

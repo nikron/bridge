@@ -13,14 +13,19 @@ class IOService(BridgeService):
     on a paticular interface.
     """
 
-    def __init__(self, name, io_fd, hub_connection, log_queue):
-        super().__init__(name, hub_connection, log_queue)
-        self.io_fd = io_fd
+    def __init__(self, name, file_name, hub_connection):
+        super().__init__(name, hub_connection)
+        self.io_fd = self.create_fd(file_name)
 
         self.read_list = [self.hub_connection]
 
-        if io_fd is not None:
+        if self.io_fd is None:
+            self.notify_not_connected()
+
+        else:
+            self.notify_connected()
             self.read_list.append(self.io_fd)
+
 
     def run(self):
         logging.debug("Starting {0}".format(self.name))
@@ -39,6 +44,9 @@ class IOService(BridgeService):
         logging.debug("Updating model with {0}".format(repr(update)))
         self.remote_async_service_method('model', 'io_update', self.name, real_id, update)
 
+    def create_fd(self, file_name):
+        raise NotImplementedError
+
     def read_io(self):
         """Read the interface, each IO service must implmeenet this."""
         raise NotImplementedError
@@ -46,3 +54,9 @@ class IOService(BridgeService):
     def asset_info(self, real_id):
         """Get more info about device."""
         raise NotImplementedError
+
+    def notify_not_connected(self):
+        self.remote_async_service_method('model', 'io_service_offline', self.name)
+
+    def notify_connected(self):
+        self.remote_async_service_method('model', 'io_service_online', self.name)

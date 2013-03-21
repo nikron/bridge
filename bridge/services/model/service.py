@@ -9,8 +9,8 @@ from .storage import get_storage
 from bridge.services.model.idiom import IdiomError
 
 class ModelService(BridgeService):
-    def __init__(self, io_idioms, file_name, driver_name,  hub_connection, log_queue):
-        super().__init__('model', hub_connection, log_queue)
+    def __init__(self, io_idioms, file_name, driver_name,  hub_connection):
+        super().__init__('model', hub_connection)
         self.read_list = [self.hub_connection]
 
         self.storage = get_storage(file_name, driver_name)
@@ -36,6 +36,7 @@ class ModelService(BridgeService):
         """
         Try to do a simple state change that a non io process can do.
         """
+
         self.model.net_simple(asset_uuid, state)
 
     def get_services(self):
@@ -43,9 +44,10 @@ class ModelService(BridgeService):
 
     def get_assets(self): 
         """Return a list of uuids for assets."""
+
         return self.model.get_all_asset_uuids()
 
-    def create_asset(self, name, real_id, service, asset_class):
+    def create_asset(self, name, real_id, service, product_name):
         """
         Creats an asset, as this method's callers is not trusted to type check,
         we have to.
@@ -58,7 +60,7 @@ class ModelService(BridgeService):
 
 
         try:
-            asset = idiom.create_asset(name, real_id, asset_class)
+            asset = idiom.create_asset(name, real_id, product_name)
         except IdiomError as err:
             return (False, err.reason)
 
@@ -82,6 +84,13 @@ class ModelService(BridgeService):
             return easy
         else:
             return None
+
+    def get_service_info(self, service):
+        if service in self.io_idioms:
+            return { 'name' : service,
+                     'online' : self.io_idioms[service].online
+                     }
+
 
     def io_update(self, service, real_id, update):
         """
@@ -116,3 +125,8 @@ class ModelService(BridgeService):
             # to do its job
             logging.error("Do not know about io service {0}.".format(service)) 
 
+    def io_service_offline(self, service):
+        self.io_idioms[service].offline()
+
+    def io_service_online(self, service):
+        self.io_idioms[service].online()

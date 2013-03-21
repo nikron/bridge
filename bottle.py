@@ -41,6 +41,7 @@ import base64, cgi, email.utils, functools, hmac, imp, itertools, mimetypes,\
 from datetime import date as datedate, datetime, timedelta
 from tempfile import TemporaryFile
 from traceback import format_exc, print_exc
+import logging
 
 try: from json import dumps as json_dumps, loads as json_lds
 except ImportError: # pragma: no cover
@@ -753,8 +754,10 @@ class Bottle(object):
             return self._handle(path)
         return self._handle({'PATH_INFO': path, 'REQUEST_METHOD': method.upper()})
 
-    def default_error_handler(self, res):
-        return tob(template(ERROR_PAGE_TEMPLATE, e=res))
+    def default_error_handler(self, error):
+        return json_dumps({ 'error' : error.body }, indent=4) + "\n"
+
+    #return tob(template(ERROR_PAGE_TEMPLATE, e=res))
 
     def _handle(self, environ):
         try:

@@ -54,7 +54,7 @@ class BridgeHub():
 
         #need to pass in the io services it is going to connect to
         #and the the storage driver name
-        service = ModelService(self.io_idioms, self.configuration.model_file, self.configuration.model_driver, its, self.logging_service.queue)
+        service = ModelService(self.io_idioms, self.configuration.model_file, self.configuration.model_driver, its)
 
         self.add_service(ours, service)
 
@@ -62,7 +62,7 @@ class BridgeHub():
 
     def start_http_service(self):
         (its, ours) = self.create_connection()
-        service = HTTPAPIService(its, self.logging_service.queue)
+        service = HTTPAPIService(its)
         self.add_service(ours, service)
 
         service.start()
@@ -73,7 +73,7 @@ class BridgeHub():
             (its, ours) = self.create_connection()
 
             io_config = IOConfig(*io_config_args)
-            io_service =  io_config.create_service(its, self.logging_service.queue)
+            io_service =  io_config.create_service(its)
 
             self.add_service(ours, io_service)
 
@@ -114,5 +114,5 @@ class BridgeHub():
 
                 spinning = False
 
-        for service in self.services.values():
-            service.process.join()
+        #for service in self.services.values():
+        #    service.process.join()

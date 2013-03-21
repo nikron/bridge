@@ -7,6 +7,7 @@ class Model():
     def __init__(self):
         self.r2u = {} #real id to uuid
         self.assets = {}
+        self.asset_names = []
         self.links = []
 
     def add_service(self, service):
@@ -19,6 +20,9 @@ class Model():
     def get_all_asset_uuids(self):
         """Get all uuid's of all assets."""
         return list(self.assets.keys())
+
+    def get_all_asset_names(self):
+        return self.asset_names
 
     def get_uuid(self, service, real_id):
         """Get the uuid corresponding to a particular service + id. """
@@ -35,6 +39,8 @@ class Model():
             self.add_service(service)
 
         self.r2u[service][asset.get_real_id()] = asset.uuid
+        self.asset_names.append(asset.name)
+
 
     def perform_asset_action(self, uuid, action):
         """Perform an action on uuid asset."""

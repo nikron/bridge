@@ -21,9 +21,10 @@ class ModelIdiom():
     def __init__(self, service):
         self.service = service
         self.service_function = None
+        self.online = False
 
     @abstractmethod
-    def create_asset(self, name, real_id, asset_type):
+    def create_asset(self, name, real_id, product_name):
         """
         Create an asset with real_id
         """
@@ -48,7 +49,7 @@ class ModelIdiom():
         pass
 
     @abstractmethod
-    def asset_types(self):
+    def asset_product_names(self):
         """
         Return list of strings of accepted asset types.
         """
@@ -60,3 +61,9 @@ class ModelIdiom():
         communicate with service.
         """
         self.service_function = func
+    
+    def online(self):
+        self.online = True
+
+    def offline(self):
+        self.offline = True

@@ -46,8 +46,7 @@ class BridgeConfiguration():
         for io_service in config['io']['services'].split():
             name = config[io_service]['name']
             protocol = config[io_service]['protocol']
-            io_con = config[io_service]['connection']
-            io_con_args = config[io_service]['connection arguments']
+            file_name = config[io_service]['file name']
 
-            self.io_services.append((name, protocol, io_con, io_con_args))
+            self.io_services.append((name, protocol, file_name))
 
