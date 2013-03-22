@@ -28,7 +28,6 @@ class IOService(BridgeService):
 
 
     def run(self):
-        logging.debug("Starting {0}".format(self.name))
         super().run()
         self.spinning = True
 

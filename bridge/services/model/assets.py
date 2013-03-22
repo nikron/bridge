@@ -2,26 +2,10 @@
 An asset is the internal representation of a device.
 """
 from bridge.services.model.states import States
+from bridge.services.model.actions import Actions, action
 import logging
 import uuid
 
-def action(func):
-    func.__isaction__ = True
-    return func
-
-#you ask why I'd do it this way, I say for fun
-class Actions(type):
-    def __new__(mcls, names, bases, namespace):
-        cls = super().__new__(mcls, names, bases, namespace)
-        actions = {name for name, value in namespace.items() if getattr(value, '__isaction__', False)}
-
-        for base in bases:
-            base_actions = getattr(base, '__actions__', set())
-            actions = actions.union(base_actions)
-
-        cls.__actions__ = frozenset(actions)
-
-        return cls
 
 class Backing():
     def __init__(self, real_id, product_name):
@@ -54,17 +38,6 @@ class Asset(metaclass=Actions):
     def get_product_name(self):
         return self.backing.product_name
 
-    def get_actions(self):
-        return self.__actions__
-
-    def perform_action(self, action, *args):
-        act = getattr(self, action, None)
-        if act is not None:
-            act(*args)
-            return True
-
-        return False
-
 class BlankAsset(Asset):
     """
     An asset placeholder for when you know something exists but you don't
@@ -95,14 +68,14 @@ class OnOffAsset(Asset):
     def __init__(self, name, backing):
         super().__init__(name, self.on_off_states, backing)
 
-    @action
+    @action("Turn On")
     def turn_on(self):
         self.backing.on_func()
         self.states.transition('main', 'unknown')
 
         return True
 
-    @action
+    @action("Turn Off")
     def turn_off(self):
         self.backing.off_func()
         self.states.transition('main', 'unknown')

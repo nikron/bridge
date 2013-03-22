@@ -7,6 +7,7 @@ from select import select
 from bridge.service import BridgeService
 from .storage import get_storage
 from bridge.services.model.idiom import IdiomError
+from bridge.services.model.actions import get_actions
 
 class ModelService(BridgeService):
     def __init__(self, io_idioms, file_name, driver_name,  hub_connection):
@@ -78,7 +79,7 @@ class ModelService(BridgeService):
             easy['name'] = asset.name
             easy['uuid'] = str(asset.uuid)
             easy['real id'] = asset.get_real_id()
-            easy['actions'] = list(asset.get_actions())
+            easy['actions'] = get_actions(asset)
             easy['state'] =  asset.current_states()
 
             return easy
@@ -87,9 +88,10 @@ class ModelService(BridgeService):
 
     def get_service_info(self, service):
         if service in self.io_idioms:
-            return { 'name' : service,
-                     'online' : self.io_idioms[service].online
-                     }
+            return {
+                    'name' : service,
+                    'online' : self.io_idioms[service].online
+                    }
 
 
     def io_update(self, service, real_id, update):

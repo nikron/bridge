@@ -7,8 +7,6 @@ from bridge.service import BridgeService
 from bottle import run, Bottle, request, response, HTTPError
 import mimeparse
 
-import json
-import logging
 import uuid
 
 def accept_only_json(func):
@@ -16,10 +14,12 @@ def accept_only_json(func):
     acceptable = 'application/json'
 
     def mime_okay(mimetype):
+        """Checks if the mimetype is acceptable."""
         accept = mimeparse.best_match([acceptable], mimetype)
         return accept == acceptable
 
     def error_non_json(*args, **kwargs):
+        """Inner function that raises error if mimetype not acceptable."""
         if request.method == 'GET':
             if not mime_okay(request.get_header('Accept', acceptable)):
                 raise HTTPError(406, "Please accept `{0}`".format(acceptable))
@@ -44,9 +44,10 @@ class HTTPAPIService(BridgeService):
 
         self.bottle.get('/', callback=self.bridge_information())
         self.bottle.get('/services', callback=self.services())
-        self.bottle.get('/services/:name', callback=self.service_info())
+        self.bottle.get('/services/<service>', callback=self.service_info())
         self.bottle.get('/assets', callback=self.assets())
-        self.bottle.get('/assets/:name', callback=self.get_asset_from_uuid())
+        self.bottle.get('/assets/<asset>', callback=self.get_asset_from_uuid())
+        self.bottle.get('/assets/<asset>/<action>', callback=self.get_asset_action())
         self.bottle.post('/assets', callback=self.create_asset())
 
 
@@ -87,8 +88,8 @@ class HTTPAPIService(BridgeService):
 
     def service_info(self):
         @accept_only_json
-        def inner_service_info(name):
-            service = self.remote_block_service_method('model', 'get_service_info', name)
+        def inner_service_info(service):
+            service = self.remote_block_service_method('model', 'get_service_info', service)
 
             if service:
                 return service
@@ -115,8 +116,8 @@ class HTTPAPIService(BridgeService):
     def get_asset_from_uuid(self):
 
         @accept_only_json
-        def inner_get_asset_from_uuid(name):
-            asset_uuid = uuid.UUID(name)
+        def inner_get_asset_from_uuid(asset):
+            asset_uuid = uuid.UUID(asset)
 
             asset = self.remote_block_service_method('model','get_asset_info', asset_uuid)
 
@@ -150,3 +151,15 @@ class HTTPAPIService(BridgeService):
                 return "Asset created."
 
         return inner_create_asset
+
+    def get_asset_action(self):
+        """Return function that retrives info about action."""
+
+        @accept_only_json
+        def inner_get_asset_action(asset, action):
+            info = self.remote_block_service_method('mode', 'get_action_info', asset, action)
+
+            if info:
+                return info
+            else:
+                raise HTTPError(404, "Action not found.")

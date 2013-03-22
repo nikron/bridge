@@ -23,7 +23,7 @@ class InsteonIMService(IOService):
                 #If it's an im command, we should probably handle it
                 logging.debug("Updating model with {0}.".format(repr(update)))
                 self.update_model(update.from_address, update)
-    
+
     def create_fd(self, filename):
         try:
             return serial.Serial(filename, 192000)
