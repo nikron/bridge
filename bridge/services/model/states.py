@@ -65,9 +65,16 @@ class States():
 
         return True
 
-    def sudden(self, state):
+    def sudden(self, category, state):
         """Change the current state without triggering any triggers."""
-        self.current = state
+        if category not in self.categories:
+            return False
+        elif state not in self.categories[category].states:
+            return False
+
+        self.categories[category].current_state = state
+
+        return True
 
     def find_triggers(self, category, state):
         return self.categories[category].states[state]

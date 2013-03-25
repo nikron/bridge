@@ -29,7 +29,7 @@ def perform_action(obj, action, *args, **kwargs):
     try:
         action = _get_action_func(obj, action)(*args, **kwargs)
     except TypeError:
-        raise ActionError("Incorrect arguements.")
+        raise ActionError("Incorrect arguments.")
 
 
 #maybe cache this information
@@ -37,14 +37,14 @@ def get_action_information(obj, action):
     action = _get_action_func(obj, action)
     info = {}
     info['name'] = action.__pretty_name__
-    info['arguements'] =  getargspec(action).args[1:] #to not include self.
+    info['arguments'] =  getargspec(action).args[1:] #to not include self.
 
     return info
 
 
 class ActionError(Exception):
     def __init__(self, message):
-        super().__init()
+        super().__init__()
         self.message = message
 
 

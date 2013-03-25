@@ -7,6 +7,7 @@ from select import select
 from bridge.service import BridgeService
 from .storage import get_storage
 from bridge.services.model.idiom import IdiomError
+from bridge.services.model.actions import ActionError
 
 class ModelService(BridgeService):
     def __init__(self, io_idioms, file_name, driver_name,  hub_connection):
@@ -77,7 +78,12 @@ class ModelService(BridgeService):
         return self.model.serializable_asset_action_info(uuid, action)
 
     def perform_asset_action(self, uuid, action):
-        return self.model.perform_asset_action(uuid, action)
+        try:
+            self.model.perform_asset_action(uuid, action)
+        except ActionError as e:
+            return e.message
+
+        return None
 
     def io_update(self, service, real_id, update):
         """
@@ -113,7 +119,7 @@ class ModelService(BridgeService):
             logging.error("Do not know about io service {0}.".format(service)) 
 
     def io_service_offline(self, service):
-        self.io_idioms[service].offline()
+        self.io_idioms[service].online = False
 
     def io_service_online(self, service):
-        self.io_idioms[service].online()
+        self.io_idioms[service].online = True

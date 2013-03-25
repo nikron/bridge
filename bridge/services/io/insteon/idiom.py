@@ -10,7 +10,7 @@ from insteon_protocol.utils import check_insteon_id
 
 
 import logging
-from binascii import hexlify, unhexlify
+from binascii import unhexlify
 import binascii
 
 
@@ -22,17 +22,17 @@ class InsteonIdiom(ModelIdiom):
     def create_onoff(self, name, real_id, product_name):
         """Create the onoff assets."""
         def turn_on():
-            self.service_function('turn_on', hexlify(real_id))
+            self.service_function('turn_on', unhexlify(real_id))
 
         def turn_off():
-            self.service_function('turn_off', hexlify(real_id))
+            self.service_function('turn_off', unhexlify(real_id))
 
         return OnOffAsset(name, OnOffBacking(real_id, product_name, turn_on, turn_off))
 
     def create_asset(self, name, real_id, product_name):
         if type(real_id) == str:
             try:
-                check = unhexlify(real_id)
+                check = unhexlify(real_id) #make sure string is valid
             except binascii.Error:
                 raise IdiomError("Could not unhexlify `{0}`.".format(real_id))
 

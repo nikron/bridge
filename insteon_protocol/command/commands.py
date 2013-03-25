@@ -58,7 +58,6 @@ class InsteonCommand(Command):
         msg_flag = self.create_flag()
 
         cmd = self.from_address + self.to_address + msg_flag + self.cmd_bytes + self.extended_data
-        print(self.to_address)
 
         return cmd
 

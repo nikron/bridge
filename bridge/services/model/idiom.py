@@ -61,9 +61,3 @@ class ModelIdiom():
         communicate with service.
         """
         self.service_function = func
-    
-    def online(self):
-        self.online = True
-
-    def offline(self):
-        self.offline = True

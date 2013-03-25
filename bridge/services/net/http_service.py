@@ -26,7 +26,7 @@ def accept_only_json(func):
 
         elif request.method == 'POST':
             if not mime_okay(request.content_type):
-                raise HTTPError(415)
+                raise HTTPError(415, "Only accepts applicaton/json.")
 
         return func(*args, **kwargs)
 
@@ -47,7 +47,7 @@ class HTTPAPIService(BridgeService):
         self.bottle.get('/services/<service>', callback=self.service_info())
         self.bottle.get('/assets', callback=self.assets())
         self.bottle.get('/assets/<asset>', callback=self.get_asset_from_uuid())
-        #self.bottle.post('/assets/<asset>/<action>', callback=self.post_action())
+        self.bottle.post('/assets/<asset>/<action>', callback=self.post_action())
         self.bottle.get('/assets/<asset>/<action>', callback=self.get_asset_action())
         self.bottle.post('/assets', callback=self.create_asset())
 
@@ -183,9 +183,9 @@ class HTTPAPIService(BridgeService):
             msg = self.remote_block_service_method('model', 'perform_asset_action', asset_uuid, action)
 
             if msg:
-                return { "message" : "Action will be performed." }
-            else:
                 raise HTTPError(400, msg)
+            else:
+                return { "message" : "Action will be performed." }
 
         return inner_post_action
 

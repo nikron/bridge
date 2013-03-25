@@ -67,6 +67,7 @@ class OnOffAsset(Asset):
 
     def __init__(self, name, backing):
         super().__init__(name, self.on_off_states, backing)
+        self.on_off_states.sudden('main', 'unknown')
 
     @action("Turn On")
     def turn_on(self):

@@ -25,13 +25,23 @@ class InsteonIMService(IOService):
                 self.update_model(update.from_address, update)
 
     def create_fd(self, filename):
-        try:
-            return serial.Serial(filename, 192000)
-        except:
-            return None
+        #try:
+        return serial.Serial(filename, 19200)
+        #except:
+        #    return None
 
 
     def asset_info(self, real_id):
         cmd = im_commands.ProductDataRequest(real_id).encode()
+        logging.debug("Writing command {0}.".format(repr(cmd)))
+        self.io_fd.write(cmd)
+
+    def turn_off(self, real_id):
+        cmd = im_commands.TurnOff(real_id).encode()
+        logging.debug("Writing command {0}.".format(repr(cmd)))
+        self.io_fd.write(cmd)
+
+    def turn_on(self, real_id):
+        cmd = im_commands.TurnOnFast(real_id).encode()
         logging.debug("Writing command {0}.".format(repr(cmd)))
         self.io_fd.write(cmd)

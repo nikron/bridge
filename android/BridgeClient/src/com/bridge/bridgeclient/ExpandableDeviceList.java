@@ -11,23 +11,12 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.StatusLine;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
-
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
+import org.apache.http.client.ClientProtocolException;
 
 class ExpandableDeviceList extends BaseExpandableListAdapter
 {
@@ -98,7 +87,7 @@ class ExpandableDeviceList extends BaseExpandableListAdapter
     public void refresh()
     {
         try {
-            String assets = getURL("http://192.168.0.198:8080/assets");
+            String assets = Utility.getURL("http://192.168.0.198:8080/assets");
             JSONObject obj = new JSONObject(assets);
             JSONArray urlArray = obj.getJSONArray("assets_urls");
 
@@ -117,7 +106,7 @@ class ExpandableDeviceList extends BaseExpandableListAdapter
             {
                 urlOfAsset = urlArray.getString(i);
 
-                assetStr = getURL(urlOfAsset);
+                assetStr = Utility.getURL(urlOfAsset);
                 obj = new JSONObject(assetStr);
 
                 name = obj.getString("name");
@@ -138,40 +127,33 @@ class ExpandableDeviceList extends BaseExpandableListAdapter
                     j++;
                 }
 
-                devices.add(new AssetView(context, urlOfAsset, name, realID, status,  uuid, null));
+                JSONArray actionURLs = obj.getJSONArray("action_urls");
+                Action[] actions = new Action[actionURLs.length()];
+
+                for (j = 0; j < actionURLs.length(); j++)
+                {
+                    actions[j] = new Action(actionURLs.getString(j));
+                }
+
+                devices.add(new AssetView(context, urlOfAsset, name, realID, status,  uuid, actions));
             }
 
             notifyDataSetChanged();
 
-        } catch (JSONException e) {
+        }
+            catch (JSONException e)
+        {
             Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-    }
-
-    private String getURL(String url)
-    {
-        StringBuilder builder = new StringBuilder();
-        HttpClient client = new DefaultHttpClient();
-        HttpGet get = new HttpGet(url);
-
-        try {
-            HttpResponse response = client.execute(get);
-            StatusLine status = response.getStatusLine();
-            HttpEntity entity = response.getEntity();
-            InputStream content = entity.getContent();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(content));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                builder.append(line);
-            }
-
-        } catch (ClientProtocolException e) {
+            catch (ClientProtocolException e)
+        {
             Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
-        } catch (IOException e) {
+        }
+            catch (IOException e)
+        {
             Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
 
-        return builder.toString();
     }
+
 }
