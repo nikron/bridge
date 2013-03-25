@@ -7,6 +7,8 @@ from inspect import getargspec
 import logging
 
 def action(name):
+    """Decorator that accepts name as pretty name for a method to be an action of
+    its object."""
     def wrapper(func):
         func.__isaction__ = True
         func.__pretty_name__ = name
@@ -14,20 +16,23 @@ def action(name):
 
     return wrapper
 
-def _get_action_func(obj, action):
+def _get_action_func(obj, act):
+    """Internal function to get action of object or raise error."""
     try:
-        return getattr(obj, action)
+        return getattr(obj, act)
 
     except AttributeError:
         logging.debug("Asset {0} does not have action {1}.".format(getattr(obj, '__name__'), action))
         raise ActionError("Asset does not have action `{0}`.".format(action))
 
 def get_actions(obj):
+    """Get all actions of obj."""
     return list(obj.__actions__)
 
-def perform_action(obj, action, *args, **kwargs):
+def perform_action(obj, act, *args, **kwargs):
+    """Perform an action on obj."""
     try:
-        action = _get_action_func(obj, action)(*args, **kwargs)
+        _get_action_func(obj, act)(*args, **kwargs)
     except TypeError:
         raise ActionError("Incorrect arguments.")
 
