@@ -47,6 +47,7 @@ class HTTPAPIService(BridgeService):
         self.bottle.get('/services/<service>', callback=self.service_info())
         self.bottle.get('/assets', callback=self.assets())
         self.bottle.get('/assets/<asset>', callback=self.get_asset_from_uuid())
+        #self.bottle.post('/assets/<asset>/<action>', callback=self.post_action())
         self.bottle.get('/assets/<asset>/<action>', callback=self.get_asset_action())
         self.bottle.post('/assets', callback=self.create_asset())
 
@@ -117,11 +118,16 @@ class HTTPAPIService(BridgeService):
 
         @accept_only_json
         def inner_get_asset_from_uuid(asset):
-            asset_uuid = uuid.UUID(asset)
+            asset_uuid = self.check_valid_uuid(asset)
 
             asset = self.remote_block_service_method('model','get_asset_info', asset_uuid)
 
             if asset:
+                asset['action_urls'] = []
+                for action in asset['actions']:
+                    asset['action_urls'].append(request.url + "/" + action)
+                del asset['actions']
+
                 return asset
             else:
                 raise HTTPError(404, "Asset not found.")
@@ -148,7 +154,7 @@ class HTTPAPIService(BridgeService):
             else:
                 response.status = 201 #201 Created
                 response.set_header('Location', request.url + "/" + str(msg))
-                return "Asset created."
+                return { "message" : "Asset created." }
 
         return inner_create_asset
 
@@ -157,9 +163,38 @@ class HTTPAPIService(BridgeService):
 
         @accept_only_json
         def inner_get_asset_action(asset, action):
-            info = self.remote_block_service_method('mode', 'get_action_info', asset, action)
+            asset_uuid = self.check_valid_uuid(asset)
+
+            info = self.remote_block_service_method('model', 'get_asset_action_info', asset_uuid, action)
 
             if info:
                 return info
             else:
                 raise HTTPError(404, "Action not found.")
+
+        return inner_get_asset_action
+
+    def post_action(self):
+
+        @accept_only_json
+        def inner_post_action(asset, action):
+            asset_uuid = self.check_valid_uuid(asset)
+
+            msg = self.remote_block_service_method('model', 'perform_asset_action', asset_uuid, action)
+
+            if msg:
+                return { "message" : "Action will be performed." }
+            else:
+                raise HTTPError(400, msg)
+
+        return inner_post_action
+
+
+    def check_valid_uuid(self, asset):
+        try:
+            asset_uuid = uuid.UUID(asset)
+        except ValueError:
+            raise HTTPError(404, "Asset not found/not valid UUID.")
+
+        return asset_uuid
+

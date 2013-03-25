@@ -7,7 +7,6 @@ from select import select
 from bridge.service import BridgeService
 from .storage import get_storage
 from bridge.services.model.idiom import IdiomError
-from bridge.services.model.actions import get_actions
 
 class ModelService(BridgeService):
     def __init__(self, io_idioms, file_name, driver_name,  hub_connection):
@@ -33,15 +32,15 @@ class ModelService(BridgeService):
             if self.hub_connection in read:
                 self.read_and_do_remote_request()
 
-    def simple_state_change(self, asset_uuid, state):
-        """
-        Try to do a simple state change that a non io process can do.
-        """
-
-        self.model.net_simple(asset_uuid, state)
-
     def get_services(self):
         return list(self.io_idioms.keys())
+
+    def get_service_info(self, service):
+        if service in self.io_idioms:
+            return {
+                    'name' : service,
+                    'online' : self.io_idioms[service].online
+                    }
 
     def get_assets(self): 
         """Return a list of uuids for assets."""
@@ -50,8 +49,7 @@ class ModelService(BridgeService):
 
     def create_asset(self, name, real_id, service, product_name):
         """
-        Creats an asset, as this method's callers is not trusted to type check,
-        we have to.
+        Create an asset, make sure service exists  and real id doesn't already exist.
         """
 
         try:
@@ -71,28 +69,15 @@ class ModelService(BridgeService):
         return (True, asset.uuid)
 
     def get_asset_info(self, uuid):
-        """Get a representation of an asset in easy to understand dict.""" 
+        """Get a representation of an asset in an easy to understand dict.""" 
+        return self.model.serializable_asset_info(uuid)
 
-        asset = self.model.get_asset(uuid)
-        if asset:
-            easy = {}
-            easy['name'] = asset.name
-            easy['uuid'] = str(asset.uuid)
-            easy['real id'] = asset.get_real_id()
-            easy['actions'] = get_actions(asset)
-            easy['state'] =  asset.current_states()
+    def get_asset_action_info(self, uuid, action):
+        logging.debug("Getting action info {0} from {1}.".format(action, uuid))
+        return self.model.serializable_asset_action_info(uuid, action)
 
-            return easy
-        else:
-            return None
-
-    def get_service_info(self, service):
-        if service in self.io_idioms:
-            return {
-                    'name' : service,
-                    'online' : self.io_idioms[service].online
-                    }
-
+    def perform_asset_action(self, uuid, action):
+        return self.model.perform_asset_action(uuid, action)
 
     def io_update(self, service, real_id, update):
         """

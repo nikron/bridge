@@ -1,4 +1,5 @@
 import logging
+from bridge.services.model.actions import get_actions, perform_action, get_action_information, ActionError
 
 class Model():
     """
@@ -41,15 +42,43 @@ class Model():
         self.r2u[service][asset.get_real_id()] = asset.uuid
         self.asset_names.append(asset.name)
 
-
     def perform_asset_action(self, uuid, action):
         """Perform an action on uuid asset."""
         asset = self.assets.get(uuid)
 
         if asset is not None:
-            asset.perform_action(action)
+            perform_action(asset, action)
         else:
-            logging.error("{0} does not exist in this model, can not perform action {1}.".format(repr(uuid), action))
+            logging.error("{0} does not exist in this model, can not perform action {1}.".format(uuid, action))
+
+    def serializable_asset_info(self, uuid):
+        """Return an asset in basic python primitives."""
+        asset = self.get_asset(uuid)
+
+        if asset:
+            ser = {}
+            ser['name'] = asset.name
+            ser['uuid'] = str(asset.uuid)
+            ser['real id'] = asset.get_real_id()
+            ser['actions'] = get_actions(asset)
+            ser['state'] =  asset.current_states()
+
+            return ser
+        else:
+            return None
+
+    def serializable_asset_action_info(self, uuid, action):
+        asset = self.get_asset(uuid)
+
+        if asset:
+            try:
+                return get_action_information(asset, action)
+            except ActionError:
+                return None
+        else:
+            logging.error("{0} does not exist in this model, can not get action {1}.".format(type(uuid), action))
+            return None
+
 
     def io_transition(self, uuid, category, state):
         """
