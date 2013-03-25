@@ -23,7 +23,7 @@ public class BridgeActivity extends Activity
         final Button create_device = (Button) findViewById(R.id.create_device);
 
         final ExpandableListView devices = (ExpandableListView) findViewById(R.id.devices);
-        final ExpandableDeviceList deviceAdapter = new ExpandableDeviceList(this);
+        final AssetExpandableListAdapter deviceAdapter = new AssetExpandableListAdapter(this);
         devices.setGroupIndicator(null);
         devices.setAdapter(deviceAdapter);
 
