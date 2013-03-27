@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">BridgeActivity</string>
+    <string name="create_device">Create a Device</string>
+    <string name="refresh_devices">Refresh Devices</string>
 </resources>

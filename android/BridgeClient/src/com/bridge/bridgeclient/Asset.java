@@ -40,7 +40,7 @@ class Asset
         }
 
         JSONArray actionURLs = obj.getJSONArray("action_urls");
-        Action[] actions = new Action[actionURLs.length()];
+        actions = new Action[actionURLs.length()];
 
         for (j = 0; j < actionURLs.length(); j++)
         {

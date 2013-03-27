@@ -41,7 +41,7 @@ class Action
         return name;
     }
 
-    public void doAction()
+    public void doAction() throws IOException
     {
         Utility.postURL(url);
     }

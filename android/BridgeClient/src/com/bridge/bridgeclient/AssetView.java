@@ -7,13 +7,16 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Button;
+import android.widget.Toast;
+
+import java.io.IOException;
 
 class AssetView extends TableLayout
 {
     private Context context;
     private Asset asset;
 
-    public AssetView(Context context, Asset asset) 
+    public AssetView(Context context, Asset asset)
     {
         super(context);
         this.context = context;
@@ -53,7 +56,11 @@ class AssetView extends TableLayout
         button.setText(action.getName());
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                act.doAction();
+                try {
+                    act.doAction();
+                } catch (IOException e) {
+                    Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
