@@ -24,10 +24,10 @@ class InsteonIdiom(ModelIdiom):
     def create_onoff(self, name, real_id, product_name):
         """Create the onoff assets."""
         def turn_on():
-            self.service_function('turn_on', unhexlify(real_id))
+            self.service_function('turn_on', real_id)
 
         def turn_off():
-            self.service_function('turn_off', unhexlify(real_id))
+            self.service_function('turn_off', real_id)
 
         return OnOffAsset(name, OnOffBacking(real_id, product_name, turn_on, turn_off))
 
@@ -72,8 +72,11 @@ class InsteonIdiom(ModelIdiom):
             return (BlankAsset(real_id), False)
 
     def get_state(self, real_id, update):
-        if issubclass(type(update), InsteonCommand):
+        #if issubclass(type(update), InsteonCommand):
+        try:
             return INSTCMDTOSTATE.get(update)
+        except KeyError:
+            raise IdiomError("Update not implemented.")
 
 
     def asset_product_names(self):

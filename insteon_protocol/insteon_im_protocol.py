@@ -84,5 +84,3 @@ def decode(buf):
         return MODEM_COMMANDS[buf[0:1]][1](buf[1:])
     except KeyError:
         return None
-
-

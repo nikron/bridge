@@ -39,7 +39,6 @@ class IMInsteonCommand(InsteonCommand):
 
         ext = buf[6:-1]
 
-        #go go duck typing
         if buf[-1:] == b'\x06':
             okay = True
         else:

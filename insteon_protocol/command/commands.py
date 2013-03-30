@@ -76,9 +76,12 @@ class InsteonCommand(Command):
         curh = flag[4:6]
         maxh = flag[6:8]
 
-        cmd1 = buf[7]
-        cmd2 = buf[8]
+        cmd1 = buf[7:8]
+        cmd2 = buf[8:9]
 
         ext = buf[9:]
 
         return cls(fro, to, broad, group, ack, ext, curh, maxh, cmd1, cmd2, ext)
+
+    def __str__(self):
+        return "InsteonCommand<from: {0}, to: {1}, CMD1: {2}, CMD2: {3}>".format(self.from_address, self.to_address, self.cmd1, self.cmd2)

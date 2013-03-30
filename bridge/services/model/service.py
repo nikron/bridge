@@ -95,13 +95,18 @@ class ModelService(BridgeService):
         if idiom is not None:
             uuid = self.model.get_uuid(service, real_id)
 
-            if uuid is not None:
-                (category, state) = idiom.get_state(real_id, update)
+            if uuid:
+                try:
+                    (category, state) = idiom.get_state(real_id, update)
+                    logging.debug("Trying to transistion with ({0},{1})".format(category, state))
 
-                if not self.model.io_transition(uuid, category, state):
-                    asset = idiom.guess_asset(real_id, update)
+                    if not self.model.io_transition(uuid, category, state):
+                        asset = idiom.guess_asset(real_id, update)
 
-                    self.model.transform(uuid, asset)
+                        self.model.transform(uuid, asset)
+
+                except IdiomError:
+                    logging.debug("Couldn't process update {0}.".format(update))
 
             else:
                 logging.debug("Got an update about device {0} that we don't know about.".format(real_id))
@@ -113,9 +118,6 @@ class ModelService(BridgeService):
                     self.remote_async_service_method(service, 'asset_info', asset.get_real_id())
 
         else:
-            #got an update from a service we don't know about
-            #probably should complain to the bridgehub about it failing
-            # to do its job
             logging.error("Do not know about io service {0}.".format(service)) 
 
     def io_service_offline(self, service):

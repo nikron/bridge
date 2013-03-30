@@ -27,6 +27,7 @@ class Asset(metaclass=Actions):
 
     def transition(self, category, state):
         """Change the asset state to state."""
+        logging.debug("Going to state ({0},{1})".format(category, state))
         return self.states.transition(category, state)
 
     def current_states(self):

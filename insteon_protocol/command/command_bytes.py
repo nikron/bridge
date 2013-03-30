@@ -2,7 +2,7 @@
 Constants for cmd1 and cmd2 bytes.
 """
 
-__all__ = ['ASSIGNTOALLLINKGROUP', 'TURNONFAST', 'TURNOFF']
+#__all__ = ['ASSIGNTOALLLINKGROUP', 'TURNONFAST', 'TURNOFF']
 
 class CMDS():
     def __init__(self, cmd1, cmd2=None):
@@ -17,7 +17,7 @@ class CMDS():
         return self.both == other.both
 
     def __cmp__(self, other):
-        return self.both.__cmp__(other)
+        return self.both.__cmp__(other.__both__)
 
     def __hash__(self):
         return hash(self.both)

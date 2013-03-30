@@ -40,7 +40,7 @@ class IOService(BridgeService):
 
     def update_model(self, real_id, update):
         """Send an upate to model, it will be decoded by an idiom."""
-        logging.debug("Updating model with {0}".format(repr(update)))
+        logging.debug("Updating model with {0}".format(update))
         self.remote_async_service_method('model', 'io_update', self.name, real_id, update)
 
     def create_fd(self, file_name):
