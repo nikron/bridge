@@ -44,8 +44,8 @@ class BlankAsset(Asset):
     know what it is.
     """
 
-    def __init__(self, name, backing):
-        super().__init__(name, None, backing) 
+    def __init__(self, real_id):
+        super().__init__("", None, Backing(real_id, "")) 
 
     def transition(self, category, state):
         self.failed_transistions.append((category, state))

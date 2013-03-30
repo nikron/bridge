@@ -6,6 +6,7 @@ import logging
 from bridge.services.io.service import IOService
 from insteon_protocol import insteon_im_protocol
 from insteon_protocol.command import im_commands
+from binascii import hexlify
 
 import serial
 
@@ -19,10 +20,10 @@ class InsteonIMService(IOService):
         if buf is not None:
             update = insteon_im_protocol.decode(buf)
 
-            if not issubclass(type(update), im_commands.IMInsteonCommand): 
+            if not issubclass(type(update), im_commands.IMInsteonCommand):
                 #If it's an im command, we should probably handle it
                 logging.debug("Updating model with {0}.".format(repr(update)))
-                self.update_model(update.from_address, update)
+                self.update_model(hexlify(update.from_address), update)
 
     def create_fd(self, filename):
         #try:

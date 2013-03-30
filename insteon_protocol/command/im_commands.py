@@ -2,6 +2,8 @@
 Commands used to communicate to the insteon IM.
 """
 from insteon_protocol.command.commands import InsteonCommand
+from insteon_protocol.command.command_bytes import *
+
 import bitstring
 
 class IMInsteonCommand(InsteonCommand):
@@ -45,9 +47,6 @@ class IMInsteonCommand(InsteonCommand):
 
         return cls(to, broad, group, ack, ext, curh, maxh, cmd1, cmd2, ext, okay)
 
-
-
-
 #Create a command where cmd1 and cmd2 are static, and our message flag is 0x0f
 def _create_direct_static_standard_command(name, cmd1, cmd2):
     def __init__(self, address):
@@ -77,27 +76,27 @@ def _create_interdevice_extended_command(name, cmd1, cmd2):
 #The long wall of standard insteon commands, names should be self explinatory
 
 #STANDARD COMMANDS
-AssignToAllLinkGroup =  _create_direct_variable_standard_command('AssignToAllLinkGroup', b'\x01')
+AssignToAllLinkGroup =  _create_direct_variable_standard_command('AssignToAllLinkGroup', ASSIGNTOALLLINKGROUP.cmd1)
 DeleteFromAllLinkGroup =  _create_direct_variable_standard_command('DeleteFromAllLinkGroup', b'\x02')
-ProductDataRequest = _create_direct_static_standard_command('ProductDataRequest', b'\x03', b'\x00') 
-FXUsernameRequest = _create_direct_static_standard_command('FXUsernameRequest', b'\x03', b'\x01') 
-DeviceTextStringRequest = _create_direct_static_standard_command('DeviceTextStringRequest', b'\x03', b'\x02') 
+ProductDataRequest = _create_direct_static_standard_command('ProductDataRequest', b'\x03', b'\x00')
+FXUsernameRequest = _create_direct_static_standard_command('FXUsernameRequest', b'\x03', b'\x01')
+DeviceTextStringRequest = _create_direct_static_standard_command('DeviceTextStringRequest', b'\x03', b'\x02')
 
 EnterLinkingMode =  _create_direct_variable_standard_command('EnterLinkingMode', b'\x09')
 EnterUnlinkingMode =  _create_direct_variable_standard_command('EnterUnlinkingMode', b'\x0A')
 
-GetINSTEONVersion = _create_direct_static_standard_command('GetINSTEONVersion', b'\x0D', b'\x00') 
+GetINSTEONVersion = _create_direct_static_standard_command('GetINSTEONVersion', b'\x0D', b'\x00')
 
-Ping = _create_direct_static_standard_command('Ping', b'\x0F', b'\x00') 
-IDRequest = _create_direct_static_standard_command('IDRequest', b'\x10', b'\x00') 
+Ping = _create_direct_static_standard_command('Ping', b'\x0F', b'\x00')
+IDRequest = _create_direct_static_standard_command('IDRequest', b'\x10', b'\x00')
 
-TurnOn = _create_direct_static_standard_command('TurnOn', b'\x11', b'\x00') 
-TurnOnLevel = _create_direct_variable_standard_command('TurnOnLevel', b'\x11') 
+TurnOn = _create_direct_static_standard_command('TurnOn', b'\x11', b'\x00')
+TurnOnLevel = _create_direct_variable_standard_command('TurnOnLevel', b'\x11')
 
-TurnOnFast= _create_direct_static_standard_command('TurnOnFast', b'\x12', b'\x00') 
-TurnOnFastLevel = _create_direct_variable_standard_command('TurnOnFastLevel', b'\x12',) 
+TurnOnFast= _create_direct_static_standard_command('TurnOnFast', TURNONFAST.cmd1, TURNONFAST.cmd2)
+TurnOnFastLevel = _create_direct_variable_standard_command('TurnOnFastLevel', TURNONFAST.cmd1)
 
-TurnOff = _create_direct_static_standard_command('TurnOff', b'\x13', b'\x00') 
+TurnOff = _create_direct_static_standard_command('TurnOff', TURNOFF.cmd1, TURNOFF.cmd2)
 TurnOffFast = _create_direct_static_standard_command('TurnOffFast', b'\x14', b'\x00')
 
 #EXTENDED COMMANDS

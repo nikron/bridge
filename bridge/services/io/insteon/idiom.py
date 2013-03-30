@@ -6,6 +6,8 @@ from bridge.services.model.idiom import ModelIdiom, IdiomError
 from bridge.services.model.assets import BlankAsset, OnOffAsset, OnOffBacking
 
 from insteon_protocol.command.commands import InsteonCommand
+from insteon_protocol.command.command_bytes import *
+from insteon_protocol.command.command_bytes_map import CommandBytesMap
 from insteon_protocol.utils import check_insteon_id
 
 
@@ -37,7 +39,7 @@ class InsteonIdiom(ModelIdiom):
                 raise IdiomError("Could not unhexlify `{0}`.".format(real_id))
 
             if not check_insteon_id(check):
-                raise IdiomError("Insteon ID's ore byte string of length 3.")
+                raise IdiomError("Insteon ID's are byte string of length 3.")
 
         try:
             create_func = PRODUCT_NAMES[product_name]
@@ -49,7 +51,7 @@ class InsteonIdiom(ModelIdiom):
         return asset
 
 
-    def guess_insteon_asset(self, command):
+    def guess_insteon_asset(self, real_id, command):
         """
         We know it is an insteon command, let's try to guess what kind of device
         it corresponds to.
@@ -61,19 +63,24 @@ class InsteonIdiom(ModelIdiom):
             logging.debug("Found a product description command with extended data: {0}.".format(
                 repr(command.extended_data)))
 
-        return (BlankAsset(command.from_address), False)
+        return (BlankAsset(real_id), False)
 
     def guess_asset(self, real_id, update):
         if issubclass(type(update), InsteonCommand):
-            return self.guess_insteon_asset(update)
+            return self.guess_insteon_asset(real_id, update)
         else:
             return (BlankAsset(real_id), False)
 
-
     def get_state(self, real_id, update):
-        pass
+        if issubclass(type(update), InsteonCommand):
+            return INSTCMDTOSTATE.get(update)
+
 
     def asset_product_names(self):
         return list(PRODUCT_NAMES.keys())
 
 PRODUCT_NAMES = { 'ApplianceLinc V2' : InsteonIdiom.create_onoff }
+
+INSTCMDTOSTATE = CommandBytesMap()
+INSTCMDTOSTATE.register(TURNONFAST, ('main', 'on'))
+INSTCMDTOSTATE.register(TURNOFF, ('main', 'off'))

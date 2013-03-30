@@ -96,7 +96,7 @@ class ModelService(BridgeService):
             uuid = self.model.get_uuid(service, real_id)
 
             if uuid is not None:
-                (category, state) = idiom.get_state(update)
+                (category, state) = idiom.get_state(real_id, update)
 
                 if not self.model.io_transition(uuid, category, state):
                     asset = idiom.guess_asset(real_id, update)
@@ -110,7 +110,7 @@ class ModelService(BridgeService):
                 self.model.add_asset(service, asset)
 
                 if not positive:
-                    self.remote_async_service_method(service, 'asset_info', asset.real_id)
+                    self.remote_async_service_method(service, 'asset_info', asset.get_real_id())
 
         else:
             #got an update from a service we don't know about
