@@ -6,6 +6,9 @@ import android.content.Context;
 import android.os.Bundle;
 
 import android.view.View;
+import android.view.Menu;
+import android.view.MenuInflater;
+
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.ExpandableListView;
@@ -34,5 +37,12 @@ public class BridgeActivity extends Activity
                 deviceAdapter.refresh();
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
     }
 }

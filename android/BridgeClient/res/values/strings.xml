@@ -3,4 +3,5 @@
     <string name="app_name">BridgeActivity</string>
     <string name="create_device">Create a Device</string>
     <string name="refresh_devices">Refresh Devices</string>
+    <string name="set_server">Set Server</string>
 </resources>
