@@ -19,17 +19,17 @@ class IOService(BridgeService):
 
         self.read_list = [self.hub_connection]
 
+    def run(self):
+        super().run()
+        self.spinning = True
+
         if self.io_fd is None:
             self.notify_not_connected()
 
         else:
             self.notify_connected()
+
             self.read_list.append(self.io_fd)
-
-
-    def run(self):
-        super().run()
-        self.spinning = True
 
         while self.spinning:
             (read, _, _) = select(self.read_list, [], [])
