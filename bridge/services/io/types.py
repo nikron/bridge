@@ -1,7 +1,6 @@
 """
 Types of io services, and their idioms.  Used for configuration.
 """
-import serial
 import logging
 from bridge.services.io.insteon.service import InsteonIMService
 from bridge.services.io.insteon.idiom import InsteonIdiom

@@ -14,9 +14,9 @@ class BridgeConfiguration():
     .model_driver -- Storage driver model should use for storage.
     .io_services  -- List of IO services bridge should create.
     """
-    def __init__(self, args):
-        self.file = args.configuration
-        self.stderr = args.stderr
+    def __init__(self, conf_file, stderr):
+        self.file = conf_file
+        self.stderr = stderr
 
         #let the ini have a keyword in the file section
         #of the model driver

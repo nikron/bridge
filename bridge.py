@@ -25,7 +25,7 @@ def main():
     default_config_file = os.path.join(os.path.abspath(this_dir), 'bridge.ini')
 
     opts = parse_opts(default_config_file)
-    config = BridgeConfiguration(opts)
+    config = BridgeConfiguration(opts.configuration, opts.stderr)
 
     hub = BridgeHub(config)
     hub.run()
