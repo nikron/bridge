@@ -54,10 +54,10 @@ def read_command(im):
         im_cmd = im.read(1)
 
         if im_cmd == b'\x62': #62 can be either 6 or 20 bytes left to read
-            control = im.read(4) #control bytes of insteon messages
-            flag = bitstring.BitString(control[3])
+            control = im.read(4) #control bytes of insteon messages (includes from adress)
+            flag = bitstring.BitString(control[3:4])
 
-            if flag[7] == True:
+            if flag[3]:
                 left = im.read(17) #16 bytes left for ed insteon
                 buf = rsp + im_cmd + control + left
             else:
@@ -68,7 +68,7 @@ def read_command(im):
             buf = im.read(to_read)
             buf = rsp + im_cmd + buf
     else:
-        logging.error("Didn't get a start of text for first byte, communications messed up.")
+        logging.debug("Didn't get a start of text for first byte, communications messed up.")
 
 
     logging.debug("Read buffer {0}".format(repr(buf)))
