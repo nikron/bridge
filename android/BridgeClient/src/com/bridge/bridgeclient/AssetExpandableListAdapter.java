@@ -23,7 +23,7 @@ class AssetExpandableListAdapter extends BaseExpandableListAdapter
     public AssetExpandableListAdapter(Context context) {
         super();
         this.context = context;
-        this.assets = new AssetList("http://192.168.0.198:8080");
+        this.assets = new AssetList("http://10.0.1.8:8080");
     }
 
 

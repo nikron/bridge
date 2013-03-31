@@ -29,10 +29,10 @@ class InsteonIMService(IOService):
                 self.update_model(hexlify(update.from_address).decode(), update)
 
     def create_fd(self, filename):
-        #try:
-        return serial.Serial(filename, 19200)
-        #except:
-        #    return None
+        try:
+            return serial.Serial(filename, 19200)
+        except serial.serialutil.SerialException:
+            return None
 
 
     def asset_info(self, real_id):
