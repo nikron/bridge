@@ -136,9 +136,9 @@ class HTTPAPIService(BridgeService):
 
     def create_asset(self):
         """Return a function that outputs JSON of asset `name`."""
-
         @accept_only_json
         def inner_create_asset():
+            """Attempt to create asset, must have submitted correct attributes in json form."""
             name = request.json['name']
             real_id = request.json['real id']
             asset_class = request.json['asset class']
@@ -160,9 +160,9 @@ class HTTPAPIService(BridgeService):
 
     def get_asset_action(self):
         """Return function that retrives info about action."""
-
         @accept_only_json
         def inner_get_asset_action(asset, action):
+            """Get all actions of asset, output in json."""
             asset_uuid = self.check_valid_uuid(asset)
 
             info = self.remote_block_service_method('model', 'get_asset_action_info', asset_uuid, action)
@@ -175,9 +175,10 @@ class HTTPAPIService(BridgeService):
         return inner_get_asset_action
 
     def post_action(self):
-
+        """Return function for performing an action."""
         @accept_only_json
         def inner_post_action(asset, action):
+            """Attempt to do action decribed by URL."""
             asset_uuid = self.check_valid_uuid(asset)
 
             msg = self.remote_block_service_method('model', 'perform_asset_action', asset_uuid, action)
@@ -191,6 +192,7 @@ class HTTPAPIService(BridgeService):
 
 
     def check_valid_uuid(self, asset):
+        """Check if uuid `asset` is valid, raise HTTPerror if it isn't."""
         try:
             asset_uuid = uuid.UUID(asset)
         except ValueError:

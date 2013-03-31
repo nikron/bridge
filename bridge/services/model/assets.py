@@ -12,7 +12,7 @@ class Backing():
         self.real_id = real_id
         self.product_name = product_name
 
-class Asset(metaclass=Actions):
+class Asset(metaclass = Actions):
     """
     Represent a physical device, such as a Keypadlinc.
     """
