@@ -12,11 +12,10 @@ class IdiomError(Exception):
     def __str__(self):
         return self.reason
 
-class ModelIdiom():
+class ModelIdiom(metaclass = ABCMeta):
     """
     ModelService uses this class to figure out what an IO update means.
     """
-    __metaclass__ = ABCMeta # this doesn't work, but pylint blows up if you do it properly
 
     def __init__(self, service):
         self.service = service
@@ -26,7 +25,7 @@ class ModelIdiom():
     @abstractmethod
     def create_asset(self, name, real_id, product_name):
         """
-        Create an asset with real_id
+        Create an asset with real_id.
         """
         pass
 

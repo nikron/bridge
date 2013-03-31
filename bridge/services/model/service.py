@@ -5,7 +5,7 @@ import logging
 from select import select
 
 from bridge.service import BridgeService
-from .storage import get_storage
+from bridge.services.model.storage import get_storage
 from bridge.services.model.idiom import IdiomError
 from bridge.services.model.actions import ActionError
 
@@ -34,16 +34,18 @@ class ModelService(BridgeService):
                 self.read_and_do_remote_request()
 
     def get_services(self):
+        """List of services."""
         return list(self.io_idioms.keys())
 
     def get_service_info(self, service):
+        """Seriziable info of service."""
         if service in self.io_idioms:
             return {
                     'name' : service,
                     'online' : self.io_idioms[service].online
                     }
 
-    def get_assets(self): 
+    def get_assets(self):
         """Return a list of uuids for assets."""
 
         return self.model.get_all_asset_uuids()
@@ -70,7 +72,7 @@ class ModelService(BridgeService):
         return (True, asset.uuid)
 
     def get_asset_info(self, uuid):
-        """Get a representation of an asset in an easy to understand dict.""" 
+        """Get a representation of an asset in an easy to understand dict (serializable)."""
         return self.model.serializable_asset_info(uuid)
 
     def get_asset_action_info(self, uuid, action):
@@ -78,10 +80,11 @@ class ModelService(BridgeService):
         return self.model.serializable_asset_action_info(uuid, action)
 
     def perform_asset_action(self, uuid, action):
+        """Perform an action on an asset."""
         try:
             self.model.perform_asset_action(uuid, action)
-        except ActionError as e:
-            return e.message
+        except ActionError as err:
+            return err.message
 
         return None
 
