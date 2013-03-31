@@ -18,7 +18,7 @@ def get_storage(file_name, driver):
         return drivers['none'](file_name)
 
 
-class ModelStorage():
+class ModelStorage(metaclass = ABCMeta):
     """Store and read model to a persistent state."""
 
     def __init__(self, file_name):
@@ -33,7 +33,6 @@ class ModelStorage():
     def write_model(self, model):
         """Write model to the file."""
         pass
-ModelStorage = ABCMeta(ModelStorage)
 
 class NoneStorage(ModelStorage):
     """Don't store the model."""
