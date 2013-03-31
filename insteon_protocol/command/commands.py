@@ -68,7 +68,7 @@ class InsteonCommand(Command):
         fro = buf[0:3]
         to = buf[3:6]
 
-        flag = bitstring.BitString(buf[6])
+        flag = bitstring.BitString(buf[6:7])
         broad = flag[0]
         group = flag[1]
         ack = flag[2]
@@ -84,4 +84,4 @@ class InsteonCommand(Command):
         return cls(fro, to, broad, group, ack, ext, curh, maxh, cmd1, cmd2, ext)
 
     def __str__(self):
-        return "InsteonCommand<from: {0}, to: {1}, CMD1: {2}, CMD2: {3}>".format(self.from_address, self.to_address, self.cmd1, self.cmd2)
+        return "{0}<from: {1}, to: {2}, CMD1: {3}, CMD2: {4}>".format(type(self).__name__, self.from_address, self.to_address, self.cmd1, self.cmd2)
