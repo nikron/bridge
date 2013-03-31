@@ -16,6 +16,7 @@ class Model():
         self.r2u[service] = {}
 
     def get_asset(self, uuid):
+        """Get asset of uuid"""
         return self.assets.get(uuid)
 
     def get_all_asset_uuids(self):
