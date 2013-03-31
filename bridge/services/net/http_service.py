@@ -75,8 +75,10 @@ class HTTPAPIService(BridgeService):
         return inner_bridge_information
 
     def services(self):
+        """Function that output list of services."""
         @accept_only_json
         def inner_services():
+            """Need to change the services to their url."""
             servs = self.remote_block_service_method('model', 'get_services')
             servs_url_list = []
 
@@ -88,8 +90,10 @@ class HTTPAPIService(BridgeService):
         return inner_services
 
     def service_info(self):
+        """Return a function that outputs JSON of service info."""
         @accept_only_json
         def inner_service_info(service):
+            """Get service info from model; this might need to change to hub."""
             service = self.remote_block_service_method('model', 'get_service_info', service)
 
             if service:
@@ -101,34 +105,35 @@ class HTTPAPIService(BridgeService):
 
     def assets(self):
         """Return a function that outputs JSON of the asset urls."""
-
         @accept_only_json
         def inner_assets():
+            """Return url list of assets in JSON."""
             asset_uuids = self.remote_block_service_method('model', 'get_assets')
             asset_url_list = []
 
-            for uuid in asset_uuids:
-                asset_url_list.append(request.url + "/" + str(uuid))
+            for asset_uuid in asset_uuids:
+                asset_url_list.append(request.url + "/" + str(asset_uuid))
 
             return { 'assets_urls' : asset_url_list }
 
         return inner_assets
 
     def get_asset_from_uuid(self):
-
+        """Return function that displays asset data."""
         @accept_only_json
         def inner_get_asset_from_uuid(asset):
+            """Return JSON of an asset, replace actions with their urls."""
             asset_uuid = self.check_valid_uuid(asset)
 
-            asset = self.remote_block_service_method('model','get_asset_info', asset_uuid)
+            asset_info = self.remote_block_service_method('model', 'get_asset_info', asset_uuid)
 
-            if asset:
-                asset['action_urls'] = []
-                for action in asset['actions']:
-                    asset['action_urls'].append(request.url + "/" + action)
-                del asset['actions']
+            if asset_info:
+                asset_info['action_urls'] = []
+                for action in asset_info['actions']:
+                    asset_info['action_urls'].append(request.url + "/" + action)
+                del asset_info['actions']
 
-                return asset
+                return asset_info
             else:
                 raise HTTPError(404, "Asset not found.")
 
@@ -139,10 +144,16 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_create_asset():
             """Attempt to create asset, must have submitted correct attributes in json form."""
-            name = request.json['name']
-            real_id = request.json['real id']
-            asset_class = request.json['asset class']
-            service = request.json['service']
+
+            try:
+                name = request.json['name']
+                real_id = request.json['real id']
+                asset_class = request.json['asset class']
+                service = request.json['service']
+            except KeyError:
+                raise HTTPError(400, "Bad arguments.")
+            except TypeError:
+                raise HTTPError(400, "Bad arguments.")
 
             if not type(name) == type(real_id) == type(asset_class) == type(service) == str:
                 raise HTTPError(400, "Asset attributes must be strings.")
@@ -159,7 +170,7 @@ class HTTPAPIService(BridgeService):
         return inner_create_asset
 
     def get_asset_action(self):
-        """Return function that retrives info about action."""
+        """Return function that retrieves info about action."""
         @accept_only_json
         def inner_get_asset_action(asset, action):
             """Get all actions of asset, output in json."""

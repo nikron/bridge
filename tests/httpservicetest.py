@@ -16,3 +16,6 @@ class TestHTTPService(unittest.TestCase):
 
     def test_valid_uuid(self):
         self.assertRaises(HTTPError, self.serv.check_valid_uuid, 'afadf')
+
+    def test_create_asset(self):
+        self.assertRaises(HTTPError, self.serv.create_asset())
