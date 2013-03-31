@@ -59,6 +59,7 @@ class Model():
         if asset:
             ser = {}
             ser['name'] = asset.name
+            ser['asset type'] = type(asset).__name__
             ser['uuid'] = str(asset.uuid)
             ser['real id'] = asset.get_real_id()
             ser['actions'] = get_actions(asset)

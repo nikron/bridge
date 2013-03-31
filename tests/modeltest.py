@@ -15,3 +15,10 @@ class TestModel(unittest.TestCase):
 
         self.assertIs(asset, self.asset)
         self.assertEqual(self.model.get_all_asset_names(), [""])
+
+    def test_serializable(self):
+        uuid = self.model.get_uuid('upb', 'blah')
+        info = self.model.serializable_asset_info(uuid)
+
+        self.assertEqual(info['asset type'], 'BlankAsset')
+        self.assertEqual(info['name'], '')
