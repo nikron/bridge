@@ -9,8 +9,8 @@ class TestIOConfig(unittest.TestCase):
     def test_create(self):
         io_service = self.io_config.create_service(None)
 
-        self.assertTrue(io_service.name == "insteon!1")
+        self.assertEquals(io_service.name, "insteon!1")
 
     def test_model(self):
         idiom = self.io_config.model_idiom()
-        self.assertTrue(type(idiom) == InsteonIdiom)
+        self.assertIsInstance(idiom, InsteonIdiom)

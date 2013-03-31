@@ -32,5 +32,5 @@ file name = /dev/ttyUSB0
         config = BridgeConfiguration(self.temp.name, False)
 
         self.assertFalse(config.stderr)
-        self.assertTrue(config.model_driver == 'none')
-        self.assertTrue(config.io_services == [('insteon', 'insteon','/dev/ttyUSB0')])
+        self.assertEqual(config.model_driver, 'none')
+        self.assertEqual(config.io_services, [('insteon', 'insteon','/dev/ttyUSB0')])
