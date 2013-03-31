@@ -10,6 +10,7 @@ def action(name):
     """Decorator that accepts name as pretty name for a method to be an action of
     its object."""
     def wrapper(func):
+        """The new function, set some attributes of an action function."""
         func.__isaction__ = True
         func.__pretty_name__ = name
         return func
@@ -37,24 +38,28 @@ def perform_action(obj, act, *args, **kwargs):
         raise ActionError("Incorrect arguments.")
 
 
-#maybe cache this information
-def get_action_information(obj, action):
-    action = _get_action_func(obj, action)
+def get_action_information(obj, act):
+    """Get metadata of an action."""
+    action_func = _get_action_func(obj, act)
     info = {}
-    info['name'] = action.__pretty_name__
-    info['arguments'] =  getargspec(action).args[1:] #to not include self.
+    info['name'] = action_func.__pretty_name__
+    info['arguments'] =  getargspec(action_func).args[1:] #to not include self.
 
     return info
 
 
 class ActionError(Exception):
+    """Simple error for actions."""
     def __init__(self, message):
         super().__init__()
         self.message = message
 
 
-#you ask why I'd do it this way, I say for fun
 class Actions(type):
+    """
+    Metaclass that makes designated functions of a class into special `action` functions,
+    essentially functions with more metadata.
+    """
     def __new__(mcls, names, bases, namespace):
         cls = super().__new__(mcls, names, bases, namespace)
 

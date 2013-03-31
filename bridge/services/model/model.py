@@ -1,3 +1,6 @@
+"""
+Model of real and virtual assets.
+"""
 import logging
 from bridge.services.model.actions import get_actions, perform_action, get_action_information, ActionError
 
@@ -9,7 +12,7 @@ class Model():
         self.r2u = {} #real id to uuid
         self.assets = {}
         self.asset_names = []
-        self.links = []
+        self.virtual_assets = [] #links will eventually be stored here
 
     def add_service(self, service):
         """Add an io service to the model."""
@@ -24,6 +27,7 @@ class Model():
         return list(self.assets.keys())
 
     def get_all_asset_names(self):
+        """Get all the pretty names of the assets."""
         return self.asset_names
 
     def get_uuid(self, service, real_id):
@@ -70,6 +74,7 @@ class Model():
             return None
 
     def serializable_asset_action_info(self, uuid, action):
+        """Get the information of actions of an asset in base python primitives."""
         asset = self.get_asset(uuid)
 
         if asset:

@@ -28,6 +28,7 @@ class BridgeService(Process):
         signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     def read_and_do_remote_request(self):
+        """Receive object from connection, and do it assuming tis a BridgeMessage."""
         msg = self.hub_connection.recv()
         self.do_remote_request(msg)
 

@@ -1,9 +1,13 @@
+"""
+Drivers for storing the model to persistent storage.
+"""
 from abc import ABCMeta, abstractmethod
-from .model import Model
+from bridge.services.model.model import Model
 
 import logging
 
 def get_storage(file_name, driver):
+    """Retrieve storage class based on string."""
     drivers = { 'none' : NoneStorage }
 
     try:
@@ -15,27 +19,31 @@ def get_storage(file_name, driver):
 
 
 class ModelStorage():
-    __metaclass__ =ABCMeta #temporary so pylint can scan file
+    """Store and read model to a persistent state."""
 
     def __init__(self, file_name):
-        self.fd = open(file_name, 'rw')
+        self.file_name = file_name
 
     @abstractmethod
     def read_saved_model(self):
+        """Read the save model from the file."""
         pass
 
     @abstractmethod
-    def write_model(self, model): 
+    def write_model(self, model):
+        """Write model to the file."""
         pass
+ModelStorage = ABCMeta(ModelStorage)
 
 class NoneStorage(ModelStorage):
+    """Don't store the model."""
     def __init__(self, file_name):
-        #don't open the file
         pass
 
     def read_saved_model(self):
-        return  Model()
+        """Create an empty model."""
+        return Model()
 
     def write_model(self, model):
-        #do nothing
+        """Don't save anything."""
         pass
