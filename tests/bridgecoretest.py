@@ -3,8 +3,9 @@ import tempfile
 import unittest
 
 from bridge.config import BridgeConfiguration
+from bridge.hub import BridgeHub
 
-class TestBridgeConfig(unittest.TestCase):
+class TestBridgeCore(unittest.TestCase):
 
     def setUp(self):
         self.temp = tempfile.NamedTemporaryFile()
@@ -27,10 +28,13 @@ protocol = insteon
 file name = /dev/ttyUSB0
 """)
         self.temp.flush()
+        self.config = BridgeConfiguration(self.temp.name, False)
 
     def test_config(self):
-        config = BridgeConfiguration(self.temp.name, False)
+        self.assertFalse(self.config.stderr)
+        self.assertEqual(self.config.model_driver, 'none')
+        self.assertEqual(self.config.io_services, [('insteon', 'insteon','/dev/ttyUSB0')])
 
-        self.assertFalse(config.stderr)
-        self.assertEqual(config.model_driver, 'none')
-        self.assertEqual(config.io_services, [('insteon', 'insteon','/dev/ttyUSB0')])
+    
+    def test_hub(self):
+        self.assertIsNotNone(BridgeHub(self.config))
