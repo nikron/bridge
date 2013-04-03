@@ -7,7 +7,7 @@ from bridge.services.model.assets import BlankAsset, OnOffAsset, OnOffBacking
 
 from insteon_protocol.command.commands import InsteonCommand
 from insteon_protocol.command.command_bytes import *
-from insteon_protocol.command.command_bytes_map import CommandBytesMap
+from insteon_protocol.command.command_bytes_util import CommandBytesMap
 from insteon_protocol.utils import check_insteon_id
 
 

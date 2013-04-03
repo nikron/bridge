@@ -13,7 +13,7 @@ def main():
     unittest.TextTestRunner(verbosity=2).run(suite)
     cov.stop()
     cov.save()
-    cov.html_report()
+    cov.report()
 
 
 if __name__ == "__main__":
