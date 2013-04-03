@@ -76,8 +76,8 @@ def _create_interdevice_extended_command(name, cmd1, cmd2):
 
 #STANDARD COMMANDS
 AssignToAllLinkGroup =  _create_direct_variable_standard_command('AssignToAllLinkGroup', ASSIGNTOALLLINKGROUP.cmd1)
-DeleteFromAllLinkGroup =  _create_direct_variable_standard_command('DeleteFromAllLinkGroup', b'\x02')
-ProductDataRequest = _create_direct_static_standard_command('ProductDataRequest', b'\x03', b'\x00')
+DeleteFromAllLinkGroup =  _create_direct_variable_standard_command('DeleteFromAllLinkGroup', DELETEFROMALLLINKGROUP.cmd1)
+ProductDataRequest = _create_direct_static_standard_command('ProductDataRequest', PRODUCTDATAREQUEST.cmd1, PRODUCTDATAREQUEST.cmd2)
 FXUsernameRequest = _create_direct_static_standard_command('FXUsernameRequest', b'\x03', b'\x01')
 DeviceTextStringRequest = _create_direct_static_standard_command('DeviceTextStringRequest', b'\x03', b'\x02')
 

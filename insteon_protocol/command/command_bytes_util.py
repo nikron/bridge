@@ -1,4 +1,20 @@
-from insteon_protocol.command.command_bytes import CMDS
+class CMDS():
+    def __init__(self, cmd1, cmd2=None):
+        self.cmd1 = cmd1
+        self.cmd2 = cmd2
+        if self.cmd2:
+            self.both = cmd1 + cmd2
+        else:
+            self.both = cmd1
+
+    def __eq__(self, other):
+        return self.both == other.both
+
+    def __cmp__(self, other):
+        return self.both.__cmp__(other.__both__)
+
+    def __hash__(self):
+        return hash(self.both)
 
 class CommandBytesMap():
     def __init__(self):
@@ -9,6 +25,7 @@ class CommandBytesMap():
         self.objs[cmd] = obj
 
     def get(self, insteon_command):
+        """Will need to eventually store things based on product name too."""
         cmd1 = insteon_command.cmd1
         cmd2 = insteon_command.cmd2
         cmd = CMDS(cmd1, cmd2)
