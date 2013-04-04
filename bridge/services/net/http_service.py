@@ -6,6 +6,7 @@ Don't blame me for globals, blame the library.
 from bridge.service import BridgeService
 from bottle import run, Bottle, request, response, HTTPError
 import mimeparse
+import json
 
 import uuid
 
@@ -41,6 +42,7 @@ class HTTPAPIService(BridgeService):
         self.addr = addr
         self.port = port
         self.bottle = Bottle(catchall=False)
+        self.json = json.JSONEncoder(sort_keys=True, indent=4)
 
         self.bottle.get('/', callback=self.bridge_information())
         self.bottle.get('/services', callback=self.services())
@@ -55,6 +57,9 @@ class HTTPAPIService(BridgeService):
     def run(self):
         run(app=self.bottle, host=self.addr, port=self.port, debug=True)
 
+    def encode(self, obj):
+        response.content_type = "applicaton/json"
+        return self.json.encode(obj)
 
     def bridge_information(self):
         """
@@ -70,7 +75,7 @@ class HTTPAPIService(BridgeService):
                     'assets_url' : base + 'assets/{asset uuid}'
                    }
 
-            return api
+            return self.encode(api)
 
         return inner_bridge_information
 
@@ -85,7 +90,7 @@ class HTTPAPIService(BridgeService):
             for serv in servs:
                 servs_url_list.append(request.url + "/" + serv)
 
-            return { 'services' : servs_url_list }
+            return self.encode({ 'services' : servs_url_list })
 
         return inner_services
 
@@ -97,7 +102,7 @@ class HTTPAPIService(BridgeService):
             service = self.remote_block_service_method('model', 'get_service_info', service)
 
             if service:
-                return service
+                return self.encode(service)
             else:
                 raise HTTPError(404, "Service not found.")
 
@@ -114,7 +119,7 @@ class HTTPAPIService(BridgeService):
             for asset_uuid in asset_uuids:
                 asset_url_list.append(request.url + "/" + str(asset_uuid))
 
-            return { 'assets_urls' : asset_url_list }
+            return self.encode({ 'assets_urls' : asset_url_list })
 
         return inner_assets
 
@@ -133,7 +138,8 @@ class HTTPAPIService(BridgeService):
                     asset_info['action_urls'].append(request.url + "/" + action)
                 del asset_info['actions']
 
-                return asset_info
+                return self.encode(asset_info)
+
             else:
                 raise HTTPError(404, "Asset not found.")
 
@@ -160,12 +166,13 @@ class HTTPAPIService(BridgeService):
 
             okay, msg = self.remote_block_service_method('model', 'create_asset', name, real_id, service, asset_class)
 
-            if not okay:
-                raise HTTPError(400, msg)
-            else:
+            if okay:
                 response.status = 201 #201 Created
                 response.set_header('Location', request.url + "/" + str(msg))
-                return { "message" : "Asset created." }
+                return self.encode({ "message" : "Asset created." })
+
+            else:
+                raise HTTPError(400, msg)
 
         return inner_create_asset
 
@@ -179,7 +186,8 @@ class HTTPAPIService(BridgeService):
             info = self.remote_block_service_method('model', 'get_asset_action_info', asset_uuid, action)
 
             if info:
-                return info
+                return self.encode(info)
+
             else:
                 raise HTTPError(404, "Action not found.")
 
@@ -194,10 +202,11 @@ class HTTPAPIService(BridgeService):
 
             msg = self.remote_block_service_method('model', 'perform_asset_action', asset_uuid, action)
 
-            if msg:
-                raise HTTPError(400, msg)
-            else:
+            if not msg:
                 return { "message" : "Action will be performed." }
+
+            else:
+                raise HTTPError(400, msg)
 
         return inner_post_action
 
