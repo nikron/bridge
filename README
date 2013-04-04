@@ -3,19 +3,24 @@ python3
 python3-serial
 python3-bitstring
 
+optional:
+python3-coverage
+
 to run:
 python3 bridge.py
+
+tests:
+python3 run_tests.py
 
 bridge --
     This is the process(s) to handle communications with the IM.  It is
     actually a collection of servies that communicate with each using
-    pipes.  There are 4 main services: model, io, network, and event.
+    pipes.  There are 4 main services: model, io, net, and event.
 
 insteon_protocol --
     The library that the bridge process uses to communicate with the device
 
-TODO: finish test suite
-TODO: finish io service
-TODO: create model service
+TODO: finish test suite --add better tests, the current tests are awful
 TODO: create event service
-TODO: create network service
+TODO: create user auth
+TODO: save state to disk
