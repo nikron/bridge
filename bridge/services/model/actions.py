@@ -33,7 +33,7 @@ def get_actions(obj):
 def perform_action(obj, act, *args, **kwargs):
     """Perform an action on obj."""
     try:
-        _get_action_func(obj, act)(*args, **kwargs)
+        return _get_action_func(obj, act)(*args, **kwargs)
     except TypeError:
         raise ActionError("Incorrect arguments.")
 

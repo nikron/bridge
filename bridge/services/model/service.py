@@ -18,14 +18,8 @@ class ModelService(BridgeService):
         self.model = self.storage.read_saved_model()
         self.io_idioms = io_idioms
 
-        for service in self.io_idioms:
-            def service_function(method, *args, **kwargs):
-                self.remote_async_service_method(service, method, *args, **kwargs)
-
-            self.io_idioms[service].charge(service_function)
-
     def run(self):
-        super().run()
+        self.mask_signals()
         self.spinning = True
 
         while self.spinning:
@@ -79,10 +73,11 @@ class ModelService(BridgeService):
         logging.debug("Getting action info {0} from {1}.".format(action, uuid))
         return self.model.serializable_asset_action_info(uuid, action)
 
-    def perform_asset_action(self, uuid, action):
+    def perform_asset_action(self, uuid, action, *args, **kwargs):
         """Perform an action on an asset."""
         try:
-            self.model.perform_asset_action(uuid, action)
+            service, targs, tkwargs = self.model.transform_action_to_method(uuid, action, *args, **kwargs)
+            self.remote_async_service_method(service, *targs, **tkwargs)
         except ActionError as err:
             return err.message
 

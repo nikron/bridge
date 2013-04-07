@@ -47,12 +47,12 @@ class Model():
         self.r2u[service][asset.get_real_id()] = asset.uuid
         self.asset_names.append(asset.name)
 
-    def perform_asset_action(self, uuid, action):
+    def transform_action_to_method(self, uuid, action, *args, **kwargs):
         """Perform an action on uuid asset."""
         asset = self.assets.get(uuid)
 
         if asset is not None:
-            perform_action(asset, action)
+            return perform_action(asset, action, *args, **kwargs)
         else:
             logging.error("{0} does not exist in this model, can not perform action {1}.".format(uuid, action))
 

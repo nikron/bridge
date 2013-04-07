@@ -54,10 +54,10 @@ class BlankAsset(Asset):
         return False
 
 class OnOffBacking(Backing):
-    def __init__(self, real_id, product_name, on_func, off_func):
+    def __init__(self, real_id, product_name, on, off):
         super().__init__(real_id, product_name)
-        self.on_func = on_func
-        self.off_func = off_func
+        self.on = on
+        self.off = off
 
 class OnOffAsset(Asset):
     """
@@ -72,14 +72,12 @@ class OnOffAsset(Asset):
 
     @action("Turn On")
     def turn_on(self):
-        self.backing.on_func()
         self.states.transition('main', 'unknown')
 
-        return True
+        return self.backing.on
 
     @action("Turn Off")
     def turn_off(self):
-        self.backing.off_func()
         self.states.transition('main', 'unknown')
 
-        return True
+        return self.backing.off

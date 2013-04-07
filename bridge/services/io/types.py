@@ -1,7 +1,6 @@
 """
 Types of io services, and their idioms.  Used for configuration.
 """
-import logging
 from bridge.services.io.insteon.service import InsteonIMService
 from bridge.services.io.insteon.idiom import InsteonIdiom
 
@@ -32,4 +31,5 @@ class IOConfig():
         """
         Create the idiom that the model needs to communicate with the service.
         """
+
         return self.idiom(self.name)

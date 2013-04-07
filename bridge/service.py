@@ -24,7 +24,8 @@ class BridgeService(Process):
         #while blocking, need to keep track of mesages
         self.blocked_messages = []
 
-    def run(self):
+    def mask_signals(self):
+        """Mask signals (nameley keyboard interrupts)"""
         signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     def read_and_do_remote_request(self):

@@ -20,7 +20,7 @@ class IOService(BridgeService):
         self.read_list = [self.hub_connection]
 
     def run(self):
-        super().run()
+        self.mask_signals()
         self.spinning = True
 
         if self.io_fd is None:

@@ -19,15 +19,19 @@ class TestAsset(unittest.TestCase):
             self.trans = True
 
 
-        trigger = Trigger('bums', 'bust', trigger)
+        trigger = Trigger('main', 'on', trigger)
         backing = OnOffBacking(1, "Test Asset", flip, floop)
 
         self.asset = OnOffAsset('hi', backing)
 
     def test_on(self):
-        perform_action(self.asset, 'turn_on')
+        perform_action(self.asset, 'turn_on')()
         self.assertTrue(self.flipped)
 
     def test_off(self):
-        perform_action(self.asset, 'turn_off')
+        perform_action(self.asset, 'turn_off')()
         self.assertTrue(self.flooped)
+
+    def test_trigger(self):
+        self.asset.transition('main', 'on')
+        self.assertTrue(self.trans)

@@ -19,7 +19,6 @@ class ModelIdiom(metaclass = ABCMeta):
 
     def __init__(self, service):
         self.service = service
-        self.service_function = None
         self.online = False
 
     @abstractmethod
@@ -53,10 +52,3 @@ class ModelIdiom(metaclass = ABCMeta):
         Return list of strings of accepted asset types.
         """
         pass
-
-    def charge(self, func):
-        """
-        Charge the idiom with a function that creates functions that
-        communicate with service.
-        """
-        self.service_function = func

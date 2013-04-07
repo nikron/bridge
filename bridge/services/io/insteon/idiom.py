@@ -23,13 +23,11 @@ class InsteonIdiom(ModelIdiom):
 
     def create_onoff(self, name, real_id, product_name):
         """Create the onoff assets."""
-        def turn_on():
-            self.service_function('turn_on', real_id)
+        on = (self.service, 'turn_on', real_id)
+        off = (self.service, 'turn_off', real_id)
 
-        def turn_off():
-            self.service_function('turn_off', real_id)
 
-        return OnOffAsset(name, OnOffBacking(real_id, product_name, turn_on, turn_off))
+        return OnOffAsset(name, OnOffBacking(real_id, product_name, on, off))
 
     def create_asset(self, name, real_id, product_name):
         if type(real_id) == str:
