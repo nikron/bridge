@@ -23,6 +23,7 @@ class TestAsset(unittest.TestCase):
         backing = OnOffBacking(1, "Test Asset", flip, floop)
 
         self.asset = OnOffAsset('hi', backing)
+        self.asset.add_trigger(trigger)
 
     def test_on(self):
         perform_action(self.asset, 'turn_on')()

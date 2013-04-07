@@ -30,7 +30,12 @@ class Asset(metaclass = Actions):
         logging.debug("Going to state ({0},{1})".format(category, state))
         return self.states.transition(category, state)
 
+    def add_trigger(self, trigger):
+        """Add trigger to on state change."""
+        self.states.add_trigger(trigger)
+
     def current_states(self):
+        """Get the current categories and states of this asset."""
         return self.states.current_states()
 
     def get_real_id(self):
