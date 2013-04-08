@@ -17,6 +17,7 @@ class ModelService(BridgeService):
         self.storage = get_storage(file_name, driver_name)
         self.model = self.storage.read_saved_model()
         self.io_idioms = io_idioms
+        self.dirty = False
 
     def run(self):
         self.mask_signals()
@@ -54,7 +55,6 @@ class ModelService(BridgeService):
         except KeyError:
             return (False, "Service `{0}` not valid.".format(service))
 
-
         try:
             asset = idiom.create_asset(name, real_id, product_name)
         except IdiomError as err:
@@ -62,6 +62,7 @@ class ModelService(BridgeService):
 
         self.model.add_asset(service, asset)
         logging.debug("Added asset {0}.".format(repr(asset)))
+        self.dirty = True
 
         return (True, asset.uuid)
 
@@ -111,6 +112,7 @@ class ModelService(BridgeService):
 
                 (asset, positive) = idiom.guess_asset(real_id, update)
                 self.model.add_asset(service, asset)
+                self.dirty = True
 
                 if not positive:
                     self.remote_async_service_method(service, 'asset_info', asset.get_real_id())
