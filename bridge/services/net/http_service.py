@@ -41,7 +41,7 @@ class HTTPAPIService(BridgeService):
 
         self.addr = addr
         self.port = port
-        self.bottle = Bottle(catchall=False)
+        self.bottle = Bottle(catchall=False, autojson=False)
         self.json = json.JSONEncoder(sort_keys=True, indent=4)
 
         self.bottle.get('/', callback=self.bridge_information())
@@ -59,7 +59,7 @@ class HTTPAPIService(BridgeService):
 
     def encode(self, obj):
         response.content_type = "applicaton/json"
-        return self.json.encode(obj)
+        return self.json.encode(obj).encode()
 
     def bridge_information(self):
         """
@@ -203,7 +203,7 @@ class HTTPAPIService(BridgeService):
             msg = self.remote_block_service_method('model', 'perform_asset_action', asset_uuid, action)
 
             if not msg:
-                return { "message" : "Action will be performed." }
+                return self.encode({ "message" : "Action will be performed." })
 
             else:
                 raise HTTPError(400, msg)
