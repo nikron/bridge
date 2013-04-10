@@ -2,15 +2,17 @@
 An asset is the internal representation of a device.
 """
 from bridge.services.model.states import States
-from bridge.services.model.actions import Actions, action
+from bridge.services.model.actions import Actions, action, get_actions
 import logging
 import uuid
 
 
 class Backing():
-    def __init__(self, real_id, product_name):
+    """Backing attributes of an Asset."""
+    def __init__(self, real_id, product_name, actuple):
         self.real_id = real_id
         self.product_name = product_name
+        self.actuple = actuple
 
 class Asset(metaclass = Actions):
     """
@@ -39,10 +41,25 @@ class Asset(metaclass = Actions):
         return self.states.current_states()
 
     def get_real_id(self):
+        """Real id of asset, (usually a str, definately a str for insteon (instead of bytes))"""
         return self.backing.real_id
 
     def get_product_name(self):
+        """The product name of the asset ie ApplianceLinc V2"""
         return self.backing.product_name
+
+    def serializable(self):
+        """Return a form of the class that is easy to serialize (with JSON etc)"""
+        ser = {}
+        ser['name'] = self.name
+        ser['asset type'] = type(self).__name__
+        ser['uuid'] = self.uuid
+        ser['real id'] = self.get_real_id()
+        ser['actions'] = get_actions(self)
+        ser['state'] =  self.states.current_states()
+
+        return ser
+
 
 class BlankAsset(Asset):
     """
@@ -51,18 +68,12 @@ class BlankAsset(Asset):
     """
 
     def __init__(self, real_id):
-        super().__init__("", States({}, []), Backing(real_id, ""))
+        super().__init__("", States({}, []), Backing(real_id, "", []))
 
     def transition(self, category, state):
         self.failed_transistions.append((category, state))
 
         return False
-
-class OnOffBacking(Backing):
-    def __init__(self, real_id, product_name, on, off):
-        super().__init__(real_id, product_name)
-        self.on = on
-        self.off = off
 
 class OnOffAsset(Asset):
     """
@@ -77,12 +88,14 @@ class OnOffAsset(Asset):
 
     @action("Turn On")
     def turn_on(self):
+        """Action to turn on the asset."""
         self.states.transition('main', 'unknown')
 
-        return self.backing.on
+        return self.backing.actuple[0]
 
     @action("Turn Off")
     def turn_off(self):
+        """Action to turn off the asset."""
         self.states.transition('main', 'unknown')
 
-        return self.backing.off
+        return self.backing.actuple[1]

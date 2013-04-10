@@ -2,7 +2,7 @@
 Model of real and virtual assets.
 """
 import logging
-from bridge.services.model.actions import get_actions, perform_action, get_action_information, ActionError
+from bridge.services.model.actions import perform_action, get_action_information, ActionError
 
 class Model():
     """
@@ -61,15 +61,7 @@ class Model():
         asset = self.get_asset(uuid)
 
         if asset:
-            ser = {}
-            ser['name'] = asset.name
-            ser['asset type'] = type(asset).__name__
-            ser['uuid'] = str(asset.uuid)
-            ser['real id'] = asset.get_real_id()
-            ser['actions'] = get_actions(asset)
-            ser['state'] =  asset.current_states()
-
-            return ser
+            return asset.serializable()
         else:
             return None
 

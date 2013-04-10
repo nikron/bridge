@@ -1,6 +1,6 @@
 import unittest
 from bridge.services.model.states import States, Trigger
-from bridge.services.model.assets import OnOffAsset, OnOffBacking
+from bridge.services.model.assets import OnOffAsset, Backing
 from bridge.services.model.actions import perform_action
 
 class TestAsset(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestAsset(unittest.TestCase):
 
 
         trigger = Trigger('main', 'on', trigger)
-        backing = OnOffBacking(1, "Test Asset", flip, floop)
+        backing = Backing(1, "Test Asset", [flip, floop])
 
         self.asset = OnOffAsset('hi', backing)
         self.asset.add_trigger(trigger)

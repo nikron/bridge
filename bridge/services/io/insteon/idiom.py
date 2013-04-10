@@ -3,7 +3,7 @@ Idiom for model to communicate with insteon io
 services.
 """
 from bridge.services.model.idiom import ModelIdiom, IdiomError
-from bridge.services.model.assets import BlankAsset, OnOffAsset, OnOffBacking
+from bridge.services.model.assets import BlankAsset, OnOffAsset, Backing
 
 from insteon_protocol.command.commands import InsteonCommand
 from insteon_protocol.command.command_bytes import *
@@ -27,7 +27,7 @@ class InsteonIdiom(ModelIdiom):
         off = (self.service, 'turn_off', real_id)
 
 
-        return OnOffAsset(name, OnOffBacking(real_id, product_name, on, off))
+        return OnOffAsset(name, Backing(real_id, product_name, [on, off]))
 
     def create_asset(self, name, real_id, product_name):
         if type(real_id) == str:
