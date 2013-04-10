@@ -89,20 +89,15 @@ class ModelService(BridgeService):
         Receive an io update, use the idiom to decipher it, and request
         more information about asset if nessary.
         """
-        idiom = self.io_idioms[service]
 
-        if idiom is not None:
+        idiom = self.io_idioms[service]
+        if idiom:
             uuid = self.model.get_uuid(service, real_id)
 
             if uuid:
                 try:
-                    (category, state) = idiom.get_state(real_id, update)
-                    logging.debug("Trying to transistion with ({0},{1})".format(category, state))
-
-                    if not self.model.io_transition(uuid, category, state):
-                        asset = idiom.guess_asset(real_id, update)
-
-                        self.model.transform(uuid, asset)
+                    logging.debug("Trying to transistion to update {0}".format(update))
+                    idiom.change_state(self.model.get_asset(uuid), update)
 
                 except IdiomError:
                     logging.debug("Couldn't process update {0}.".format(update))
@@ -118,7 +113,7 @@ class ModelService(BridgeService):
                     self.remote_async_service_method(service, 'asset_info', asset.get_real_id())
 
         else:
-            logging.error("Do not know about io service {0}.".format(service)) 
+            logging.error("Do not know about io service {0}.".format(service))
 
     def io_service_offline(self, service):
         self.io_idioms[service].online = False

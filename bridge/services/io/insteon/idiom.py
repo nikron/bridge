@@ -69,10 +69,11 @@ class InsteonIdiom(ModelIdiom):
         else:
             return (BlankAsset(real_id), False)
 
-    def get_state(self, real_id, update):
-        #if issubclass(type(update), InsteonCommand):
+    def change_state(self, asset, update):
         try:
-            return INSTCMDTOSTATE.get(update)
+            (category, status) = INSTCMDTOSTATE.get(update)
+            asset.transition(category, status)
+
         except KeyError:
             raise IdiomError("Update not implemented.")
 

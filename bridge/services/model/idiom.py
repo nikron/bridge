@@ -39,7 +39,7 @@ class ModelIdiom(metaclass = ABCMeta):
         pass
 
     @abstractmethod
-    def get_state(self, real_id, update):
+    def change_state(self, asset, update):
         """
         Get the state an asset should transition to if it is the
         correct asset.

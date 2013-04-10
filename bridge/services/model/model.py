@@ -85,15 +85,3 @@ class Model():
         else:
             logging.error("{0} does not exist in this model, can not get action {1}.".format(type(uuid), action))
             return None
-
-
-    def io_transition(self, uuid, category, state):
-        """
-        Attempt to change asset to state, return False if failed.
-        """
-        return self.assets[uuid].transition(category, state)
-
-    def transform(self, uuid, asset):
-        """Hard method where we transform an arbitrary asset into another
-        figure out how to do this"""
-        pass
