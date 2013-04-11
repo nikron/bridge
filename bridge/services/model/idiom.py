@@ -47,7 +47,7 @@ class ModelIdiom(metaclass = ABCMeta):
         pass
 
     @abstractmethod
-    def asset_product_names(self):
+    def product_names(self):
         """
         Return list of strings of accepted asset types.
         """

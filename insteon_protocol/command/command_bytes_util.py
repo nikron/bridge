@@ -4,8 +4,11 @@ class CMDS():
         self.cmd2 = cmd2
         if self.cmd2:
             self.both = cmd1 + cmd2
+            self.variable = True
+
         else:
             self.both = cmd1
+            self.variable = False
 
     def __eq__(self, other):
         return self.both == other.both
@@ -17,12 +20,18 @@ class CMDS():
         return hash(self.both)
 
 class CommandBytesMap():
-    def __init__(self):
-        #self.cmdbytes = {getattr(command_bytes, cmdstr) for cmdstr in command_bytes.__all__ if getattr(command_bytes, cmdstr).is_variable()}
+    def __init__(self, cmdbytes, call=True):
+        self.variable = {cmd for cmd in cmdbytes if cmd.variable}
+        self.static = {cmd for cmd in cmdbytes if not cmd.variable}
+
+        self.call = call
         self.objs = {}
 
     def register(self, cmd, obj):
-        self.objs[cmd] = obj
+        if cmd in self.variable or cmd in self.static:
+            self.objs[cmd] = obj
+
+        #maybe raise an error if it isn't
 
     def get(self, insteon_command):
         """Will need to eventually store things based on product name too."""
@@ -35,5 +44,9 @@ class CommandBytesMap():
             return obj
         else:
             cmd = CMDS(cmd1)
-            func = self.objs[cmd1]
-            return func(cmd2)
+            obj = self.objs[cmd1]
+
+            if self.call:
+                return obj(cmd2)
+            else:
+                return obj

@@ -7,7 +7,7 @@ from bridge.services.model.assets import BlankAsset, OnOffAsset, Backing
 
 from insteon_protocol.command.commands import InsteonCommand
 from insteon_protocol.command.command_bytes import *
-from insteon_protocol.command.command_bytes_util import CommandBytesMap
+from insteon_protocol.linc.lincs import LincMap
 from insteon_protocol.utils import check_insteon_id
 
 
@@ -40,7 +40,7 @@ class InsteonIdiom(ModelIdiom):
                 raise IdiomError("Insteon ID's are byte string of length 3.")
 
         try:
-            create_func = PRODUCT_NAMES[product_name]
+            create_func = LINCMAPPING.get(product_name)
         except AttributeError:
             raise IdiomError("Invalid asset class.")
 
@@ -71,18 +71,14 @@ class InsteonIdiom(ModelIdiom):
 
     def change_state(self, asset, update):
         try:
-            (category, status) = INSTCMDTOSTATE.get(update)
+            (category, status) = LINCMAPPING.get(asset.get_product_name(), update)
             asset.transition(category, status)
 
         except KeyError:
             raise IdiomError("Update not implemented.")
 
+    def product_names(self):
+        return LINCMAPPING.names()
 
-    def asset_product_names(self):
-        return list(PRODUCT_NAMES.keys())
-
-PRODUCT_NAMES = { 'ApplianceLinc V2' : InsteonIdiom.create_onoff }
-
-INSTCMDTOSTATE = CommandBytesMap()
-INSTCMDTOSTATE.register(TURNONFAST, ('main', 'on'))
-INSTCMDTOSTATE.register(TURNOFF, ('main', 'off'))
+LINCMAPPING = LincMap()
+LINCMAPPING.register('ApplianceLinc V2', InsteonIdiom.create_onoff, [(TURNONFAST, ('main', 'on')), (TURNOFF, ('main', 'off'))])
