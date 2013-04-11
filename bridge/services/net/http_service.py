@@ -100,7 +100,7 @@ class HTTPAPIService(BridgeService):
         def inner_service_info(service):
             """Get service info from model; this might need to change to hub."""
             service = self.remote_block_service_method('model', 'get_io_service_info', service)
-            self.transform_to_urls(service, key='assets',  newkey='asset_urls', prefix='/assets')
+            self.transform_to_urls(service, key='assets',  newkey='asset_urls', prefix='assets/')
 
             if service:
                 return self.encode(service)
@@ -131,7 +131,7 @@ class HTTPAPIService(BridgeService):
             asset_info = self.remote_block_service_method('model', 'get_asset_info', asset_uuid)
 
             if asset_info:
-                self.transform_to_urls(asset_info, key='uuid', newkey='url', prefix='/assets')
+                self.transform_to_urls(asset_info, key='uuid', newkey='url', prefix='assets/')
                 self.transform_to_urls(asset_info, key='actions', newkey='action_urls')
 
                 return self.encode(asset_info)
@@ -221,9 +221,12 @@ class HTTPAPIService(BridgeService):
         """Transform a list to one appended with the current request.url, or a dict item
         to another dict key."""
         if 'prefix' in kwargs:
-            prefix = request.urlparts[0] + request.urlparts[1] + kwargs['prefix'] + "/'"
+            prefix = request.urlparts[0] + request.urlparts[1] + kwargs['prefix']
         else:
-            prefix = request.url + "/"
+            prefix = request.url
+            if prefix[-1] != "/":
+                prefix = prefix + "/"
+
 
         if type(container) == dict:
             key = kwargs['key']

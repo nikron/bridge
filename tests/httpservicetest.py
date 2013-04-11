@@ -21,3 +21,6 @@ class TestHTTPService(unittest.TestCase):
 
     def test_create_asset(self):
         self.assertRaises(HTTPError, self.serv.create_asset())
+
+    def test_transform_to_urls(self):
+        self.assertEquals('http://127.0.0.1/boo', self.serv.transform_to_urls('boo'))
