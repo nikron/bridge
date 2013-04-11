@@ -41,7 +41,8 @@ class ModelService(BridgeService):
         if service in self.io_idioms:
             return {
                     'name' : service,
-                    'online' : self.io_idioms[service].online
+                    'online' : self.io_idioms[service].online,
+                    'assets' : self.model.get_service_asset_uuids(service)
                     }
 
     def get_assets(self):

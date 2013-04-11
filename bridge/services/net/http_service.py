@@ -10,9 +10,11 @@ import json
 
 import uuid
 
+JSON_MIME = 'application/json'
+
 def accept_only_json(func):
     """Raise an error if content type isn't json."""
-    acceptable = 'application/json'
+    acceptable = JSON_MIME
 
     def mime_okay(mimetype):
         """Checks if the mimetype is acceptable."""
@@ -27,7 +29,7 @@ def accept_only_json(func):
 
         elif request.method == 'POST':
             if not mime_okay(request.content_type):
-                raise HTTPError(415, "Only accepts applicaton/json.")
+                raise HTTPError(415, "Only accepts application/json.")
 
         return func(*args, **kwargs)
 
@@ -60,7 +62,7 @@ class HTTPAPIService(BridgeService):
     def encode(self, obj):
         """Encode a python primitive collection to json, and set
         response encoding to json."""
-        response.content_type = "applicaton/json"
+        response.content_type = JSON_MIME
         return self.json.encode(obj).encode()
 
     def bridge_information(self):
@@ -76,7 +78,7 @@ class HTTPAPIService(BridgeService):
             info['services_url'] =  base + 'services/{service}'
             info['assets_url'] =  base + 'assets/{asset uuid}'
 
-            return info
+            return self.encode(info)
 
         return inner_bridge_information
 
@@ -98,6 +100,7 @@ class HTTPAPIService(BridgeService):
         def inner_service_info(service):
             """Get service info from model; this might need to change to hub."""
             service = self.remote_block_service_method('model', 'get_io_service_info', service)
+            self.transform_to_urls(service, key='assets',  newkey='asset_urls', prefix='/assets')
 
             if service:
                 return self.encode(service)
@@ -123,12 +126,13 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_get_asset_from_uuid(asset):
             """Return JSON of an asset, replace actions with their urls."""
-            asset_uuid = self.check_valid_uuid(asset)
+            asset_uuid = self._check_valid_uuid(asset)
 
             asset_info = self.remote_block_service_method('model', 'get_asset_info', asset_uuid)
 
             if asset_info:
-                self.transform_to_urls(asset_info, 'actions', 'action_urls')
+                self.transform_to_urls(asset_info, key='uuid', newkey='url', prefix='/assets')
+                self.transform_to_urls(asset_info, key='actions', newkey='action_urls')
 
                 return self.encode(asset_info)
 
@@ -173,7 +177,7 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_get_asset_action(asset, action):
             """Get all actions of asset, output in json."""
-            asset_uuid = self.check_valid_uuid(asset)
+            asset_uuid = self._check_valid_uuid(asset)
 
             info = self.remote_block_service_method('model', 'get_asset_action_info', asset_uuid, action)
 
@@ -190,7 +194,7 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_post_action(asset, action):
             """Attempt to do action decribed by URL."""
-            asset_uuid = self.check_valid_uuid(asset)
+            asset_uuid = self._check_valid_uuid(asset)
 
             msg = self.remote_block_service_method('model', 'perform_asset_action', asset_uuid, action)
 
@@ -203,7 +207,8 @@ class HTTPAPIService(BridgeService):
         return inner_post_action
 
 
-    def check_valid_uuid(self, asset):
+    @staticmethod
+    def _check_valid_uuid(asset):
         """Check if uuid `asset` is valid, raise HTTPerror if it isn't."""
         try:
             asset_uuid = uuid.UUID(asset)
@@ -212,15 +217,30 @@ class HTTPAPIService(BridgeService):
 
         return asset_uuid
 
-    @staticmethod
-    def transform_to_urls(container, key=None, newkey=None):
+    def transform_to_urls(self, container, **kwargs):
         """Transform a list to one appended with the current request.url, or a dict item
         to another dict key."""
-        if key:
-            container[newkey] = [request.url + "/" + item for item in container[key]]
-            del container[key]
+        if 'prefix' in kwargs:
+            prefix = request.urlparts[0] + request.urlparts[1] + kwargs['prefix'] + "/'"
+        else:
+            prefix = request.url + "/"
+
+        if type(container) == dict:
+            key = kwargs['key']
+            if 'newkey' in kwargs:
+                newkey = kwargs['newkey']
+            else:
+                newkey = kwargs['newkey']
+
+            container[newkey] = self.transform_to_urls(container[key], **kwargs)
+
+            if newkey != key:
+                del container[key]
 
             return container
 
+        elif type(container) == list:
+            return [prefix + str(item) for item in container]
+        
         else:
-            return [request.url + "/" + item for item in container]
+            return prefix + str(container)
