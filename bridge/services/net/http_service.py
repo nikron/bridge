@@ -86,10 +86,7 @@ class HTTPAPIService(BridgeService):
         def inner_services():
             """Need to change the services to their url."""
             servs = self.remote_block_service_method('model', 'get_io_services')
-            servs_url_list = []
-
-            for serv in servs:
-                servs_url_list.append(request.url + "/" + serv)
+            servs_url_list = self.transform_to_urls(servs)
 
             return self.encode({ 'services' : servs_url_list })
 
@@ -115,12 +112,9 @@ class HTTPAPIService(BridgeService):
         def inner_assets():
             """Return url list of assets in JSON."""
             asset_uuids = self.remote_block_service_method('model', 'get_assets')
-            asset_url_list = []
+            asset_urls = self.transform_to_urls(asset_uuids)
 
-            for asset_uuid in asset_uuids:
-                asset_url_list.append(request.url + "/" + str(asset_uuid))
-
-            return self.encode({ 'assets_urls' : asset_url_list })
+            return self.encode({ 'assets_urls' : asset_urls })
 
         return inner_assets
 
@@ -134,10 +128,7 @@ class HTTPAPIService(BridgeService):
             asset_info = self.remote_block_service_method('model', 'get_asset_info', asset_uuid)
 
             if asset_info:
-                asset_info['action_urls'] = []
-                for action in asset_info['actions']:
-                    asset_info['action_urls'].append(request.url + "/" + action)
-                del asset_info['actions']
+                self.transform_to_urls(asset_info, 'actions', 'action_urls')
 
                 return self.encode(asset_info)
 
@@ -221,3 +212,15 @@ class HTTPAPIService(BridgeService):
 
         return asset_uuid
 
+    @staticmethod
+    def transform_to_urls(container, key=None, newkey=None):
+        """Transform a list to one appended with the current request.url, or a dict item
+        to another dict key."""
+        if key:
+            container[newkey] = [request.url + "/" + item for item in container[key]]
+            del container[key]
+
+            return container
+
+        else:
+            return [request.url + "/" + item for item in container]
