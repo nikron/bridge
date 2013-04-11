@@ -58,6 +58,8 @@ class HTTPAPIService(BridgeService):
         run(app=self.bottle, host=self.addr, port=self.port, debug=True)
 
     def encode(self, obj):
+        """Encode a python primitive collection to json, and set
+        response encoding to json."""
         response.content_type = "applicaton/json"
         return self.json.encode(obj).encode()
 
@@ -69,13 +71,12 @@ class HTTPAPIService(BridgeService):
         def inner_bridge_information():
             """Inner method."""
             base = request.url
+            info = self.remote_block_service_method('model', 'get_info')
 
-            api = {
-                    'services_url' : base + 'services/{service}',
-                    'assets_url' : base + 'assets/{asset uuid}'
-                   }
+            info['services_url'] =  base + 'services/{service}'
+            info['assets_url'] =  base + 'assets/{asset uuid}'
 
-            return self.encode(api)
+            return info
 
         return inner_bridge_information
 
@@ -84,7 +85,7 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_services():
             """Need to change the services to their url."""
-            servs = self.remote_block_service_method('model', 'get_services')
+            servs = self.remote_block_service_method('model', 'get_io_services')
             servs_url_list = []
 
             for serv in servs:
@@ -99,7 +100,7 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_service_info(service):
             """Get service info from model; this might need to change to hub."""
-            service = self.remote_block_service_method('model', 'get_service_info', service)
+            service = self.remote_block_service_method('model', 'get_io_service_info', service)
 
             if service:
                 return self.encode(service)

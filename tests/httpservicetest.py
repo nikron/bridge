@@ -1,6 +1,7 @@
 import unittest
 from multiprocessing import Pipe
 from bridge.services.net.http_service import HTTPAPIService
+from bridge.service import BridgeMessage
 from bottle import HTTPError
 
 class TestHTTPService(unittest.TestCase):
@@ -11,6 +12,7 @@ class TestHTTPService(unittest.TestCase):
         self.ours = ours
 
     def test_info(self):
+        self.ours.send(BridgeMessage('http_api', 'reply', None, None, None, {}))
         api = self.serv.bridge_information()()
         self.assertIsNotNone(api)
 

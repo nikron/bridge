@@ -28,11 +28,15 @@ class ModelService(BridgeService):
             if self.hub_connection in read:
                 self.read_and_do_remote_request()
 
-    def get_services(self):
+    def get_info(self):
+        """Summary of this service status."""
+        return { 'model saved' : not self.dirty }
+
+    def get_io_services(self):
         """List of services."""
         return list(self.io_idioms.keys())
 
-    def get_service_info(self, service):
+    def get_io_service_info(self, service):
         """Seriziable info of service."""
         if service in self.io_idioms:
             return {
