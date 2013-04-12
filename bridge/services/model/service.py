@@ -15,7 +15,7 @@ class ModelService(BridgeService):
         self.read_list = [self.hub_connection]
 
         self.storage = get_storage(file_name, driver_name)
-        self.model = self.storage.read_saved_model()
+        self.model = self.storage.read_model()
         self.io_idioms = io_idioms
         self.dirty = False
 
@@ -31,6 +31,14 @@ class ModelService(BridgeService):
     def get_info(self):
         """Summary of this service status."""
         return { 'model saved' : not self.dirty }
+
+    def save(self, file_name):
+        try:
+            ret = self.storage.write_model(self, file_name)
+            return ret, 'Hopefully successful.'
+
+        except AttributeError as ex:
+            return False, ex.args[0]
 
     def get_io_services(self):
         """List of services."""

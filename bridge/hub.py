@@ -54,7 +54,7 @@ class BridgeHub():
 
         #need to pass in the io services it is going to connect to
         #and the the storage driver name
-        service = ModelService(self.io_idioms, self.configuration.model_file, self.configuration.model_driver, its)
+        service = ModelService(self.io_idioms, self.configuration.model_dir(), self.configuration.model_driver, its)
 
         self.add_service(ours, service)
 

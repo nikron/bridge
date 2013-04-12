@@ -47,6 +47,7 @@ class HTTPAPIService(BridgeService):
         self.json = json.JSONEncoder(sort_keys=True, indent=4)
 
         self.bottle.get('/', callback=self.bridge_information())
+        self.bottle.post('/', callback=self.bridge_post())
         self.bottle.get('/services', callback=self.services())
         self.bottle.get('/services/<service>', callback=self.service_info())
         self.bottle.get('/assets', callback=self.assets())
@@ -81,6 +82,30 @@ class HTTPAPIService(BridgeService):
             return self.encode(info)
 
         return inner_bridge_information
+
+    def bridge_post(self):
+
+        @accept_only_json
+        def inner_bridge_post():
+            """Inner method."""
+            try:
+                file_name = request.json['save']
+            except KeyError:
+                raise HTTPError(400, "Bad arguments.")
+            except TypeError:
+                raise HTTPError(400, "Bad arguments.")
+
+            if not type(file_name) == str:
+                raise HTTPError(400, "File name must be str")
+
+            success, message = self.remote_block_service_method('model', 'save', file_name)
+
+            if success:
+                return self.encode({ 'message' : message })
+            else:
+                HTTPError(500, message)
+
+        return inner_bridge_post
 
     def services(self):
         """Function that output list of services."""

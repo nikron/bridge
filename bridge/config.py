@@ -22,7 +22,7 @@ class BridgeConfiguration():
         #of the model driver
         self.conf_dir = os.path.dirname(self.file)
 
-        self.model_file = ''
+        self.data_dir = ''
         self.model_driver = ''
         self.io_services = []
         self.log_file = ''
@@ -37,8 +37,8 @@ class BridgeConfiguration():
         config.read(self.file)
 
         self.log_file = config['general']['log'].format(this_dir=self.conf_dir)
+        self.data_dir = config['general']['dir'].format(this_dir=self.conf_dir)
 
-        self.model_file = config['model']['file'].format(this_dir=self.conf_dir)
         self.model_driver = config['model']['driver']
 
 
@@ -50,3 +50,5 @@ class BridgeConfiguration():
 
             self.io_services.append((name, protocol, file_name))
 
+    def model_dir(self):
+        return os.path.join(self.data_dir, 'model')

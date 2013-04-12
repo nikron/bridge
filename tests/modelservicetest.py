@@ -16,3 +16,5 @@ class TestModelService(unittest.TestCase):
         self.serv.io_service_online('idiom')
 
         self.assertTrue(self.serv.get_io_service_info('idiom')['online'])
+
+        self.serv.storage.remove_files()

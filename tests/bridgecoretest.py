@@ -13,10 +13,9 @@ class TestBridgeCore(unittest.TestCase):
 b"""[general]
 ;path name
 log = {this_dir}/bridge.log
+dir = {this_dir}/.bridge
 
 [model]
-;file the model stores its information in
-file = {this_dir}/.model
 driver = none
 
 [io]
@@ -35,6 +34,6 @@ file name = /dev/ttyUSB0
         self.assertEqual(self.config.model_driver, 'none')
         self.assertEqual(self.config.io_services, [('insteon', 'insteon','/dev/ttyUSB0')])
 
-    
+
     def test_hub(self):
         self.assertIsNotNone(BridgeHub(self.config))
