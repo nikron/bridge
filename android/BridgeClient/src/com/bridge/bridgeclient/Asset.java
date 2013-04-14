@@ -2,6 +2,7 @@ package com.bridge.bridgeclient;
 
 import java.util.Iterator;
 import java.io.IOException;
+import java.net.URI;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -17,9 +18,13 @@ class Asset
     private String[][] status;
     private Action[] actions;
 
-    public Asset (String url) throws JSONException, ClientProtocolException, IOException
+    public Asset(URI url) throws JSONException, ClientProtocolException, IOException
     {
-        String assetJSON = Utility.getURL(url);
+        this(Utility.getURL(url));
+    }
+
+    public Asset(String assetJSON) throws JSONException, ClientProtocolException, IOException
+    {
         JSONObject obj = new JSONObject(assetJSON);
 
         name = obj.getString("name");

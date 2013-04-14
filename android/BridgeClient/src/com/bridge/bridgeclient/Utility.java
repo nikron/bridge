@@ -17,11 +17,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 class Utility
 {
     private static HttpClient client = new DefaultHttpClient();
 
-    public static String getURL(String url) throws ClientProtocolException, IOException
+
+    public static String getURL(String url) throws URISyntaxException, ClientProtocolException, IOException
+    {
+        return getURL(new URI(url));
+    }
+
+    public static String getURL(URI url) throws ClientProtocolException, IOException
     {
         StringBuilder builder = new StringBuilder();
         HttpGet get = new HttpGet(url);

@@ -22,21 +22,6 @@ public class BridgeActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-
-        final Button create_device = (Button) findViewById(R.id.create_device);
-
-        final ExpandableListView devices = (ExpandableListView) findViewById(R.id.devices);
-        final AssetExpandableListAdapter deviceAdapter = new AssetExpandableListAdapter(this);
-        devices.setGroupIndicator(null);
-        devices.setAdapter(deviceAdapter);
-
-
-        final Button refreshDevices = (Button) findViewById(R.id.refresh);
-        refreshDevices.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                deviceAdapter.refresh();
-            }
-        });
     }
 
     @Override

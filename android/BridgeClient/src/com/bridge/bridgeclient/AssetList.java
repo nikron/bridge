@@ -1,6 +1,7 @@
 package com.bridge.bridgeclient;
 
 import java.util.ArrayList;
+import java.net.URI;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -10,27 +11,28 @@ import org.apache.http.client.ClientProtocolException;
 
 class AssetList
 {
-    String url;
+    URI url;
     ArrayList<Asset> assets;
 
-    public AssetList(String serverURL)
+    public AssetList()
     {
-        this.url = serverURL + "/assets";
+        this.url = null;
         assets = new ArrayList<Asset>();
-
     }
 
     public void refresh() throws JSONException, IOException, ClientProtocolException
     {
         assets.clear();
 
-        String assetURLs = Utility.getURL(url);
-        JSONObject obj = new JSONObject(assetURLs);
-        JSONArray urlArray = obj.getJSONArray("assets_urls");
+        if (url != null) {
+            String assetURLs = Utility.getURL(url);
+            JSONObject obj = new JSONObject(assetURLs);
+            JSONArray urlArray = obj.getJSONArray("assets_urls");
 
-        for (int i = 0; i < urlArray.length(); i++)
-        {
-            assets.add(new Asset(urlArray.getString(i)));
+            for (int i = 0; i < urlArray.length(); i++)
+            {
+                assets.add(new Asset(urlArray.getString(i)));
+            }
         }
     }
 
@@ -42,5 +44,10 @@ class AssetList
     public Asset get(int i)
     {
         return assets.get(i);
+    }
+
+    public void setURL(URI url)
+    {
+        this.url = url;
     }
 }
