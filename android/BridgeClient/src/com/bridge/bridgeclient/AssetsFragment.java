@@ -1,6 +1,7 @@
 package com.bridge.bridgeclient;
 
-import android.app.Fragment;
+import com.actionbarsherlock.app.SherlockFragment;
+
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,16 +13,15 @@ import android.widget.Toast;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-class AssetsFragment extends Fragment
+public class AssetsFragment extends SherlockFragment
 {
     String serverURL;
     AssetList assetList;
 
-    public AssetsFragment(String serverURL)
+    public AssetsFragment()
     {
         super();
-        this.serverURL = serverURL;
-
+        this.serverURL = null;
         this.assetList = new AssetList();
     }
 
