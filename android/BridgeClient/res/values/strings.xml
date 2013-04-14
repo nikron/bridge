@@ -3,6 +3,7 @@
     <string name="app_name">BridgeActivity</string>
     <string name="create_device">Create a Device</string>
     <string name="refresh_devices">Refresh Devices</string>
+    <string name="menu_pref">Preferences</string>
     <string name="pref_server_category">Server Information</string>
     <string name="pref_server">Server Address</string>
     <string name="pref_server_summary">Set address of the bridger server.</string>

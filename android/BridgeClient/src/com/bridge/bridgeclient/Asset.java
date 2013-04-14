@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.apache.http.client.ClientProtocolException;
+import java.net.URISyntaxException;
 
 class Asset
 {
@@ -18,12 +19,12 @@ class Asset
     private String[][] status;
     private Action[] actions;
 
-    public Asset(URI url) throws JSONException, ClientProtocolException, IOException
+    public Asset(URI url) throws JSONException, ClientProtocolException, IOException, URISyntaxException
     {
         this(Utility.getURL(url));
     }
 
-    public Asset(String assetJSON) throws JSONException, ClientProtocolException, IOException
+    public Asset(String assetJSON) throws JSONException, ClientProtocolException, IOException, URISyntaxException
     {
         JSONObject obj = new JSONObject(assetJSON);
 

@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import org.json.JSONException;
 import java.io.IOException;
 import org.apache.http.client.ClientProtocolException;
+import java.net.URISyntaxException;
 
 class AssetList
 {
@@ -20,7 +21,7 @@ class AssetList
         assets = new ArrayList<Asset>();
     }
 
-    public void refresh() throws JSONException, IOException, ClientProtocolException
+    public void refresh() throws JSONException, IOException, ClientProtocolException, URISyntaxException
     {
         assets.clear();
 

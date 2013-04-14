@@ -13,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import java.io.IOException;
 import org.apache.http.client.ClientProtocolException;
+import java.net.URISyntaxException;
 
 import java.net.URI;
 
@@ -108,6 +109,9 @@ class AssetExpandableListAdapter extends BaseExpandableListAdapter
             Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
             catch (IOException e)
+        {
+            Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch (URISyntaxException e)
         {
             Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
         }

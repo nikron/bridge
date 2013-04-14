@@ -24,7 +24,6 @@ class Utility
 {
     private static HttpClient client = new DefaultHttpClient();
 
-
     public static String getURL(String url) throws URISyntaxException, ClientProtocolException, IOException
     {
         return getURL(new URI(url));

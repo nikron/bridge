@@ -6,6 +6,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import org.apache.http.client.ClientProtocolException;
+import java.net.URISyntaxException;
 
 class Action
 {
@@ -13,7 +14,7 @@ class Action
     private String url;
     private String[] arguments;
 
-    public Action(String url) throws ClientProtocolException, IOException, JSONException
+    public Action(String url) throws ClientProtocolException, IOException, JSONException, URISyntaxException
     {
         this.url = url;
 

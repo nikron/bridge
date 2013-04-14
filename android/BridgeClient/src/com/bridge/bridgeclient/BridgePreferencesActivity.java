@@ -8,7 +8,8 @@ public class BridgePreferencesActivity extends SherlockPreferenceActivity
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
+        setTheme(R.style.Theme_Sherlock);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.preferences);
+        addPreferencesFromResource(R.xml.preferences);
     }
 }
