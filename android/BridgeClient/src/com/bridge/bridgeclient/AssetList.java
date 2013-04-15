@@ -15,9 +15,9 @@ class AssetList
     URI url;
     ArrayList<Asset> assets;
 
-    public AssetList()
+    public AssetList(URI url)
     {
-        this.url = null;
+        this.url = url;
         assets = new ArrayList<Asset>();
     }
 
@@ -32,7 +32,7 @@ class AssetList
 
             for (int i = 0; i < urlArray.length(); i++)
             {
-                assets.add(new Asset(urlArray.getString(i)));
+                assets.add(new Asset(new URI(urlArray.getString(i))));
             }
         }
     }
