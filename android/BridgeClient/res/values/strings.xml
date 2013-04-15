@@ -8,6 +8,10 @@
 
     <string name="pref_server_category">Server Information</string>
     <string name="pref_server">Server Address</string>
-    <string name="pref_server_summary">Set address of the bridger server.</string>
+    <string name="pref_server_summary">Set address of the bridge server.</string>
     <string name="pref_port">Server Port</string>
+
+    <string name="pref_user_category">User Information</string>
+    <string name="pref_user">Username</string>
+    <string name="pref_password">Password</string>
 </resources>

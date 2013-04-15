@@ -13,4 +13,14 @@
             android:defaultValue="8080"
             android:numeric="integer" />
     </PreferenceCategory>
+    <PreferenceCategory
+        android:title="@string/pref_user_category">
+        <EditTextPreference
+            android:key="pref_user"
+            android:title="@string/pref_user" />
+        <EditTextPreference
+            android:key="pref_password"
+            android:title="@string/pref_password"
+            android:inputType="textPassword" />
+    </PreferenceCategory>
 </PreferenceScreen>
