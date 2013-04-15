@@ -2,7 +2,9 @@ import unittest
 from multiprocessing import Pipe
 from bridge.services.net.http_service import HTTPAPIService
 from bridge.service import BridgeMessage
-from bottle import HTTPError
+from bottle import HTTPError, response
+
+import uuid
 
 class TestHTTPService(unittest.TestCase):
     def setUp(self):
@@ -24,3 +26,9 @@ class TestHTTPService(unittest.TestCase):
 
     def test_transform_to_urls(self):
         self.assertEquals('http://127.0.0.1/boo', self.serv.transform_to_urls('boo'))
+
+    def test_delete_asset_by_uuid(self):
+        self.ours.send(BridgeMessage('http_api', 'reply', None, None, None, True))
+        self.serv.delete_asset_by_uuid()(str(uuid.uuid1()))
+
+        self.assertEquals(response.status, '204 No Content')

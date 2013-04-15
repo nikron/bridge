@@ -59,6 +59,8 @@ class Model():
         del self.assets[asset.uuid]
         self.asset_names.remove(asset.name)
 
+        return True
+
     def transform_action_to_method(self, uuid, action, *args, **kwargs):
         """Perform an action on uuid asset."""
         asset = self.assets.get(uuid)
