@@ -130,9 +130,8 @@ class SumExpression(Expression):
 #
 
 class ControlAssetAction(Action):
-    """Implements an action type that initiates commitment of some value to an
-       attribute of an asset, providing a StatusContext value for a later
-       suspend operation."""
+    """Implements an action type that executes a control command on an asset,
+       providing a StatusContext value for a later suspend/unwrap operation."""
     
     def __init__(self, asset, attr, rhs, stlabel):
         self.asset = asset
@@ -158,22 +157,24 @@ class ConditionalAction(Action):
     """Implements an action type that conditionally executes its body
        contingent on the value of a condition (in other words, an if-block)."""
     
-    def __init__(self, condition, body):
+    def __init__(self, condition, thenaction, elseaction):
         self.condition = condition
-        self.body = body
+        self.thenaction = thenaction
+        self.elseaction = elseaction
     
     def execute(self, ctx):
         # TODO: Evaluate condition and execute body if true
         pass
 
-class InterrogateAction(Action):
+class QueryAttributeAction(Action):
     """Implements an action type that initiates interrogation of some attribute
        of an asset, providing a StatusContext for a later suspend/unwrap
        operation."""
-    def __init__(self, asset, attr, stlabel):
+    def __init__(self, asset, attr, stlabel, timeout):
         self.asset = asset
         self.attr = attr
         self.stlabel = stlabel
+        self.timeout = timeout
         
     def execute(self, ctx):
         # TODO: Interrogate attr on asset and place StatusContext in stlabel
@@ -200,4 +201,19 @@ class SuspendAction(Action):
     
     def execute(self, ctx):
         # TODO: Stall until all target control jobs have completed/failed
+        pass
+
+class UpdateAttributeAction(Action):
+    """Implements an action type that initiates commitment of some value to an
+       attribute of an asset, providing a StatusContext value for a later
+       suspend operation."""
+    
+    def __init__(self, asset, attr, rhs, stlabel):
+        self.asset = asset
+        self.attr = attr
+        self.rhs = rhs
+        self.stlabel = stlabel
+    
+    def execute(self, ctx):
+        # TODO: Set attr on asset to rhs and place StatusContext in stlabel
         pass
