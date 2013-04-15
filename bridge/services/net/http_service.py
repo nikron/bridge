@@ -156,8 +156,9 @@ class HTTPAPIService(BridgeService):
             asset_info = self.remote_block_service_method('model', 'get_asset_info', asset_uuid)
 
             if asset_info:
-                self.transform_to_urls(asset_info, key='uuid', newkey='url', prefix='assets/')
+                self.transform_to_urls(asset_info, key='uuid', newkey='url', prefix='assets/', delete=False)
                 self.transform_to_urls(asset_info, key='actions', newkey='action_urls')
+                asset_info['uuid'] = str(asset_info['uuid'])
 
                 return self.encode(asset_info)
 
@@ -264,7 +265,10 @@ class HTTPAPIService(BridgeService):
             container[newkey] = self.transform_to_urls(container[key], **kwargs)
 
             if newkey != key:
-                del container[key]
+                if 'delete' in kwargs and kwargs['delete']:
+                    del container[key]
+                elif not 'delete' in kwargs:
+                    del container[key]
 
             return container
 
