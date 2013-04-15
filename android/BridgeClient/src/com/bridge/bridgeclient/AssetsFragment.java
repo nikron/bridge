@@ -66,7 +66,7 @@ public class AssetsFragment extends SherlockFragment
                 refresh();
                 return true;
             default:
-                return false;
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -80,7 +80,8 @@ public class AssetsFragment extends SherlockFragment
         String port = sharedPref.getString("pref_port", "8080");
         URI url;
 
-        try {
+        try
+        {
             url = new URI(server + ":" + port + "/assets");
             this.assetList.setURL(url);
         }

@@ -96,8 +96,8 @@ class AssetExpandableListAdapter extends BaseExpandableListAdapter
 
     public void refresh()
     {
-        try {
-
+        try
+        {
             assets.refresh();
         }
             catch (JSONException e)
@@ -111,7 +111,8 @@ class AssetExpandableListAdapter extends BaseExpandableListAdapter
             catch (IOException e)
         {
             Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
-        } catch (URISyntaxException e)
+        }
+            catch (URISyntaxException e)
         {
             Toast.makeText(context, e.getMessage(), Toast.LENGTH_SHORT).show();
         }

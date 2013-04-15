@@ -16,20 +16,29 @@ public class BridgeActivity extends SherlockFragmentActivity
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
-        setTheme(R.style.Theme_Sherlock);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         MenuInflater inflater = getSupportMenuInflater();
         inflater.inflate(R.menu.settings, menu);
         return true;
     }
 
-    public boolean launchPreferences(MenuItem menu) {
-        startActivity(new Intent(this, BridgePreferencesActivity.class));
-        return true;
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        switch (item.getItemId())
+        {
+            case R.id.menu_pref:
+                startActivity(new Intent(this, BridgePreferencesActivity.class));
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }
