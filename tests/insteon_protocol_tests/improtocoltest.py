@@ -1,7 +1,7 @@
 import io
 import unittest
 
-from insteon_protocol.insteon_im_protocol import read_command
+from insteon_protocol.insteon_im_protocol import read_command, decode
 
 class TestIMProtocol(unittest.TestCase):
     def setUp(self):
@@ -20,3 +20,10 @@ class TestIMProtocol(unittest.TestCase):
         self.assertEquals(self.cmd3, buf)
         buf = read_command(self.tmp)
         self.assertIsNone(buf)
+
+
+    def test_decode(self):
+       buf = b'asdfasdf'
+       self.assertIsNone(decode(buf))
+
+       self.assertIsNotNone(decode(self.cmd1))
