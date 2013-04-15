@@ -73,11 +73,14 @@ class ModelService(BridgeService):
         except IdiomError as err:
             return (False, err.reason)
 
-        self.model.add_asset(service, asset)
+        self.model.add_asset(asset)
         logging.debug("Added asset {0}.".format(repr(asset)))
         self.dirty = True
 
         return (True, asset.uuid)
+
+    def delete_asset(self, uuid):
+        return self.model.remove_asset(uuid)
 
     def get_asset_info(self, uuid):
         """Get a representation of an asset in an easy to understand dict (serializable)."""

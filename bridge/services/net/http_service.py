@@ -51,7 +51,8 @@ class HTTPAPIService(BridgeService):
         self.bottle.get('/services', callback=self.services())
         self.bottle.get('/services/<service>', callback=self.service_info())
         self.bottle.get('/assets', callback=self.assets())
-        self.bottle.get('/assets/<asset>', callback=self.get_asset_from_uuid())
+        self.bottle.get('/assets/<asset>', callback=self.get_asset_by_uuid())
+        self.bottle.delete('/assets/<asset>', callback=self.delete_asset_by_uuid())
         self.bottle.post('/assets/<asset>/<action>', callback=self.post_action())
         self.bottle.get('/assets/<asset>/<action>', callback=self.get_asset_action())
         self.bottle.post('/assets', callback=self.create_asset())
@@ -146,12 +147,27 @@ class HTTPAPIService(BridgeService):
 
         return inner_assets
 
-    def get_asset_from_uuid(self):
+    def delete_asset_by_uuid(self):
+        @accept_only_json
+        def inner_delete_asset_by_uuid(asset):
+            asset_uuid = self._make_uuid(asset)
+
+            success = self.remote_block_service_method('model', 'delete_asset', asset_uuid)
+
+            if success:
+                response.status = 204
+                return None
+            else:
+                HTTPError(404, "Asset not found.")
+
+        return inner_delete_asset_by_uuid
+
+    def get_asset_by_uuid(self):
         """Return function that displays asset data."""
         @accept_only_json
-        def inner_get_asset_from_uuid(asset):
+        def inner_get_asset_by_uuid(asset):
             """Return JSON of an asset, replace actions with their urls."""
-            asset_uuid = self._check_valid_uuid(asset)
+            asset_uuid = self._make_uuid(asset)
 
             asset_info = self.remote_block_service_method('model', 'get_asset_info', asset_uuid)
 
@@ -165,7 +181,7 @@ class HTTPAPIService(BridgeService):
             else:
                 raise HTTPError(404, "Asset not found.")
 
-        return inner_get_asset_from_uuid
+        return inner_get_asset_by_uuid
 
     def create_asset(self):
         """Return a function that outputs JSON of asset `name`."""
@@ -203,7 +219,7 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_get_asset_action(asset, action):
             """Get all actions of asset, output in json."""
-            asset_uuid = self._check_valid_uuid(asset)
+            asset_uuid = self._make_uuid(asset)
 
             info = self.remote_block_service_method('model', 'get_asset_action_info', asset_uuid, action)
 
@@ -220,7 +236,7 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_post_action(asset, action):
             """Attempt to do action decribed by URL."""
-            asset_uuid = self._check_valid_uuid(asset)
+            asset_uuid = self._make_uuid(asset)
 
             msg = self.remote_block_service_method('model', 'perform_asset_action', asset_uuid, action)
 
@@ -232,9 +248,8 @@ class HTTPAPIService(BridgeService):
 
         return inner_post_action
 
-
     @staticmethod
-    def _check_valid_uuid(asset):
+    def _make_uuid(asset):
         """Check if uuid `asset` is valid, raise HTTPerror if it isn't."""
         try:
             asset_uuid = uuid.UUID(asset)

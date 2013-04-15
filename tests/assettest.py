@@ -22,7 +22,7 @@ class TestAsset(unittest.TestCase):
         trigger = Trigger('main', 'on', trigger)
         backing = Backing(1, "Test Asset", [flip, floop])
 
-        self.asset = OnOffAsset('hi', backing)
+        self.asset = OnOffAsset('hi', 'null', backing)
         self.asset.add_trigger(trigger)
 
     def test_on(self):

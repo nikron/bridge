@@ -27,7 +27,7 @@ class InsteonIdiom(ModelIdiom):
         off = (self.service, 'turn_off', real_id)
 
 
-        return OnOffAsset(name, Backing(real_id, product_name, [on, off]))
+        return OnOffAsset(name, self.service, Backing(real_id, product_name, [on, off]))
 
     def create_asset(self, name, real_id, product_name):
         if type(real_id) == str:
@@ -67,7 +67,7 @@ class InsteonIdiom(ModelIdiom):
         if issubclass(type(update), InsteonCommand):
             return self.guess_insteon_asset(real_id, update)
         else:
-            return (BlankAsset(real_id), False)
+            return (BlankAsset(real_id, self.service), False)
 
     def change_state(self, asset, update):
         try:

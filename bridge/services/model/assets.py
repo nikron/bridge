@@ -19,9 +19,10 @@ class Asset(metaclass = Actions):
     Represent a physical device, such as a Keypadlinc.
     """
 
-    def __init__(self, name, states, backing):
+    def __init__(self, name, service, states, backing):
         self.states = states
         self.name = name
+        self.service = service
         self.backing = backing
 
         self.uuid = uuid.uuid1()
@@ -67,8 +68,8 @@ class BlankAsset(Asset):
     know what it is.
     """
 
-    def __init__(self, real_id):
-        super().__init__("", States({}, []), Backing(real_id, "", []))
+    def __init__(self, real_id, service):
+        super().__init__("", service, States({}, []), Backing(real_id, "", []))
 
     def transition(self, category, state):
         self.failed_transistions.append((category, state))
@@ -82,8 +83,8 @@ class OnOffAsset(Asset):
 
     on_off_states = States({'main' : {'unknown', 'pending on', 'pending off', 'off', 'on'}}, [])
 
-    def __init__(self, name, backing):
-        super().__init__(name, self.on_off_states, backing)
+    def __init__(self, name, service, backing):
+        super().__init__(name, service, self.on_off_states, backing)
         self.on_off_states.sudden('main', 'unknown')
 
     @action("Turn On")

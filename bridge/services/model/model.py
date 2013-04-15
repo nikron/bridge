@@ -40,15 +40,24 @@ class Model():
 
         return None
 
-    def add_asset(self, service, asset):
+    def add_asset(self, asset):
         """Add an asset to the model."""
         self.assets[asset.uuid] = asset
 
-        if service not in self.r2u:
-            self.add_service(service)
+        if asset.service not in self.r2u:
+            self.add_service(asset.service)
 
-        self.r2u[service][asset.get_real_id()] = asset.uuid
+        self.r2u[asset.service][asset.get_real_id()] = asset.uuid
         self.asset_names.append(asset.name)
+
+    def remove_asset(self, uuid):
+        asset = self.get_asset(uuid)
+        if not asset:
+            return False
+
+        del self.r2u[asset.service][asset.get_real_id()]
+        del self.assets[asset.uuid]
+        self.asset_names.remove(asset.name)
 
     def transform_action_to_method(self, uuid, action, *args, **kwargs):
         """Perform an action on uuid asset."""

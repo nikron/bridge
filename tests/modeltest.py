@@ -6,8 +6,8 @@ class TestModel(unittest.TestCase):
     def setUp(self):
         self.model = Model()
         self.model.add_service('upb')
-        self.asset = BlankAsset('blah')
-        self.model.add_asset('upb', self.asset)
+        self.asset = BlankAsset('blah', 'upb')
+        self.model.add_asset(self.asset)
 
     def test_get(self):
         uuid = self.model.get_uuid('upb', 'blah')
