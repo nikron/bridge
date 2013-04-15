@@ -67,6 +67,7 @@ class Model():
             return perform_action(asset, action, *args, **kwargs)
         else:
             logging.error("{0} does not exist in this model, can not perform action {1}.".format(uuid, action))
+            raise KeyError
 
     def serializable_asset_info(self, uuid):
         """Return an asset in basic python primitives."""

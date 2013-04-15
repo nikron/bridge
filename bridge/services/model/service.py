@@ -97,6 +97,8 @@ class ModelService(BridgeService):
             self.remote_async_service_method(service, *targs, **tkwargs)
         except ActionError as err:
             return err.message
+        except KeyError:
+            return "Asset not found."
 
         return None
 
