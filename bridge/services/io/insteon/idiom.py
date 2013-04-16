@@ -2,6 +2,7 @@
 Idiom for model to communicate with insteon io
 services.
 """
+from bridge.services.model import create_actuple
 from bridge.services.model.idiom import ModelIdiom, IdiomError
 from bridge.services.model.assets import BlankAsset, OnOffAsset, Backing
 
@@ -23,9 +24,8 @@ class InsteonIdiom(ModelIdiom):
 
     def create_onoff(self, name, real_id, product_name):
         """Create the onoff assets."""
-        on = (self.service, 'turn_on', real_id)
-        off = (self.service, 'turn_off', real_id)
-
+        on = create_actuple(self.service, 'turn_on', real_id)
+        off = create_actuple(self.service, 'turn_off', real_id)
 
         return OnOffAsset(name, self.service, Backing(real_id, product_name, [on, off]))
 

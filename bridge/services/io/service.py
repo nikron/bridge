@@ -6,7 +6,6 @@ from select import select
 
 from bridge.service import BridgeService
 
-#pylint: disable=R0921
 class IOService(BridgeService):
     """
     An abstraction of a BridgeService, meant to run IO
@@ -15,9 +14,10 @@ class IOService(BridgeService):
 
     def __init__(self, name, file_name, hub_connection):
         super().__init__(name, hub_connection)
-        self.io_fd = self.create_fd(file_name)
+        self.io_fd = self._create_fd(file_name)
 
         self.read_list = [self.hub_connection]
+        self.pending = []
 
     def run(self):
         self.mask_signals()
@@ -43,8 +43,15 @@ class IOService(BridgeService):
         logging.debug("Updating model with {0}".format(update))
         self.remote_async_service_method('model', 'io_update', self.name, real_id, update)
 
-    def create_fd(self, file_name):
+    def _create_fd(self, file_name):
         raise NotImplementedError
+
+    def write_io(self, buf):
+        logging.debug("Writing command {0}.".format(str(buf)))
+        if self.io_fd:
+            self.io_fd.write(buf)
+        else:
+            self.pending.append(buf)
 
     def read_io(self):
         """Read the interface, each IO service must implmeenet this."""

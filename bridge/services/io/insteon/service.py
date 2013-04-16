@@ -28,26 +28,23 @@ class InsteonIMService(IOService):
                 #If it's an im command, we should probably handle it
                 self.update_model(hexlify(update.from_address).decode(), update)
 
-    def create_fd(self, filename):
+    def _create_fd(self, filename):
         try:
             return serial.Serial(filename, 19200)
         except serial.serialutil.SerialException:
             return None
 
-
+    @unhex
     def asset_info(self, real_id):
         cmd = im_commands.ProductDataRequest(real_id).encode()
-        logging.debug("Writing command {0}.".format(repr(cmd)))
-        self.io_fd.write(cmd)
+        self.write_io(cmd)
 
     @unhex
     def turn_off(self, real_id):
         cmd = im_commands.TurnOff(real_id).encode()
-        logging.debug("Writing command {0}.".format(repr(cmd)))
-        self.io_fd.write(cmd)
+        self.write_io(cmd)
 
     @unhex
     def turn_on(self, real_id):
         cmd = im_commands.TurnOnFast(real_id).encode()
-        logging.debug("Writing command {0}.".format(repr(cmd)))
-        self.io_fd.write(cmd)
+        self.write_io(cmd)
