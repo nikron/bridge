@@ -24,7 +24,7 @@ public class BridgeActivity extends SherlockFragmentActivity
     public boolean onCreateOptionsMenu(Menu menu)
     {
         MenuInflater inflater = getSupportMenuInflater();
-        inflater.inflate(R.menu.settings, menu);
+        inflater.inflate(R.menu.menu, menu);
         return true;
     }
 

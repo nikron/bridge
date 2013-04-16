@@ -4,6 +4,7 @@
     <string name="create_device">Create a Device</string>
 
     <string name="menu_pref">Preferences</string>
+    <string name="menu_save">Save</string>
     <string name="menu_refresh">Refresh Devices</string>
 
     <string name="pref_server_category">Server Information</string>
