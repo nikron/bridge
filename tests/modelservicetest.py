@@ -9,7 +9,7 @@ class TestModelService(unittest.TestCase):
         idiom = InsteonIdiom('idiom')
         (self.ours, its) = Pipe()
 
-        self.serv = ModelService({'idiom' : idiom}, 'none', 'none', its)
+        self.serv = ModelService({'idiom' : idiom}, 'none', its)
 
     def test_service_info(self):
         self.assertEquals(self.serv.get_io_services(), ['idiom'])

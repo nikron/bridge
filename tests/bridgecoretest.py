@@ -15,9 +15,6 @@ b"""[general]
 log = {this_dir}/bridge.log
 dir = {this_dir}/.bridge
 
-[model]
-driver = none
-
 [io]
 services = insteon
 
@@ -31,7 +28,6 @@ file name = /dev/ttyUSB0
 
     def test_config(self):
         self.assertFalse(self.config.stderr)
-        self.assertEqual(self.config.model_driver, 'none')
         self.assertEqual(self.config.io_services, [('insteon', 'insteon','/dev/ttyUSB0')])
 
 
