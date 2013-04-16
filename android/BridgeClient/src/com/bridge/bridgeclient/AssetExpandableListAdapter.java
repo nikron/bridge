@@ -78,6 +78,7 @@ class AssetExpandableListAdapter extends BaseExpandableListAdapter
     {
         TextView view = new TextView(context);
         view.setText((String) getGroup(groupPosition));
+        view.setTextSize(20);
 
         return view;
     }
@@ -98,6 +99,7 @@ class AssetExpandableListAdapter extends BaseExpandableListAdapter
     {
         try
         {
+
             assets.refresh();
         }
             catch (JSONException e)
