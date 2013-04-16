@@ -23,13 +23,11 @@ class BridgeConfiguration():
         self.conf_dir = os.path.dirname(self.file)
 
         self.data_dir = ''
-        self.model_driver = ''
         self.io_services = []
         self.log_file = ''
 
         if self.file is not None:
             self.load_from_file()
-
 
     def load_from_file(self):
         """Load configuration from stored file."""
@@ -38,10 +36,6 @@ class BridgeConfiguration():
 
         self.log_file = config['general']['log'].format(this_dir=self.conf_dir)
         self.data_dir = config['general']['dir'].format(this_dir=self.conf_dir)
-
-        self.model_driver = config['model']['driver']
-
-
 
         for io_service in config['io']['services'].split():
             name = config[io_service]['name']

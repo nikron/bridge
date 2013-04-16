@@ -47,7 +47,7 @@ class HTTPAPIService(BridgeService):
         self.json = json.JSONEncoder(sort_keys=True, indent=4)
 
         self.bottle.get('/', callback=self.bridge_information())
-        self.bottle.post('/', callback=self.bridge_post())
+        self.bottle.post('/', callback=self.bridge_save())
         self.bottle.get('/services', callback=self.services())
         self.bottle.get('/services/<service>', callback=self.service_info())
         self.bottle.get('/assets', callback=self.assets())
@@ -84,10 +84,9 @@ class HTTPAPIService(BridgeService):
 
         return inner_bridge_information
 
-    def bridge_post(self):
-
+    def bridge_save(self):
         @accept_only_json
-        def inner_bridge_post():
+        def inner_bridge_save():
             """Inner method."""
             try:
                 file_name = request.json['save']
@@ -106,7 +105,7 @@ class HTTPAPIService(BridgeService):
             else:
                 HTTPError(500, message)
 
-        return inner_bridge_post
+        return inner_bridge_save
 
     def services(self):
         """Function that output list of services."""

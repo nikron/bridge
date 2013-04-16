@@ -5,16 +5,16 @@ import logging
 from select import select
 
 from bridge.service import BridgeService
-from bridge.services.model.storage import get_storage
+from bridge.services.model.storage import ModelStorage
 from bridge.services.model.idiom import IdiomError
 from bridge.services.model.actions import ActionError
 
 class ModelService(BridgeService):
-    def __init__(self, io_idioms, file_name, driver_name,  hub_connection):
+    def __init__(self, io_idioms, directory, hub_connection):
         super().__init__('model', hub_connection)
         self.read_list = [self.hub_connection]
 
-        self.storage = get_storage(file_name, driver_name)
+        self.storage = ModelStorage(directory)
         self.model = self.storage.read_model()
         self.io_idioms = io_idioms
         self.dirty = False
@@ -32,10 +32,10 @@ class ModelService(BridgeService):
         """Summary of this service status."""
         return { 'model saved' : not self.dirty }
 
-    def save(self, file_name):
+    def save(self, file_name=None):
         try:
             ret = self.storage.write_model(self, file_name)
-            return ret, 'Hopefully successful.'
+            return ret, ''
 
         except AttributeError as ex:
             return False, ex.args[0]
