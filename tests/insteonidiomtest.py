@@ -12,5 +12,4 @@ class TestInsteonIdiom(unittest.TestCase):
         asset = self.idiom.create_asset('Home Appliance', self.fake_real_id, 'ApplianceLinc V2')
         ret = perform_action(asset, 'turn_on')
 
-        self.assertEquals('test_serviceturn_onbbbbbb', ''.join(list(ret)))
-
+        self.assertEquals('test_serviceturn_onbbbbbb', ret[0] + ''.join(ret[1]))
