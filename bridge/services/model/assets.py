@@ -3,26 +3,34 @@ An asset is the internal representation of a device.
 """
 from bridge.services.model.states import States
 from bridge.services.model.actions import Actions, action, get_actions
+from bridge.service import BridgeMessage
 import logging
 import uuid
 
 
 class Backing():
     """Backing attributes of an Asset."""
-    def __init__(self, real_id, product_name, actuple):
+    def __init__(self, real_id, service, product_name, io_args):
         self.real_id = real_id
+        self.service = service
         self.product_name = product_name
-        self.actuple = actuple
+        self.io_args = io_args
+        self.bridge_messages = []
+
+        self._create_messages()
+
+    def _create_messages(self):
+        for method, args in self.io_args:
+            self.bridge_messages.append(BridgeMessage.create_async(self.service, method, self.real_id, *args))
 
 class Asset(metaclass = Actions):
     """
     Represent a physical device, such as a Keypadlinc.
     """
 
-    def __init__(self, name, service, states, backing):
+    def __init__(self, name, states, backing):
         self.states = states
         self.name = name
-        self.service = service
         self.backing = backing
 
         self.uuid = uuid.uuid1()
@@ -44,6 +52,9 @@ class Asset(metaclass = Actions):
     def get_real_id(self):
         """Real id of asset, (usually a str, definately a str for insteon (instead of bytes))"""
         return self.backing.real_id
+
+    def get_service(self):
+        return self.backing.service
 
     def get_product_name(self):
         """The product name of the asset ie ApplianceLinc V2"""
@@ -69,7 +80,7 @@ class BlankAsset(Asset):
     """
 
     def __init__(self, real_id, service):
-        super().__init__("", service, States({}, []), Backing(real_id, "", []))
+        super().__init__("", States({}, []), Backing(real_id, service, "", []))
 
     def transition(self, category, state):
         self.failed_transistions.append((category, state))
@@ -81,22 +92,23 @@ class OnOffAsset(Asset):
     A device that is either simply on or off.
     """
 
-    on_off_states = States({'main' : {'unknown', 'pending on', 'pending off', 'off', 'on'}}, [])
+    on_off_states = States({'main' : {'unknown', 'off', 'on'}}, [])
 
-    def __init__(self, name, service, backing):
-        super().__init__(name, service, self.on_off_states, backing)
-        self.on_off_states.sudden('main', 'unknown')
+    def __init__(self, name, real_id, service, product_name):
+        backing = Backing(real_id, service, product_name, [('turn_on', []), ('turn_off', [])])
+        super().__init__(name, self.on_off_states, backing)
+        self.on_off_states.sudden_transistion('main', 'unknown')
 
     @action("Turn On")
     def turn_on(self):
         """Action to turn on the asset."""
         self.states.transition('main', 'unknown')
 
-        return self.backing.actuple[0]
+        return self.backing.bridge_messages[0]
 
     @action("Turn Off")
     def turn_off(self):
         """Action to turn off the asset."""
         self.states.transition('main', 'unknown')
 
-        return self.backing.actuple[1]
+        return self.backing.bridge_messages[1]

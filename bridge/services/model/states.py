@@ -65,7 +65,7 @@ class States():
 
         return True
 
-    def sudden(self, category, state):
+    def sudden_transistion(self, category, state):
         """Change the current state without triggering any triggers."""
         if category not in self.categories:
             return False

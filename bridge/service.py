@@ -6,11 +6,35 @@ from  multiprocessing import Process
 
 import logging
 import signal
-from collections import namedtuple
 
-BridgeMessage = namedtuple('BridgeMessage', ['to', 'type', 'method', 'args', 'kwargs', 'ret'])
+class BridgeMessage():
+    ASYNC = 'async'
+    BLOCKING = 'blocking'
+    REPLY = 'reply'
+    CLOSE = 'close'
 
-CLOSE_MESSAGE = BridgeMessage(None, 'close', None, None, None, None)
+    def __init__(self, to, _type, method, args, kwargs, ret):
+        self.to = to
+        self.type = _type
+        self.method = method
+        self.args = args
+        self.kwargs = kwargs
+        self.ret = ret
+
+    @classmethod
+    def create_async(cls, to, method, *args, **kwargs):
+        return cls(to, cls.ASYNC, method, args, kwargs, None)
+
+    @classmethod
+    def create_block(cls, to, _from, method, *args, **kwargs):
+        return cls(to, cls.BLOCKING, method, args, kwargs, _from)
+
+    @classmethod
+    def create_reply(cls, block_message, ret):
+        return cls(block_message.ret, cls.REPLY, None, None, None, ret)
+
+
+CLOSE_MESSAGE = BridgeMessage(None, BridgeMessage.CLOSE, None, None, None, None)
 
 class BridgeService(Process):
     """Base class of bridge services, needs a connection to hub."""
@@ -39,15 +63,15 @@ class BridgeService(Process):
         rest of the program.  Automatically calls a function on self.
         """
 
-        if msg.type == 'close':
+        if msg.type == BridgeMessage.CLOSE:
             self.close()
 
         elif hasattr(self, msg.method):
             func = getattr(self, msg.method)
             ret = func(*msg.args, **msg.kwargs)
 
-            if msg.type == 'block':
-                reply = BridgeMessage(msg.ret, 'reply', None, None, None, ret)
+            if msg.type == BridgeMessage.BLOCKING:
+                reply = BridgeMessage.create_reply(msg, ret)
                 self.hub_connection.send(reply)
 
         else:
@@ -62,7 +86,7 @@ class BridgeService(Process):
     def remote_async_service_method(self, service, method, *args, **kwargs):
         """Call a method on a remote service."""
 
-        msg = BridgeMessage(service, 'async', method, args, kwargs, None)
+        msg = BridgeMessage.create_async(service, method, *args, **kwargs)
         self.hub_connection.send(msg)
 
     def clear_blocked_requests(self):
@@ -76,15 +100,15 @@ class BridgeService(Process):
         Send a blocking call on a service, never use this method easily results in
         deadlocks.
         """
-        msg = BridgeMessage(service, 'block', method, args, kwargs, self.name)
+        msg = BridgeMessage.create_block(service, self.name, method, *args, **kwargs)
         self.hub_connection.send(msg)
 
         self.spinning = True
         while self.spinning:
             msg = self.hub_connection.recv()
-            if msg.type == 'close':
+            if msg.type == BridgeMessage.CLOSE:
                 self.close()
-            elif msg.type == 'reply':
+            elif msg.type == BridgeMessage.REPLY:
                 return msg.ret
             else:
                 self.blocked_messages.append(msg)

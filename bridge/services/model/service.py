@@ -93,8 +93,8 @@ class ModelService(BridgeService):
     def perform_asset_action(self, uuid, action, *args, **kwargs):
         """Perform an action on an asset."""
         try:
-            service, targs, tkwargs = self.model.transform_action_to_method(uuid, action, *args, **kwargs)
-            self.remote_async_service_method(service, *targs, **tkwargs)
+            msg = self.model.transform_action_to_method(uuid, action, *args, **kwargs)
+            self.hub_connection.send(msg)
         except ActionError as err:
             return err.message
         except KeyError:

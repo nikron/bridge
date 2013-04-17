@@ -1,37 +1,28 @@
 import unittest
 from bridge.services.model.states import States, Trigger
-from bridge.services.model.assets import OnOffAsset, Backing
+from bridge.services.model.assets import OnOffAsset
 from bridge.services.model.actions import perform_action
 
 class TestAsset(unittest.TestCase):
     def setUp(self):
-        self.flipped = False
-        self.flooped = False
         self.trans = False
-
-        def flip():
-            self.flipped = True
-
-        def floop():
-            self.flooped = True
 
         def trigger():
             self.trans = True
 
 
         trigger = Trigger('main', 'on', trigger)
-        backing = Backing(1, "Test Asset", [flip, floop])
 
-        self.asset = OnOffAsset('hi', 'null', backing)
+        self.asset = OnOffAsset('hi', 'null', 'test_service', 'boop')
         self.asset.add_trigger(trigger)
 
     def test_on(self):
-        perform_action(self.asset, 'turn_on')()
-        self.assertTrue(self.flipped)
+        ret = perform_action(self.asset, 'turn_on')
+        self.assertEquals(ret.method, 'turn_on')
 
     def test_off(self):
-        perform_action(self.asset, 'turn_off')()
-        self.assertTrue(self.flooped)
+        ret = perform_action(self.asset, 'turn_off')
+        self.assertEquals(ret.method, 'turn_off')
 
     def test_trigger(self):
         self.asset.transition('main', 'on')

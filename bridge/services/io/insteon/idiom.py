@@ -2,9 +2,8 @@
 Idiom for model to communicate with insteon io
 services.
 """
-from bridge.services.model import create_actuple
 from bridge.services.model.idiom import ModelIdiom, IdiomError
-from bridge.services.model.assets import BlankAsset, OnOffAsset, Backing
+from bridge.services.model.assets import BlankAsset, OnOffAsset
 
 from insteon_protocol.command.commands import InsteonCommand
 from insteon_protocol.command.command_bytes import *
@@ -24,10 +23,8 @@ class InsteonIdiom(ModelIdiom):
 
     def create_onoff(self, name, real_id, product_name):
         """Create the onoff assets."""
-        on = create_actuple(self.service, 'turn_on', real_id)
-        off = create_actuple(self.service, 'turn_off', real_id)
 
-        return OnOffAsset(name, self.service, Backing(real_id, product_name, [on, off]))
+        return OnOffAsset(name, real_id, self.service, product_name)
 
     def create_asset(self, name, real_id, product_name):
         if type(real_id) == str:
@@ -61,7 +58,7 @@ class InsteonIdiom(ModelIdiom):
             logging.debug("Found a product description command with extended data: {0}.".format(
                 repr(command.extended_data)))
 
-        return (BlankAsset(real_id), False)
+        return (BlankAsset(real_id, self.service), False)
 
     def guess_asset(self, real_id, update):
         if issubclass(type(update), InsteonCommand):
