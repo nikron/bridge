@@ -5,11 +5,11 @@ from bridge.services.io.profiles import *
 from insteon_protocol import insteon_im_protocol
 
 class InsteonDomain(Domain):
-    _pmap = map(Domain.identifier, [
+    _plist = [
         PowerDeviceProfile(),
         DimmablePowerDeviceProfile()
-    ])
-    _plist = _pmap.viewvalues()
+    ]
+    _pmap = {p.identifier: p for p in _plist}
     
     def __init__(self, modem_device):
         self._serdev = serial.Serial(modem_device, 19200)
@@ -28,3 +28,6 @@ class InsteonDomain(Domain):
     @property
     def profiles(self):
         return self._plist
+
+    def send_cmd(self, address, cmd):
+        raise NotImplementedError()

@@ -10,6 +10,10 @@ class DeviceProfile(metaclass=abc.ABCMeta):
     def control(self, locator, attribute, value)
         pass
         
+    @abc.abstractmethod
+    def find_attribute(self, identifier):
+        pass
+        
     @abc.abstractproperty
     def identifier(self):
         pass
