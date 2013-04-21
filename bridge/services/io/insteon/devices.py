@@ -3,8 +3,9 @@ import gevent
 import gevent.event
 import gevent.select
 import serial
-from bridge.services.io.devcore import Domain, Locator
+from bridge.services.io.devices import Device, DeviceProfile, Domain, Locator
 from bridge.services.io.profiles import *
+from bridge.services.model.attributes import Attribute
 from insteon_protocol import insteon_im_protocol
 
 class _InsteonDevice(Device):
@@ -13,7 +14,7 @@ class _InsteonDevice(Device):
     
     def control_async(self, attribute, value):
         # Validate arguments
-        assert attribute != None
+        assert isinstance(attribute, Attribute)
         assert value != None
         if not attribute in self.profile.attributes:
             raise ValueError("Only attributes of this device are permitted")
@@ -28,7 +29,7 @@ class _InsteonDevice(Device):
     
     def interrogate_async(self, attribute):
         # Validate arguments
-        assert attribute != None
+        assert isinstance(attribute, Attribute)
         if not attribute in self.profile.attributes:
             raise ValueError("Only attributes of this device are permitted")
         if not attribute.space.validate(value):
@@ -43,8 +44,7 @@ class _InsteonDevice(Device):
 class InsteonDeviceProfile(DeviceProfile, metaclass=abc.ABCMeta):
     def bind(self, locator):
         # Validate arguments
-        if locator == None or not isinstance(locator, Locator):
-            raise ValueError("The specified value is not a locator")
+        assert isinstance(locator, Locator)
         if not isinstance(locator.domain, InsteonDomain):
             raise ValueError("This profile supports only Insteon devices")
         if not isinstance(locator.address, bytes) or len(locator.address) != 3:

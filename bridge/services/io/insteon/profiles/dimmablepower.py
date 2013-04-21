@@ -1,9 +1,9 @@
-from bridge.services.io.devcore import DeviceProfile
-from bridge.services.io.insteon import InsteonDomain
+from bridge.services.io.devices import DeviceProfile
+from bridge.services.io.insteon.devices import InsteonDeviceProfile
 from bridge.services.model.attributes import Attribute, IntegerSpace
 from insteon_protocol.command import im_commands
 
-class DimmablePowerDeviceProfile(DeviceProfile):
+class DimmablePowerDeviceProfile(InsteonDeviceProfile):
     _alist = [
         Attribute("intensity", IntegerSpace(0, 0xFF))
     ]
@@ -13,15 +13,7 @@ class DimmablePowerDeviceProfile(DeviceProfile):
     def attributes(self):
         return self._alist
     
-    def control(self, locator, attribute, value)
-        # Validate operation
-        if _amap[attribute.identifier] != attribute:
-            raise ValueError("Unrecognized attribute")
-        if not attribute.space.validate(value):
-            raise ValueError("Illegal attribute value")
-        if not isinstance(locator.domain, InsteonDomain):
-            raise ValueError("Locator specified is not for an Insteon device")
-        
+    def _control(self, locator, attribute, value)
         # Produce a command
         if attribute.identifier == "intensity":
             cmd = im_commands.TurnOnFast(real_id) # FIXME: Wrong command
@@ -29,7 +21,6 @@ class DimmablePowerDeviceProfile(DeviceProfile):
         # Transmit it
         locator.domain.send_cmd(locator.address, cmd)
     
-    @abc.abstractmethod
     def find_attribute(self, identifier):
         return self._amap.get(identifier)
     
@@ -37,10 +28,5 @@ class DimmablePowerDeviceProfile(DeviceProfile):
     def identifier(self):
         return "dimmable_power"
     
-    def interrogate(self, locator, attribute)
-        # Validate operation
-        if _amap[attribute.identifier] != attribute:
-            raise ValueError("Unrecognized attribute")
-        if not isinstance(locator.domain, InsteonDomain):
-            raise ValueError("Locator specified is not for an Insteon device")
+    def _interrogate(self, locator, attribute)
         raise NotImplementedError()
