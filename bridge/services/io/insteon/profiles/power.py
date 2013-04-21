@@ -11,7 +11,8 @@ class PowerDeviceProfile(DeviceProfile):
         return self._attributes
     
     def control(self, locator, attribute, value)
-        pass
+        if not attribute.validate(value):
+            raise ValueError("Illegal attribute value")
     
     @property
     def identifier(self):

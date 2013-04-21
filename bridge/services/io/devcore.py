@@ -22,6 +22,14 @@ class Domain(metaclass=abc.ABCMeta)
     def __init__(self, identifier):
         self.identifier = identifier
         
+    @abc.abstractmethod
+    def find_profile(self, identifier):
+        pass
+        
+    @abc.abstractmethod
+    def monitor(self):
+        pass
+        
     @abc.abstractproperty
     def profiles(self):
         pass

@@ -8,11 +8,12 @@ class DimmablePowerDeviceProfile(DeviceProfile):
     
     @property
     def attributes(self):
-        pass
+        return self._attributes
     
     def control(self, locator, attribute, value)
-        pass
-        
+        if not attribute.validate(value):
+            raise ValueError("Illegal attribute value")
+    
     @property
     def identifier(self):
         return "dimmable_power"
