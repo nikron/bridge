@@ -34,7 +34,7 @@ class Asset(metaclass = Actions):
         self.backing = backing
 
         self.uuid = uuid.uuid1()
-        self.failed_transistions = []
+        self.failed_transitions = []
 
     def transition(self, category, state):
         """Change the asset state to state."""
@@ -68,7 +68,7 @@ class Asset(metaclass = Actions):
         ser['uuid'] = self.uuid
         ser['real id'] = self.get_real_id()
         ser['actions'] = get_actions(self)
-        ser['state'] =  self.states.current_states()
+        ser['state'] =  self.states.serializable()
 
         return ser
 
@@ -80,10 +80,10 @@ class BlankAsset(Asset):
     """
 
     def __init__(self, real_id, service):
-        super().__init__("", States({}, []), Backing(real_id, service, "", []))
+        super().__init__("", States(), Backing(real_id, service, "", []))
 
     def transition(self, category, state):
-        self.failed_transistions.append((category, state))
+        self.failed_transitions.append((category, state))
 
         return False
 
@@ -92,12 +92,11 @@ class OnOffAsset(Asset):
     A device that is either simply on or off.
     """
 
-    on_off_states = States({'main' : {'unknown', 'off', 'on'}}, [])
+    on_off_states = States(main=['on', 'off'])
 
     def __init__(self, name, real_id, service, product_name):
         backing = Backing(real_id, service, product_name, [('turn_on', []), ('turn_off', [])])
         super().__init__(name, self.on_off_states, backing)
-        self.on_off_states.sudden_transistion('main', 'unknown')
 
     @action("Turn On")
     def turn_on(self):

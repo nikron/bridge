@@ -9,7 +9,8 @@ class TestState(unittest.TestCase):
             self.flipped = True
 
         trigger = Trigger('bams', 'bust', flip)
-        self.state = States({'bams' : ['boom', 'bust']}, [trigger])
+        self.state = States(bams=['boom', 'bust'])
+        self.state.add_trigger(trigger)
 
     def test_flip_from_transition(self):
         self.state.transition('bams', 'bust')

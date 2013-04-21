@@ -261,13 +261,12 @@ class HTTPAPIService(BridgeService):
         """Transform a list to one appended with the current request.url, or a dict item
         to another dict key."""
         if 'prefix' in kwargs:
-            prefix = request.urlparts[0] + "://" + request.urlparts[1] + kwargs['prefix']
+            prefix = request.urlparts[0] + "://" + request.urlparts[1] + "/" + kwargs['prefix']
         else:
             prefix = request.url
 
         if prefix[-1] != "/":
             prefix = prefix + "/"
-
 
         if type(container) == dict:
             key = kwargs['key']
