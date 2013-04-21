@@ -1,4 +1,4 @@
-from bridge.services.io.devices import DeviceProfile
+from bridge.services.io.devcore import DeviceProfile
 from bridge.services.model.attributes import Attribute, IntegerSpace
 
 class DimmablePowerDeviceProfile(DeviceProfile):
