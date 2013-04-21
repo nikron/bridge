@@ -20,6 +20,10 @@ class Space(metaclass=abc.ABCMeta)
 class BooleanSpace(Space):
     """Represents the range of possible values for a boolean attribute."""
     
+    @property
+    def parameters(self):
+        return {}
+    
     def validate(self, value):
         return isinstance(value, bool)
 
@@ -29,11 +33,10 @@ class IntegerSpace(Space):
     def __init__(self, min_value, max_value):
         self.min_value = min_value
         self.max_value = max_value
-        self._params = {"min_value": min_value, "max_value": max_value}
     
     @property
     def parameters(self):
-        return self._params
+        return {"min_value": min_value, "max_value": max_value}
     
     def validate(self, value):
         if not isinstance(value, int):
