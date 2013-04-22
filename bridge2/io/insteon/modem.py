@@ -47,7 +47,7 @@ class ModemPDU(object):
         return ModemPDU(command, payload)
     
     def encode(self):
-        return chr(self.command) + self.payload
+        return b"\x02" + chr(self.command) + self.payload
     
     @staticmethod
     def readfrom(src, readfn=None):
@@ -85,7 +85,7 @@ class StdMessageReceivedModemPDU(ModemPDU):
         return rv
 
 class ExtMessageReceivedModemPDU(ModemPDU):
-    def __init__(self, command, payload):
+    def __init__(self, message):
         raise NotImplementedError()
         
     @classmethod
@@ -108,7 +108,7 @@ class ButtonEventReportModemPDU(ModemPDU):
         raise NotImplementedError()
         
     @classmethod
-    def decode(cls, command, payload):
+    def decode(cls, button, event):
         assert command == ModemPDU.BUTTON_EVENT_REPORT
         assert len(payload) == 1
         rv = cls.__new__(cls)
@@ -119,7 +119,7 @@ class ButtonEventReportModemPDU(ModemPDU):
         return rv
 
 class UserResetDetectedModemPDU(ModemPDU):
-    def __init__(self, command, payload):
+    def __init__(self):
         raise NotImplementedError()
         
     @classmethod
@@ -131,7 +131,7 @@ class UserResetDetectedModemPDU(ModemPDU):
         return rv
 
 class LinkCleanupFailureRptModemPDU(ModemPDU):
-    def __init__(self, command, payload):
+    def __init__(self, link_group, address):
         raise NotImplementedError()
         
     @classmethod
@@ -145,7 +145,7 @@ class LinkCleanupFailureRptModemPDU(ModemPDU):
         return rv
 
 class LinkCleanupStatusRptModemPDU(ModemPDU):
-    def __init__(self, command, payload):
+    def __init__(self, cleanup_aborted):
         raise NotImplementedError()
         
     @classmethod
