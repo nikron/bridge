@@ -11,7 +11,7 @@ class TestAsset(unittest.TestCase):
             self.trans = True
 
 
-        trigger = Trigger('main', 'on', trigger)
+        trigger = Trigger('main', True, trigger)
 
         self.asset = OnOffAsset('hi', 'null', 'test_service', 'boop')
         self.asset.add_trigger(trigger)
@@ -25,5 +25,5 @@ class TestAsset(unittest.TestCase):
         self.assertEquals(ret.method, 'turn_off')
 
     def test_trigger(self):
-        self.asset.transition('main', 'on')
+        self.asset.transition('main', True)
         self.assertTrue(self.trans)

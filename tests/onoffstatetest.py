@@ -8,10 +8,10 @@ class TestState(unittest.TestCase):
         def flip():
             self.flipped = True
 
-        trigger = Trigger('bams', 'bust', flip)
-        self.state = States(bams=['boom', 'bust'])
+        trigger = Trigger('bams', True, flip)
+        self.state = States(bams=bool)
         self.state.add_trigger(trigger)
 
     def test_flip_from_transition(self):
-        self.state.transition('bams', 'bust')
+        self.state.transition('bams', True)
         self.assertTrue(self.flipped)

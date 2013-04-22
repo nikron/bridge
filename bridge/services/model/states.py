@@ -25,20 +25,23 @@ class StateCategory():
     BINARY = 'binary'
     RANGE = 'range'
 
+    UNKNOWN_STATE = 'unknown' #all categories can be unknown
+
     def __init__(self, category, states):
         self.category = category
-        self.current_state = 'unknown'
+        self.current_state = self.UNKNOWN_STATE
 
         if type(states) is range:
             self.type = self.RANGE
+            self.states = list(states).append(self.UNKNOWN_STATE)
 
-        elif len(states) == 2:
+        elif states == bool:
             self.type = self.BINARY
+            self.states = [True, False, self.UNKNOWN_STATE]
 
         else:
             raise TypeError('State is not binary or a range.')
 
-        self.states = states
         self.triggers = defaultdict(lambda : [])
 
     def transition(self, state):
@@ -67,8 +70,8 @@ class StateCategory():
         ser['type'] = self.type
         if self.type == self.RANGE:
             ser['possibilities'] = str(self.states)
-        else:
-            ser['possibilities'] = self.states
+        elif self.type == self.BINARY:
+            ser['possibilities'] =  "boolean"
 
         return ser
 

@@ -94,7 +94,7 @@ class OnOffAsset(Asset):
     A device that is either simply on or off.
     """
 
-    on_off_states = States(main=['on', 'off'])
+    on_off_states = States(main=bool)
 
     def __init__(self, name, real_id, service, product_name):
         backing = Backing(real_id, service, product_name, [('turn_on', []), ('turn_off', [])])
