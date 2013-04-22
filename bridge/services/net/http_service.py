@@ -4,19 +4,21 @@ Don't blame me for globals, blame the library.
 """
 
 from bridge.service import BridgeService
-from bottle import run, Bottle, request, response, HTTPError
-import mimeparse
+from external_libs.bottle import run, Bottle, request, response, HTTPError
+from external_libs import mimeparse, jsonpatch
 import json
 
 import uuid
 
 JSON_MIME = 'application/json'
+JSON_PATCH_MIME = 'application/json-patch'
 
 def accept_only_json(func):
     """Raise an error if content type isn't json."""
     acceptable = JSON_MIME
+    acceptable_patch = JSON_PATCH_MIME
 
-    def mime_okay(mimetype):
+    def mime_okay(mimetype, acceptable=acceptable):
         """Checks if the mimetype is acceptable."""
         accept = mimeparse.best_match([acceptable], mimetype)
         return accept == acceptable
@@ -30,6 +32,10 @@ def accept_only_json(func):
         elif request.method == 'POST':
             if not mime_okay(request.content_type):
                 raise HTTPError(415, "Only accepts application/json.")
+
+        elif request.method == 'PATCH':
+            if not mime_okay(request.content_type, acceptable_patch):
+                raise HTTPError(415, "Only accepts application/json-patch.")
 
         return func(*args, **kwargs)
 
@@ -51,8 +57,11 @@ class HTTPAPIService(BridgeService):
         self.bottle.get('/services', callback=self.services())
         self.bottle.get('/services/<service>', callback=self.service_info())
         self.bottle.get('/assets', callback=self.assets())
+
         self.bottle.get('/assets/<asset>', callback=self.get_asset_by_uuid())
+        self.bottle.route('/asset/<asset>', method = 'PATCH', callback=self.change_asset_by_uuid())
         self.bottle.delete('/assets/<asset>', callback=self.delete_asset_by_uuid())
+
         self.bottle.post('/assets/<asset>/<action>', callback=self.post_action())
         self.bottle.get('/assets/<asset>/<action>', callback=self.get_asset_action())
         self.bottle.post('/assets', callback=self.create_asset())
@@ -146,6 +155,43 @@ class HTTPAPIService(BridgeService):
 
         return inner_assets
 
+    def get_asset_by_uuid(self):
+        """Return function that displays asset data."""
+        @accept_only_json
+        def inner_get_asset_by_uuid(asset):
+            """Return JSON of an asset, replace actions with their urls."""
+            return self._get_asset_json(asset)
+
+        return inner_get_asset_by_uuid
+
+    def change_asset_by_uuid(self):
+        @accept_only_json
+        def inner_change_asset_by_uuid(asset):
+            asset_json = self._get_asset_json(asset)
+
+            patch = request.body.read(request.MEMFILE_MAX)
+            try:
+                result = jsonpatch.apply_patch(asset_json, patch)
+            except jsonpatch.JsonPatchException:
+                raise HTTPError(400, "Not a correct json-patch.")
+
+            changed = self._report_keys_changed(asset_json, result)
+
+            if not changed.issubset({"name"}):
+                raise HTTPError(422, "Only accepts changes on name.")
+
+            for key in changed:
+                if key == "name":
+                    if result[key] == str:
+                        self.remote_async_service_method('mode', 'set_asset_name', self._make_uuid(asset), result[key])
+                    else:
+                        raise HTTPError(422, "Name must be a string.")
+
+            response.status = 204
+            return None
+
+        return inner_change_asset_by_uuid
+
     def delete_asset_by_uuid(self):
         @accept_only_json
         def inner_delete_asset_by_uuid(asset):
@@ -160,27 +206,6 @@ class HTTPAPIService(BridgeService):
                 HTTPError(404, "Asset not found.")
 
         return inner_delete_asset_by_uuid
-
-    def get_asset_by_uuid(self):
-        """Return function that displays asset data."""
-        @accept_only_json
-        def inner_get_asset_by_uuid(asset):
-            """Return JSON of an asset, replace actions with their urls."""
-            asset_uuid = self._make_uuid(asset)
-
-            asset_info = self.remote_block_service_method('model', 'get_asset_info', asset_uuid)
-
-            if asset_info:
-                self.transform_to_urls(asset_info, key='uuid', newkey='url', prefix='assets/', delete=False)
-                self.transform_to_urls(asset_info, key='actions', newkey='action_urls')
-                asset_info['uuid'] = str(asset_info['uuid'])
-
-                return self.encode(asset_info)
-
-            else:
-                raise HTTPError(404, "Asset not found.")
-
-        return inner_get_asset_by_uuid
 
     def create_asset(self):
         """Return a function that outputs JSON of asset `name`."""
@@ -246,6 +271,31 @@ class HTTPAPIService(BridgeService):
                 raise HTTPError(400, msg)
 
         return inner_post_action
+
+    def _get_asset_json(self, asset):
+        """Get asset JSON, with an uuid in string form."""
+        asset_uuid = self._make_uuid(asset)
+
+        asset_info = self.remote_block_service_method('model', 'get_asset_info', asset_uuid)
+
+        if asset_info:
+            self.transform_to_urls(asset_info, key='uuid', newkey='url', prefix='assets/', delete=False)
+            self.transform_to_urls(asset_info, key='actions', newkey='action_urls')
+            asset_info['uuid'] = str(asset_info['uuid'])
+
+            return self.encode(asset_info)
+
+        else:
+            raise HTTPError(404, "Asset not found.")
+
+    @staticmethod
+    def _report_keys_changed(first, second):
+        first_set = set(first.keys())
+        second_set = set(second.keys())
+        changed = {key for key in first_set.intersection(second_set) if first[key] != second[key]}
+        changed.join(first_set.symmetric_difference(second_set))
+
+        return changed
 
     @staticmethod
     def _make_uuid(asset):

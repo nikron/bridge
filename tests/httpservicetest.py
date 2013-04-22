@@ -2,7 +2,7 @@ import unittest
 from multiprocessing import Pipe
 from bridge.services.net.http_service import HTTPAPIService
 from bridge.service import BridgeMessage
-from bottle import HTTPError, response
+from external_libs.bottle import HTTPError, response
 
 import uuid
 

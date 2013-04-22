@@ -40,6 +40,11 @@ class Model():
 
         return None
 
+    def set_asset_name(self, uuid, name):
+        asset = self.get_asset(uuid)
+        self.asset_names.remove(asset.get_name())
+        asset.set_name(name)
+
     def add_asset(self, asset):
         """Add an asset to the model."""
         self.assets[asset.uuid] = asset

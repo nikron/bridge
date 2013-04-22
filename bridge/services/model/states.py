@@ -29,7 +29,6 @@ class StateCategory():
         self.category = category
         self.current_state = 'unknown'
 
-        #type checking, maybe we should assume trusted?
         if type(states) is range:
             self.type = self.RANGE
 

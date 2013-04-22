@@ -90,6 +90,9 @@ class ModelService(BridgeService):
         logging.debug("Getting action info {0} from {1}.".format(action, uuid))
         return self.model.serializable_asset_action_info(uuid, action)
 
+    def set_asset_name(self, uuid, name):
+        self.model.set_asset_name(uuid, name)
+
     def perform_asset_action(self, uuid, action, *args, **kwargs):
         """Perform an action on an asset."""
         try:

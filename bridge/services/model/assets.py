@@ -45,9 +45,8 @@ class Asset(metaclass = Actions):
         """Add trigger to on state change."""
         self.states.add_trigger(trigger)
 
-    def current_states(self):
-        """Get the current categories and states of this asset."""
-        return self.states.current_states()
+    def get_name(self):
+        return self.name
 
     def get_real_id(self):
         """Real id of asset, (usually a str, definately a str for insteon (instead of bytes))"""
@@ -59,6 +58,9 @@ class Asset(metaclass = Actions):
     def get_product_name(self):
         """The product name of the asset ie ApplianceLinc V2"""
         return self.backing.product_name
+
+    def set_name(self, name):
+        self.name = name
 
     def serializable(self):
         """Return a form of the class that is easy to serialize (with JSON etc)"""
