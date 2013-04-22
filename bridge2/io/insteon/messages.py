@@ -100,9 +100,9 @@ class InsteonMessage(object):
         return self.__unicode__().encode()
 
     def __unicode__(self):
-        fmt = "{1} message {2:#02x}:{3:02x}, {4}/{5} hops"
+        fmt = "{0} message {1:#02x}:{2:02x}, {3}/{4} hops"
         mcn = "E" if self.extended else "S"
-        mcn += self._mcnames[self._mclass]
+        mcn += InsteonMessage._mcnames[self._mclass]
         return fmt.format(mcn, self._c1, self._c2, self._ttl, self._max_ttl)
 
 class ExtInsteonMessage(InsteonMessage):   

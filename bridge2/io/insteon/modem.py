@@ -4,8 +4,7 @@ Decode messages from an Insteon PLM.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import logging
-from insteon_protocol.command.commands import InsteonCommand
-from insteon_protocol.command.im_commands import IMInsteonCommand
+from bridge2.io.insteon.messages import InsteonMessage
 
 #
 # Modem protocol core
@@ -93,11 +92,11 @@ class ModemPDU(object):
         l, ctor = ctuple
         if cmd == ModemPDU.SEND_INSTEON_MSG:
             payload = ModemPDU._readmsg(src, readfn)
-        else
+        else:
             payload = readfn(src, l)
         
         # Return a ModemPDU instance representing the message
-        logging.debug("Read buffer {0}".format(repr(payload))
+        logging.debug("Read buffer {0}".format(repr(payload)))
         return ModemPDU.decode(cmd, payload)
 
     @staticmethod
@@ -136,7 +135,7 @@ class StdInsteonMessageRcvdModemPDU(ModemPDU):
     def _decode(cls, command, payload):
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
-        rv.message = InsteonCommand.decode(payload)
+        rv.message = InsteonMessage.decode(payload)
         return rv
 
 class ExtInsteonMessageRcvdModemPDU(ModemPDU):
@@ -147,7 +146,7 @@ class ExtInsteonMessageRcvdModemPDU(ModemPDU):
     def _decode(cls, command, payload):
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
-        rv.message = InsteonCommand.decode(payload)
+        rv.message = InsteonMessage.decode(payload)
         return rv
 
 class ButtonEventReportModemPDU(ModemPDU):
@@ -212,7 +211,7 @@ class SendInsteonMsgModemRespPDU(ModemPDU):
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
         rv.dest = payload[0:3]
-        rv.message = InsteonMessage.decode(payload[3:6]
+        rv.message = InsteonMessage.decode(payload[3:6])
         rv.successful = (ord(payload[6]) == 0x06)
         return rv
         
