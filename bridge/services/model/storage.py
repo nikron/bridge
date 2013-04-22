@@ -15,9 +15,9 @@ class ModelStorage():
 
     def __init__(self, directory):
         self.directory = directory
-        self.data = os.path.join(self.directory, 'data')
-        self.last = os.path.join(self.directory, 'last')
-        self.file_name = os.path.join(self.data, self.DEFAULT)
+        self.data = os.path.abspath(os.path.join(self.directory, 'data'))
+        self.last = os.path.abspath(os.path.join(self.directory, 'last'))
+        self.file_name = os.path.abspath(os.path.join(self.data, self.DEFAULT))
 
         self.create_files()
 
@@ -29,6 +29,11 @@ class ModelStorage():
 
         if not os.path.exists(self.data):
             os.makedirs(self.data)
+
+        if not os.path.exists(self.last):
+            fd = open(self.last, "w")
+            fd.close()
+            
 
     def remove_files(self):
         shutil.rmtree(self.directory)
@@ -81,7 +86,7 @@ class ModelStorage():
         return False
 
     def read_last(self):
-        with open(self.last, 'w+') as fd:
+        with open(self.last, 'r+') as fd:
             self.file_name = fd.readline()
 
         if self.file_name == '':
@@ -96,7 +101,7 @@ class ModelStorage():
             return self.file_name
 
         else:
-            file_name = os.path.join(self.data, file_name)
+            file_name = os.path.abspath(os.path.join(self.data, file_name))
             if os.path.dirname(file_name) != self.data:
                 raise AttributeError('File does not stay within data directory.')
 
