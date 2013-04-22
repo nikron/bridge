@@ -59,7 +59,7 @@ class HTTPAPIService(BridgeService):
         self.bottle.get('/assets', callback=self.assets())
 
         self.bottle.get('/assets/<asset>', callback=self.get_asset_by_uuid())
-        self.bottle.route('/asset/<asset>', method = 'PATCH', callback=self.change_asset_by_uuid())
+        self.bottle.route('/assets/<asset>', method='PATCH', callback=self.change_asset_by_uuid())
         self.bottle.delete('/assets/<asset>', callback=self.delete_asset_by_uuid())
 
         self.bottle.post('/assets/<asset>/<action>', callback=self.post_action())
@@ -160,16 +160,18 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_get_asset_by_uuid(asset):
             """Return JSON of an asset, replace actions with their urls."""
-            return self._get_asset_json(asset)
+            asset_uuid = self._make_uuid(asset)
+            return self.encode(self._get_asset_json(asset_uuid))
 
         return inner_get_asset_by_uuid
 
     def change_asset_by_uuid(self):
         @accept_only_json
         def inner_change_asset_by_uuid(asset):
-            asset_json = self._get_asset_json(asset)
+            asset_uuid = self._make_uuid(asset)
+            asset_json = self._get_asset_json(asset_uuid)
 
-            patch = request.body.read(request.MEMFILE_MAX)
+            patch = request.body.read(request.MEMFILE_MAX).decode()
             try:
                 result = jsonpatch.apply_patch(asset_json, patch)
             except jsonpatch.JsonPatchException:
@@ -182,8 +184,8 @@ class HTTPAPIService(BridgeService):
 
             for key in changed:
                 if key == "name":
-                    if result[key] == str:
-                        self.remote_async_service_method('mode', 'set_asset_name', self._make_uuid(asset), result[key])
+                    if type(result[key]) == str:
+                        self.remote_async_service_method('model', 'set_asset_name', asset_uuid, result[key])
                     else:
                         raise HTTPError(422, "Name must be a string.")
 
@@ -272,10 +274,8 @@ class HTTPAPIService(BridgeService):
 
         return inner_post_action
 
-    def _get_asset_json(self, asset):
+    def _get_asset_json(self, asset_uuid):
         """Get asset JSON, with an uuid in string form."""
-        asset_uuid = self._make_uuid(asset)
-
         asset_info = self.remote_block_service_method('model', 'get_asset_info', asset_uuid)
 
         if asset_info:
@@ -283,7 +283,7 @@ class HTTPAPIService(BridgeService):
             self.transform_to_urls(asset_info, key='actions', newkey='action_urls')
             asset_info['uuid'] = str(asset_info['uuid'])
 
-            return self.encode(asset_info)
+            return asset_info
 
         else:
             raise HTTPError(404, "Asset not found.")
@@ -293,7 +293,7 @@ class HTTPAPIService(BridgeService):
         first_set = set(first.keys())
         second_set = set(second.keys())
         changed = {key for key in first_set.intersection(second_set) if first[key] != second[key]}
-        changed.join(first_set.symmetric_difference(second_set))
+        changed.union(first_set.symmetric_difference(second_set))
 
         return changed
 
