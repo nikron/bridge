@@ -2,7 +2,7 @@
 Decode messages from an Insteon PLM.
 """
 
-from __future__ import absolute_imports, division, print_function, unicode_strings
+from __future__ import absolute_import, division, print_function, unicode_literals
 import logging
 from insteon_protocol.command.commands import InsteonCommand
 from insteon_protocol.command.im_commands import IMInsteonCommand
@@ -37,18 +37,6 @@ class ModemPDU(object):
     SET_ACK_BYTE_2 = 0x71           # Set INSTEON ACK Message Two Bytes
     RF_SLEEP = 0x72                 # RF Sleep
     GET_IM_CONFIG = 0x73            # Get IM Configuration
-
-    _receivables = {
-        STD_MSG_RECEIVED: (9, StdMessageModemPDU),
-        EXT_MSG_RECEIVED: (23, ExtMessageModemPDU),
-        X10_MSG_RECEIVED: (2, None),
-        LINKING_COMPLETED: (8, None),
-        BUTTON_EVENT_REPORT: (1, None),
-        USER_RESET_DETECTED: (0, None),
-        LINK_CLEANUP_FAILURE_RPT: (5, None),
-        LINK_REC_RESPONSE: (8, None),
-        LINK_CLEANUP_STATUS_RPT: (1, None)
-    }
     
     def __init__(self, command, payload):
         self.command = command
@@ -86,3 +74,15 @@ class StdMessageModemPDU(ModemPDU):
     def __init__(self, command, payload):
         super(StdMessageModemPDU, self).__init__(command, payload)
         self.message = InsteonCommand.decode(payload)
+
+ModemPDU._receivables = {
+    ModemPDU.STD_MSG_RECEIVED: (9, StdMessageModemPDU),
+    ModemPDU.EXT_MSG_RECEIVED: (23, ExtMessageModemPDU),
+    ModemPDU.X10_MSG_RECEIVED: (2, None),
+    ModemPDU.LINKING_COMPLETED: (8, None),
+    ModemPDU.BUTTON_EVENT_REPORT: (1, None),
+    ModemPDU.USER_RESET_DETECTED: (0, None),
+    ModemPDU.LINK_CLEANUP_FAILURE_RPT: (5, None),
+    ModemPDU.LINK_REC_RESPONSE: (8, None),
+    ModemPDU.LINK_CLEANUP_STATUS_RPT: (1, None)
+}

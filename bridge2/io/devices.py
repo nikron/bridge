@@ -1,7 +1,10 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
 import binascii
 
-class Device(metaclass=abc.ABCMeta):
+class Device(object):
+    __metaclass__ = abc.ABCMeta
+    
     def __init__(self, locator, profile):
         self.locator = locator
         self.profile = profile
@@ -20,7 +23,9 @@ class Device(metaclass=abc.ABCMeta):
     def interrogate_async(self, attribute):
         pass
 
-class DeviceProfile(metaclass=abc.ABCMeta):
+class DeviceProfile(object):
+    __metaclass__ = abc.ABCMeta
+    
     @abc.abstractproperty
     def attributes(self):
         pass
@@ -33,7 +38,9 @@ class DeviceProfile(metaclass=abc.ABCMeta):
     def identifier(self):
         pass
 
-class Domain(metaclass=abc.ABCMeta):
+class Domain(object):
+    __metaclass__ = abc.ABCMeta
+    
     def __init__(self, identifier):
         self.identifier = identifier
     

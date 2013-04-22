@@ -1,10 +1,13 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
 
 #
 # Attribute spaces
 #
 
-class Space(metaclass=abc.ABCMeta)
+class Space(object):
+    __metaclass__ = abc.ABCMeta
+    
     """Represents a range of possible values for an attribute."""
     
     @abc.abstractproperty
@@ -49,7 +52,7 @@ class IntegerSpace(Space):
 # Attributes
 #
 
-class Attribute():
+class Attribute(object):
     """Represents a feature of an asset that may be accessed or controlled."""
     
     def __init__(self, identifier, space):

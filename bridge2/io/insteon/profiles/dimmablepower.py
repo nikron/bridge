@@ -1,9 +1,10 @@
-from bridge.services.io.devices import DeviceProfile
-from bridge.services.io.insteon.devices import InsteonDeviceProfile
-from bridge.services.model.attributes import Attribute, IntegerSpace
+from __future__ import absolute_import, division, print_function, unicode_literals
+from bridge2.io.devices import DeviceProfile
+from bridge2.io.insteon.profiles.base import _InsteonDeviceProfile
+from bridge2.model.attributes import Attribute, IntegerSpace
 from insteon_protocol.command import im_commands
 
-class DimmablePowerDeviceProfile(InsteonDeviceProfile):
+class DimmablePowerDeviceProfile(_InsteonDeviceProfile):
     _alist = [
         Attribute("intensity", IntegerSpace(0, 0xFF))
     ]
@@ -13,7 +14,7 @@ class DimmablePowerDeviceProfile(InsteonDeviceProfile):
     def attributes(self):
         return self._alist
     
-    def _control(self, locator, attribute, value)
+    def _control(self, locator, attribute, value):
         # Produce a command
         if attribute.identifier == "intensity":
             cmd = im_commands.TurnOnFast(real_id) # FIXME: Wrong command
@@ -28,5 +29,5 @@ class DimmablePowerDeviceProfile(InsteonDeviceProfile):
     def identifier(self):
         return "dimmable_power"
     
-    def _interrogate(self, locator, attribute)
+    def _interrogate(self, locator, attribute):
         raise NotImplementedError()

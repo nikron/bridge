@@ -1,10 +1,13 @@
+from __future__ import absolute_imports, division, print_function, unicode_literals
 import abc
 
 #
 # Macro core logic
 #
 
-class Action(metaclass=abc.ABCMeta):
+class Action(object):
+    __metaclass__ = abc.ABCMeta
+    
     """Provides a base class for all action (statement) types that may be
        included within a macro."""
     

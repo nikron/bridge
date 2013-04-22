@@ -1,11 +1,12 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
 import gevent
 import gevent.event
 import serial
-from bridge.services.io.devices import Device, DeviceProfile, Domain, Locator
-from bridge.services.io.insteon.profiles import *
-from bridge.services.io.insteon.protocol import ModemPDU
-from bridge.services.model.attributes import Attribute
+from bridge2.io.devices import Device, DeviceProfile, Domain, Locator
+from bridge2.io.insteon.modem import ModemPDU
+from bridge2.io.insteon.profiles import *
+from bridge2.model.attributes import Attribute
 from insteon_protocol import insteon_im_protocol
 
 class _InsteonDevice(Device):
@@ -39,26 +40,6 @@ class _InsteonDevice(Device):
         gevent.spawn(fn, self.locator, attribute).link(res)
         return res
 
-class InsteonDeviceProfile(DeviceProfile, metaclass=abc.ABCMeta):
-    def bind(self, locator):
-        # Validate arguments
-        assert isinstance(locator, Locator)
-        if not isinstance(locator.domain, InsteonDomain):
-            raise ValueError("This profile supports only Insteon devices")
-        if not isinstance(locator.address, bytes) or len(locator.address) != 3:
-            raise ValueError("The specified locator address is not valid")
-            
-        # Delegate to the InsteonDomain
-        return locator.domain._bind(locator, self)
-    
-    @abc.abstractmethod
-    def _control(self, locator, attribute, value):
-        pass
-        
-    @abc.abstractmethod
-    def _interrogate(self, locator, attribute):
-        pass
-
 class InsteonDomain(Domain):
     _plist = [
         PowerDeviceProfile(),
@@ -72,6 +53,13 @@ class InsteonDomain(Domain):
         self._serdev = serial.Serial(devfile, 19200, timeout=0, writeTimeout=0)
     
     def _bind(self, locator, profile):
+        # Validate arguments
+        assert isinstance(locator, Locator)
+        if not isinstance(locator.domain, InsteonDomain):
+            raise ValueError("This profile supports only Insteon devices")
+        if not isinstance(locator.address, bytes) or len(locator.address) != 3:
+            raise ValueError("The specified address is not valid")
+
         # Store the binding, unless one already exists
         if address in self._bindings:
             raise ValueError("The specified address is already bound")
@@ -94,7 +82,7 @@ class InsteonDomain(Domain):
         data = ""
         nread = 0
         while nread < n:
-            gevent.select.select([f], [] [])
+            gevent.select.select([f], [], [])
             data2 = f.read(n)
             nread += len(data2)
             data += data2

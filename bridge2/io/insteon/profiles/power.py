@@ -1,9 +1,10 @@
-from bridge.services.io.devices import DeviceProfile
-from bridge.services.io.insteon.devices import InsteonDeviceProfile
-from bridge.services.model.attributes import Attribute, BooleanSpace
+from __future__ import absolute_import, division, print_function, unicode_literals
+from bridge2.io.devices import DeviceProfile
+from bridge2.io.insteon.profiles.base import _InsteonDeviceProfile
+from bridge2.model.attributes import Attribute, BooleanSpace
 from insteon_protocol.command import im_commands
 
-class PowerDeviceProfile(InsteonDeviceProfile):
+class PowerDeviceProfile(_InsteonDeviceProfile):
     _alist = [
         Attribute("power", BooleanSpace())
     ]
@@ -13,7 +14,7 @@ class PowerDeviceProfile(InsteonDeviceProfile):
     def attributes(self):
         return self._alist
     
-    def _control(self, locator, attribute, value)
+    def _control(self, locator, attribute, value):
         # Produce a command
         if attribute.identifier == "power":
             cmd = im_commands.TurnOnFast(real_id) # FIXME: Wrong command
@@ -28,5 +29,5 @@ class PowerDeviceProfile(InsteonDeviceProfile):
     def identifier(self):
         return "power"
     
-    def _interrogate(self, locator, attribute)
+    def _interrogate(self, locator, attribute):
         raise NotImplementedError()
