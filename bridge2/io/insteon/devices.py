@@ -11,7 +11,7 @@ from insteon_protocol import insteon_im_protocol
 
 class _InsteonDevice(Device):
     def __init__(self, locator, profile):
-        super().__init__(locator, profile)
+        super(_InsteonDevice, self).__init__(locator, profile)
     
     def control_async(self, attribute, value):
         # Validate arguments
@@ -48,7 +48,7 @@ class InsteonDomain(Domain):
     _pmap = {p.identifier: p for p in _plist}
     
     def __init__(self, identifier, devfile):
-        super().__init__(identifier)
+        super(InsteonDomain, self).__init__(identifier)
         self._bindings = {}
         self._serdev = serial.Serial(devfile, 19200, timeout=0, writeTimeout=0)
     

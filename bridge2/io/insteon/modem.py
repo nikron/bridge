@@ -42,8 +42,8 @@ class ModemPDU(object):
         self.command = command
         self.payload = payload
     
-    @classmethod
-    def readfrom(cls, src, readfn=None):
+    @staticmethod
+    def readfrom(src, readfn=None):
         """Read a command from an IM interface, needs to support read(number)"""
         
         # Retrieve the message from the serial device
@@ -53,7 +53,7 @@ class ModemPDU(object):
         if magic != 0x02:
             raise IOError("STX byte expected when reading PDU")
         cmd = ord(readfn(src, 1))
-        ctuple = cls._receivables.get(cmd)
+        ctuple = ModemPDU._receivables.get(cmd)
         if ctuple == None:
             raise IOError("An unrecognized modem PDU was received")
         l, ctor = ctuple
