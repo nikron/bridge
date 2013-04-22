@@ -43,6 +43,13 @@ class ModemPDU(object):
         self.payload = payload
     
     @staticmethod
+    def decode(command, payload):
+        return ModemPDU(command, payload)
+    
+    def encode(self):
+        return chr(self.command) + self.payload
+    
+    @staticmethod
     def readfrom(src, readfn=None):
         """Read a command from an IM interface, needs to support read(number)"""
         
@@ -63,26 +70,101 @@ class ModemPDU(object):
         logging.debug("Read buffer {0}".format(repr(payload)))
         if ctor == None:
             ctor = ModemPDU
-        return ctor(cmd, payload)
+        return ctor.decode(cmd, payload)
 
-class ExtMessageModemPDU(ModemPDU):
-    def __init__(self, command, payload):
-        super(ExtMessageModemPDU, self).__init__(command, payload)
-        self.message = InsteonCommand.decode(payload)
+class StdMessageReceivedModemPDU(ModemPDU):
+    def __init__(self, message):
+        raise NotImplementedError()
+        
+    @classmethod
+    def decode(cls, command, payload):
+        assert command == ModemPDU.STD_MSG_RECEIVED
+        rv = cls.__new__(cls)
+        super(cls, rv).__init__(command, payload)
+        rv.message = InsteonCommand.decode(payload)
+        return rv
 
-class StdMessageModemPDU(ModemPDU):
+class ExtMessageReceivedModemPDU(ModemPDU):
     def __init__(self, command, payload):
-        super(StdMessageModemPDU, self).__init__(command, payload)
-        self.message = InsteonCommand.decode(payload)
+        raise NotImplementedError()
+        
+    @classmethod
+    def decode(cls, command, payload):
+        assert command == ModemPDU.EXT_MSG_RECEIVED
+        rv = cls.__new__(cls)
+        super(cls, rv).__init__(command, payload)
+        rv.message = InsteonCommand.decode(payload)
+        return rv
+
+class ButtonEventReportModemPDU(ModemPDU):
+    BUTTON_SET = 0
+    BUTTON_2 = 1
+    BUTTON_3 = 2
+    EVENT_TAP = 2
+    EVENT_HOLD = 3
+    EVENT_RELEASE = 4
+    
+    def __init__(self, command, payload):
+        raise NotImplementedError()
+        
+    @classmethod
+    def decode(cls, command, payload):
+        assert command == ModemPDU.BUTTON_EVENT_REPORT
+        assert len(payload) == 1
+        rv = cls.__new__(cls)
+        super(cls, rv).__init__(command, payload)
+        v = ord(payload[0])
+        rv.button = v >> 4
+        rv.event = v & 0xF
+        return rv
+
+class UserResetDetectedModemPDU(ModemPDU):
+    def __init__(self, command, payload):
+        raise NotImplementedError()
+        
+    @classmethod
+    def decode(cls, command, payload):
+        assert command == ModemPDU.USER_RESET_DETECTED
+        assert len(payload) == 0
+        rv = cls.__new__(cls)
+        super(cls, rv).__init__(command, payload)
+        return rv
+
+class LinkCleanupFailureRptModemPDU(ModemPDU):
+    def __init__(self, command, payload):
+        raise NotImplementedError()
+        
+    @classmethod
+    def decode(cls, command, payload):
+        assert command == ModemPDU.LINK_CLEANUP_FAILURE_RPT
+        assert len(payload) == 5
+        rv = cls.__new__(cls)
+        super(cls, rv).__init__(command, payload)
+        rv.link_group = ord(payload[1])
+        rv.address = payload[2:5]
+        return rv
+
+class LinkCleanupStatusRptModemPDU(ModemPDU):
+    def __init__(self, command, payload):
+        raise NotImplementedError()
+        
+    @classmethod
+    def decode(cls, command, payload):
+        assert command == ModemPDU.LINK_CLEANUP_STATUS_RPT
+        assert len(payload) == 1
+        rv = cls.__new__(cls)
+        super(cls, rv).__init__(command, payload)
+        rv.cleanup_aborted = (ord(payload[0]) == 0x15)
+        return rv
 
 ModemPDU._receivables = {
-    ModemPDU.STD_MSG_RECEIVED: (9, StdMessageModemPDU),
-    ModemPDU.EXT_MSG_RECEIVED: (23, ExtMessageModemPDU),
+    ModemPDU.STD_MSG_RECEIVED: (9, StdMessageReceivedModemPDU),
+    ModemPDU.EXT_MSG_RECEIVED: (23, ExtMessageReceivedModemPDU),
     ModemPDU.X10_MSG_RECEIVED: (2, None),
     ModemPDU.LINKING_COMPLETED: (8, None),
-    ModemPDU.BUTTON_EVENT_REPORT: (1, None),
-    ModemPDU.USER_RESET_DETECTED: (0, None),
-    ModemPDU.LINK_CLEANUP_FAILURE_RPT: (5, None),
+    ModemPDU.BUTTON_EVENT_REPORT: (1, ButtonEventReportModemPDU),
+    ModemPDU.USER_RESET_DETECTED: (0, UserResetDetectedModemPDU),
+    ModemPDU.LINK_CLEANUP_FAILURE_RPT: (5, LinkCleanupFailureRptModemPDU),
     ModemPDU.LINK_REC_RESPONSE: (8, None),
-    ModemPDU.LINK_CLEANUP_STATUS_RPT: (1, None)
+    ModemPDU.LINK_CLEANUP_STATUS_RPT: (1, LinkCleanupStatusRptModemPDU)
 }
