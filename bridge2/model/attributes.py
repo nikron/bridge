@@ -34,6 +34,8 @@ class IntegerSpace(Space):
     """Represents the range of possible values for an integer attribute."""
     
     def __init__(self, min_value, max_value):
+        assert isinstance(min_value, int)
+        assert isinstance(max_value, int)
         self.min_value = min_value
         self.max_value = max_value
     
@@ -55,6 +57,12 @@ class IntegerSpace(Space):
 class Attribute(object):
     """Represents a feature of an asset that may be accessed or controlled."""
     
-    def __init__(self, identifier, space):
+    def __init__(self, identifier, space, readonly=False, cacheable=True, config=False):
+        assert isinstance(identifier, unicode)
+        assert isinstance(space, Space)
+        assert isinstance(readonly, bool)
         self.identifier = identifier
         self.space = space
+        self.readonly = readonly
+        self.cacheable = cacheable
+        self.config = config
