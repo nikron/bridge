@@ -3,6 +3,8 @@ Create an Insteon command by calling the appriate object
 with the correct information.
 """
 
+import binascii
+
 class InsteonMessage(object):
     """Base class for all insteon commands."""
     
@@ -14,6 +16,17 @@ class InsteonMessage(object):
     DIRECT_NAK = 0b101
     LINK_BROADCAST_CMD = 0b110
     LINK_CLEANUP_NAK = 0b111
+    
+    _mcnames = {
+        DIRECT_CMD: "D",
+        DIRECT_ACK: "D ACK",
+        LINK_CLEANUP_CMD: "C",
+        LINK_CLEANUP_ACK: "C ACK",
+        BROADCAST_CMD: "B",
+        DIRECT_NAK: "D NAK",
+        LINK_BROADCAST_CMD: "A",
+        LINK_CLEANUP_NAK: "C NAK"
+    }
     
     def __init__(self, mclass, ttl, max_ttl, c1, c2):
         # Validate arguments
@@ -84,9 +97,15 @@ class InsteonMessage(object):
         return self._ttl
 
     def __str__(self):
-        return "{0}<from: {1}, to: {2}, CMD1: {3}, CMD2: {4}>".format(type(self).__name__, self.from_address, self.to_address, self.cmd1, self.cmd2)
+        return self.__unicode__().encode()
 
-class ExtInsteonMessage(InsteonMessage):
+    def __unicode__(self):
+        fmt = "{1} message {2:#02x}:{3:02x}, {4}/{5} hops"
+        mcn = "E" if self.extended else "S"
+        mcn += self._mcnames[self._mclass]
+        return fmt.format(mcn, self._c1, self._c2, self._ttl, self._max_ttl)
+
+class ExtInsteonMessage(InsteonMessage):   
     def __init__(self, mclass, ttl, max_ttl, c1, c2, extdata):
         assert isinstance(extdata, bytes)
         assert len(extdata) == 14
@@ -109,3 +128,7 @@ class ExtInsteonMessage(InsteonMessage):
     @property
     def extended(self):
         return True
+
+    def __unicode__(self):
+        basestr = super(ExtInsteonMessage, self).__unicode__()
+        return basestr + ", payload = " + binascii.hexlify(self._extdata)
