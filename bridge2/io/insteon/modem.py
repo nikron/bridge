@@ -7,10 +7,14 @@ import logging
 from insteon_protocol.command.commands import InsteonCommand
 from insteon_protocol.command.im_commands import IMInsteonCommand
 
+#
+# Modem protocol core
+#
+
 class ModemPDU(object):
-    STD_MSG_RECEIVED = 0x50         # INSTEON Standard Message Received
-    EXT_MSG_RECEIVED = 0x51         # INSTEON Extended Message Received
-    X10_MSG_RECEIVED = 0x52         # X10 Received
+    STD_INSTEON_MSG_RCVD = 0x50     # INSTEON Standard Message Received
+    EXT_INSTEON_MSG_RCVD = 0x51     # INSTEON Extended Message Received
+    X10_INSTEON_MSG_RCVD = 0x52     # X10 Received
     LINKING_COMPLETED = 0x53        # ALL-Linking Completed
     BUTTON_EVENT_REPORT = 0x54      # Button Event Report
     USER_RESET_DETECTED = 0x55      # User Reset Detected
@@ -19,7 +23,7 @@ class ModemPDU(object):
     LINK_CLEANUP_STATUS_RPT = 0x58  # ALL-Link Cleanup Status Report
     GET_IM_INFO = 0x60              # Get IM Info
     SEND_LINK_COMMAND = 0x61        # Send ALL-Link Command
-    SEND_STD_EXT_MSG = 0x62         # Send INSTEON Standard or Extended Message
+    SEND_INSTEON_MSG = 0x62         # Send INSTEON Standard or Extended Message
     SEND_X10_MSG = 0x63             # Send X10
     START_LINKING = 0x64            # Start ALL-Linking
     CANCEL_LINKING = 0x65           # Cancel ALL-Linking
@@ -72,25 +76,33 @@ class ModemPDU(object):
             ctor = ModemPDU
         return ctor.decode(cmd, payload)
 
-class StdMessageReceivedModemPDU(ModemPDU):
-    def __init__(self, message):
+#
+# Receivable PDUs
+#
+
+class StdInsteonMessageRcvdModemPDU(ModemPDU):
+    def __init__(self, src, dest, message):
         raise NotImplementedError()
         
     @classmethod
     def decode(cls, command, payload):
-        assert command == ModemPDU.STD_MSG_RECEIVED
+        assert command == ModemPDU.STD_INSTEON_MSG_RCVD
+        assert isinstance(payload, bytes)
+        assert len(payload) == 9
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
         rv.message = InsteonCommand.decode(payload)
         return rv
 
-class ExtMessageReceivedModemPDU(ModemPDU):
-    def __init__(self, message):
+class ExtInsteonMessageRcvdModemPDU(ModemPDU):
+    def __init__(self, src, dest, message):
         raise NotImplementedError()
         
     @classmethod
     def decode(cls, command, payload):
-        assert command == ModemPDU.EXT_MSG_RECEIVED
+        assert command == ModemPDU.EXT_INSTEON_MSG_RCVD
+        assert isinstance(payload, bytes)
+        assert len(payload) == 23
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
         rv.message = InsteonCommand.decode(payload)
@@ -110,6 +122,7 @@ class ButtonEventReportModemPDU(ModemPDU):
     @classmethod
     def decode(cls, button, event):
         assert command == ModemPDU.BUTTON_EVENT_REPORT
+        assert isinstance(payload, bytes)
         assert len(payload) == 1
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
@@ -125,23 +138,25 @@ class UserResetDetectedModemPDU(ModemPDU):
     @classmethod
     def decode(cls, command, payload):
         assert command == ModemPDU.USER_RESET_DETECTED
+        assert isinstance(payload, bytes)
         assert len(payload) == 0
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
         return rv
 
 class LinkCleanupFailureRptModemPDU(ModemPDU):
-    def __init__(self, link_group, address):
+    def __init__(self, link_group, src):
         raise NotImplementedError()
         
     @classmethod
     def decode(cls, command, payload):
         assert command == ModemPDU.LINK_CLEANUP_FAILURE_RPT
+        assert isinstance(payload, bytes)
         assert len(payload) == 5
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
         rv.link_group = ord(payload[1])
-        rv.address = payload[2:5]
+        rv.src = payload[2:5]
         return rv
 
 class LinkCleanupStatusRptModemPDU(ModemPDU):
@@ -151,6 +166,7 @@ class LinkCleanupStatusRptModemPDU(ModemPDU):
     @classmethod
     def decode(cls, command, payload):
         assert command == ModemPDU.LINK_CLEANUP_STATUS_RPT
+        assert isinstance(payload, bytes)
         assert len(payload) == 1
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
@@ -158,8 +174,8 @@ class LinkCleanupStatusRptModemPDU(ModemPDU):
         return rv
 
 ModemPDU._receivables = {
-    ModemPDU.STD_MSG_RECEIVED: (9, StdMessageReceivedModemPDU),
-    ModemPDU.EXT_MSG_RECEIVED: (23, ExtMessageReceivedModemPDU),
+    ModemPDU.STD_INSTEON_MSG_RCVD: (9, StdMessageReceivedModemPDU),
+    ModemPDU.EXT_INSTEON_MSG_RCVD: (23, ExtMessageReceivedModemPDU),
     ModemPDU.X10_MSG_RECEIVED: (2, None),
     ModemPDU.LINKING_COMPLETED: (8, None),
     ModemPDU.BUTTON_EVENT_REPORT: (1, ButtonEventReportModemPDU),
@@ -168,3 +184,22 @@ ModemPDU._receivables = {
     ModemPDU.LINK_REC_RESPONSE: (8, None),
     ModemPDU.LINK_CLEANUP_STATUS_RPT: (1, LinkCleanupStatusRptModemPDU)
 }
+
+#
+# Transmissible PDUs
+#
+
+class SendInsteonMsgModemPDU(ModemPDU):
+    def __init__(self, dest, message):
+        assert isinstance(dest, bytes)
+        assert len(dest) == 3
+        cmd = ModemPDU.SEND_INSTEON_MSG
+        payload = dest + message.encode()
+        super(SendInsteonMsgModemPDU, self).__init__(cmd, payload)
+        self.dest = dest
+        self.message = message
+        
+    @classmethod
+    def decode(cls, command, payload):
+        raise NotImplementedError()
+    
