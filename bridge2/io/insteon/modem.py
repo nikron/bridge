@@ -48,15 +48,25 @@ class ModemPDU(object):
     
     @classmethod
     def decode(cls, command, payload):
-        assert isinstance(payload, bytes)
+        # Look up the command type
         ctuple = ModemPDU._receivables.get(command)
         if ctuple == None:
             raise ValueError("The specified command type is not decodable")
         l, ctor = ctuple
-        if len(payload) != l:
+        
+        # Check the length, w/ special handling for message send responses
+        assert isinstance(payload, bytes)
+        if command == ModemPDU.SEND_INSTEON_MSG:
+            if not len(payload) in (7, 21):
+                raise ValueError("'payload' is not of the expected length")
+        elif len(payload) != l:
             raise ValueError("'payload' is not of the expected length")
         if cls != ModemPDU and cls != ctor:
             raise ValueError("'command' does not match this PDU type")
+            
+        # Hand the PDU off to the actual decoder
+        if ctor == None:
+            return ModemPDU(command, payload)
         return ctor._decode(command, payload)
     
     def encode(self):
@@ -66,9 +76,11 @@ class ModemPDU(object):
     def readfrom(src, readfn=None):
         """Read a command from an IM interface, needs to support read(number)"""
         
-        # Retrieve the message from the serial device
+        # If not told otherwise, use the read function
         if readfn == None:
             readfn = src.read
+            
+        # Read the PDU header
         magic = ord(readfn(src, 1))
         if magic != 0x02:
             raise IOError("STX byte expected when reading PDU")
@@ -76,14 +88,41 @@ class ModemPDU(object):
         ctuple = ModemPDU._receivables.get(cmd)
         if ctuple == None:
             raise IOError("An unrecognized modem PDU was received")
+        
+        # Read the payload
         l, ctor = ctuple
-        payload = readfn(src, l)
+        if cmd == ModemPDU.SEND_INSTEON_MSG:
+            payload = ModemPDU._readmsg(src, readfn)
+        else
+            payload = readfn(src, l)
         
         # Return a ModemPDU instance representing the message
-        logging.debug("Read buffer {0}".format(repr(payload)))
-        if ctor == None:
-            ctor = ModemPDU
-        return ctor.decode(cmd, payload)
+        logging.debug("Read buffer {0}".format(repr(payload))
+        return ModemPDU.decode(cmd, payload)
+
+    @staticmethod
+    def _readmsg(src, readfn):
+        control = readfn(src, 4)
+        flags = ord(control[3])
+        if flags & 8 != 0:
+            body = readfn(src, 17) #16 bytes left for ed insteon
+        else:
+            body = readfn(src, 3) #two bytes left for a sd insteon
+        return control + body
+
+#
+# Transmissible PDUs
+#
+
+class SendInsteonMsgModemPDU(ModemPDU):
+    def __init__(self, dest, message):
+        assert isinstance(dest, bytes)
+        assert len(dest) == 3
+        cmd = ModemPDU.SEND_INSTEON_MSG
+        payload = dest + message.encode()
+        super(SendInsteonMsgModemPDU, self).__init__(cmd, payload)
+        self.dest = dest
+        self.message = message
 
 #
 # Receivable PDUs
@@ -154,16 +193,29 @@ class LinkCleanupFailureRptModemPDU(ModemPDU):
         return rv
 
 class LinkCleanupStatusRptModemPDU(ModemPDU):
-    def __init__(self, cleanup_aborted):
+    def __init__(self, successful):
         raise NotImplementedError()
         
     @classmethod
     def _decode(cls, command, payload):
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
-        rv.cleanup_aborted = (ord(payload[0]) == 0x15)
+        rv.successful = (ord(payload[0]) == 0x06)
         return rv
 
+class SendInsteonMsgModemRespPDU(ModemPDU):
+    def __init__(self, dest, message, successful):
+        raise NotImplementedError()
+        
+    @classmethod
+    def _decode(cls, command, payload):
+        rv = cls.__new__(cls)
+        super(cls, rv).__init__(command, payload)
+        rv.dest = payload[0:3]
+        rv.message = InsteonMessage.decode(payload[3:6]
+        rv.successful = (ord(payload[6]) == 0x06)
+        return rv
+        
 ModemPDU._receivables = {
     ModemPDU.STD_INSTEON_MSG_RCVD: (9, StdInsteonMessageRcvdModemPDU),
     ModemPDU.EXT_INSTEON_MSG_RCVD: (23, ExtInsteonMessageRcvdModemPDU),
@@ -173,19 +225,25 @@ ModemPDU._receivables = {
     ModemPDU.USER_RESET_DETECTED: (0, UserResetDetectedModemPDU),
     ModemPDU.LINK_CLEANUP_FAILURE_RPT: (5, LinkCleanupFailureRptModemPDU),
     ModemPDU.LINK_REC_RESPONSE: (8, None),
-    ModemPDU.LINK_CLEANUP_STATUS_RPT: (1, LinkCleanupStatusRptModemPDU)
+    ModemPDU.LINK_CLEANUP_STATUS_RPT: (1, LinkCleanupStatusRptModemPDU),
+    ModemPDU.GET_IM_INFO: (7, None),
+    ModemPDU.SEND_LINK_COMMAND: (4, None),
+    ModemPDU.SEND_INSTEON_MSG: (None, SendInsteonMsgModemRespPDU), # var. len.
+    ModemPDU.SEND_X10_MSG: (3, None),
+    ModemPDU.START_LINKING: (3, None),
+    ModemPDU.CANCEL_LINKING: (1, None),
+    ModemPDU.SET_HOST_DEV_CATEGORY: (4, None),
+    ModemPDU.RESET_IM: (1, None),
+    ModemPDU.SET_ACK_BYTE: (2, None),
+    ModemPDU.GET_FIRST_LINK_REC: (1, None),
+    ModemPDU.GET_NEXT_LINK_REC: (1, None),
+    ModemPDU.SET_IM_CONFIG: (2, None),
+    ModemPDU.GET_LINK_REC_FOR_SENDER: (1, None),
+    ModemPDU.LED_ON: (2, None),
+    ModemPDU.LED_OFF: (2, None),
+    ModemPDU.MANAGE_LINK_REC: (10, None),
+    ModemPDU.SET_NAK_BYTE: (2, None),
+    ModemPDU.SET_ACK_BYTE_2: (3, None),
+    ModemPDU.RF_SLEEP: (1, None),
+    ModemPDU.GET_IM_CONFIG: (4, None)
 }
-
-#
-# Transmissible PDUs
-#
-
-class SendInsteonMsgModemPDU(ModemPDU):
-    def __init__(self, dest, message):
-        assert isinstance(dest, bytes)
-        assert len(dest) == 3
-        cmd = ModemPDU.SEND_INSTEON_MSG
-        payload = dest + message.encode()
-        super(SendInsteonMsgModemPDU, self).__init__(cmd, payload)
-        self.dest = dest
-        self.message = message
