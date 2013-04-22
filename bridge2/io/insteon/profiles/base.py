@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import abc
 from bridge2.io.devices import DeviceProfile
 
-class _InsteonDeviceProfile(DeviceProfile):
+class InsteonDeviceProfile(DeviceProfile):
     __metaclass__ = abc.ABCMeta
     
     def bind(self, locator):
