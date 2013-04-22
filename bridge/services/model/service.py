@@ -15,7 +15,7 @@ class ModelService(BridgeService):
         self.read_list = [self.hub_connection]
 
         self.storage = ModelStorage(directory)
-        self.model = self.storage.read_model()
+        self.model = self.storage.read_model(io_idioms)
         self.io_idioms = io_idioms
         self.dirty = False
 
@@ -34,7 +34,7 @@ class ModelService(BridgeService):
 
     def save(self, file_name=None):
         try:
-            ret = self.storage.write_model(self, file_name)
+            ret = self.storage.write_model(self.model, file_name)
             return ret, ''
 
         except AttributeError as ex:

@@ -2,11 +2,11 @@
 Drivers for storing the model to persistent storage.
 """
 from bridge.services.model.model import Model
+
 import os
 import shutil
-
-import logging
-import pickle
+import json
+import uuid
 
 class ModelStorage():
     """Store and read model to a persistent state."""
@@ -29,24 +29,30 @@ class ModelStorage():
 
         if not os.path.exists(self.data):
             os.makedirs(self.data)
-    
+
     def remove_files(self):
         shutil.rmtree(self.directory)
 
-    def read_model(self, file_name = None):
+    def read_model(self, idioms, file_name = None):
         """Read the save model from the file."""
         file_name = self._make_file_name(file_name)
 
         self.write_last() #this is the last file name either way
-        with open(file_name, "wb+") as fd:
-            try:
-                model = pickle.load(fd)
-                if type(model).__name__ == "Model":
-                    return model
-            finally:
-                return Model()
+        model = Model()
 
-        return Model()
+        try:
+            fd = open(file_name, "r+")
+            json_model = json.load(fd)
+
+            for asset_dict in json_model['assets']:
+                asset = idioms[asset_dict['service']].create_asset(asset_dict['name'], asset_dict['real id'], asset_dict['product name'])
+                asset.uuid = uuid.UUID(asset_dict['uuid'])
+                model.add_asset(asset)
+
+            return model
+
+        except FileNotFoundError:
+            return model
 
     def write_model(self, model, file_name = None):
         """
@@ -55,8 +61,20 @@ class ModelStorage():
         """
         file_name = self._make_file_name(file_name)
 
-        with open(file_name, "wb+") as fd:
-            pickle.dump(model, fd)
+        with open(file_name, "w+") as fd:
+            save_dict = {'assets' : []}
+
+            for asset_uuid in model.get_all_asset_uuids():
+                asset = model.get_asset(asset_uuid)
+                save_dict['assets'].append({
+                            'name' : asset.get_name(), 
+                            'uuid' : str(asset_uuid), 
+                            'real id' : asset.get_real_id(),
+                            'service' : asset.get_service(),
+                            'product name' : asset.get_product_name()
+                            })
+
+            json.dump(save_dict, fd, indent=4)
             self.write_last()
             return True
 
@@ -68,7 +86,7 @@ class ModelStorage():
 
         if self.file_name == '':
             self.file_name = os.path.join(self.data, self.DEFAULT)
-    
+
     def write_last(self):
         with open(self.last, 'w+') as fd:
             fd.write(self.file_name)
