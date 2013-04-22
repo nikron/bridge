@@ -114,11 +114,11 @@ class ExtInsteonMessage(InsteonMessage):
     
     def _decode(self, buf):
         assert len(buf) == 17
-        super(ExtInsteonMessage, self)._decode2(buf[0:3])
+        super(ExtInsteonMessage, self)._decode(buf[0:3])
         self._extdata = buf[3:17]
     
     def encode(self):
-        basebuf = super(ExtInsteonMessage, self)
+        basebuf = super(ExtInsteonMessage, self).encode()
         return basebuf + self._extdata
     
     @property

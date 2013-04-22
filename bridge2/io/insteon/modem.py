@@ -4,7 +4,7 @@ Decode messages from an Insteon PLM.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import logging
-from bridge2.io.insteon.messages import InsteonMessage
+from bridge2.io.insteon.messages import ExtInsteonMessage, InsteonMessage
 
 #
 # Modem protocol core
@@ -146,7 +146,7 @@ class ExtInsteonMessageRcvdModemPDU(ModemPDU):
     def _decode(cls, command, payload):
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
-        rv.message = InsteonMessage.decode(payload)
+        rv.message = ExtInsteonMessage.decode(payload)
         return rv
 
 class ButtonEventReportModemPDU(ModemPDU):
@@ -211,8 +211,12 @@ class SendInsteonMsgModemRespPDU(ModemPDU):
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
         rv.dest = payload[0:3]
-        rv.message = InsteonMessage.decode(payload[3:6])
-        rv.successful = (ord(payload[6]) == 0x06)
+        msgdata = payload[3:-1]
+        if len(msgdata) == 17:
+            rv.message = ExtInsteonMessage.decode(msgdata)
+        else:
+            rv.message = InsteonMessage.decode(msgdata)
+        rv.successful = (ord(payload[-1]) == 0x06)
         return rv
         
 ModemPDU._receivables = {
