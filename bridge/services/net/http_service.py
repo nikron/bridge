@@ -74,7 +74,7 @@ class HTTPAPIService(BridgeService):
         """Encode a python primitive collection to json, and set
         response encoding to json."""
         response.content_type = JSON_MIME
-        return self.json.encode(obj).encode()
+        return (self.json.encode(obj) + "\n").encode() #add a trailing newline
 
     def bridge_information(self):
         """
