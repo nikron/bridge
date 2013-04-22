@@ -1,7 +1,6 @@
 import abc
 import gevent
 import gevent.event
-import gevent.select
 import serial
 from bridge.services.io.devices import Device, DeviceProfile, Domain, Locator
 from bridge.services.io.insteon.profiles import *
@@ -33,8 +32,6 @@ class _InsteonDevice(Device):
         assert isinstance(attribute, Attribute)
         if not attribute in self.profile.attributes:
             raise ValueError("Only attributes of this device are permitted")
-        if not attribute.space.validate(value):
-            raise ValueError("Illegal attribute value")
             
         # Delegate to the profile
         res = gevent.event.AsyncResult()
@@ -85,7 +82,6 @@ class InsteonDomain(Domain):
     
     def monitor(self):
         while True:
-            gevent.select.select([self._serdev.fileno()], None, None)
             pdu = ModemPDU.readfrom(self._serdev, self._read_nblock)
             # FIXME: Do something here
             if isinstance(pdu, StdMessageModemPDU):

@@ -19,7 +19,7 @@ class DimmablePowerDeviceProfile(InsteonDeviceProfile):
             cmd = im_commands.TurnOnFast(real_id) # FIXME: Wrong command
             
         # Transmit it
-        locator.domain.send_cmd(locator.address, cmd)
+        locator.domain._xmit(locator.address, cmd)
     
     def find_attribute(self, identifier):
         return self._amap.get(identifier)
