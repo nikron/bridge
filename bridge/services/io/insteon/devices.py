@@ -4,7 +4,8 @@ import gevent.event
 import gevent.select
 import serial
 from bridge.services.io.devices import Device, DeviceProfile, Domain, Locator
-from bridge.services.io.profiles import *
+from bridge.services.io.insteon.profiles import *
+from bridge.services.io.insteon.protocol import ModemPDU
 from bridge.services.model.attributes import Attribute
 from insteon_protocol import insteon_im_protocol
 
@@ -22,7 +23,7 @@ class _InsteonDevice(Device):
             raise ValueError("Illegal attribute value")
             
         # Delegate to the profile
-        res = AsyncResult()
+        res = gevent.event.AsyncResult()
         fn = self.profile._control
         gevent.spawn(fn, self.locator, attribute, value).link(res)
         return res
@@ -36,7 +37,7 @@ class _InsteonDevice(Device):
             raise ValueError("Illegal attribute value")
             
         # Delegate to the profile
-        res = AsyncResult()
+        res = gevent.event.AsyncResult()
         fn = self.profile._interrogate
         gevent.spawn(fn, self.locator, attribute).link(res)
         return res
@@ -68,10 +69,10 @@ class InsteonDomain(Domain):
     ]
     _pmap = {p.identifier: p for p in _plist}
     
-    def __init__(self, identifier, modem_device):
+    def __init__(self, identifier, devfile):
         super().__init__(identifier)
         self._bindings = {}
-        self._serdev = serial.Serial(modem_device, 19200)
+        self._serdev = serial.Serial(devfile, 19200, timeout=0, writeTimeout=0)
     
     def _bind(self, locator, profile):
         # Store the binding, unless one already exists
@@ -79,16 +80,29 @@ class InsteonDomain(Domain):
             raise ValueError("The specified address is already bound")
         self._bindings[address] = profile
         
-        # Produce an InsteonDevice for the caller
+        # Produce an _InsteonDevice for the caller
         return _InsteonDevice(locator, profile)
     
     def monitor(self):
         while True:
             gevent.select.select([self._serdev.fileno()], None, None)
-            buf = insteon_im_protocol.read_command(self._serdev)
-            if buf != None:
-                update = insteon_im_protocol.decode(buf)
-                # FIXME: Do something here
+            pdu = ModemPDU.readfrom(self._serdev, self._read_nblock)
+            # FIXME: Do something here
+            if isinstance(pdu, StdMessageModemPDU):
+                pass
+            if isinstance(pdu, ExtMessageModemPDU):
+                pass
+    
+    @staticmethod
+    def _read_nblock(f, n):
+        data = ""
+        nread = 0
+        while nread < n:
+            gevent.select.select([f], [] [])
+            data2 = f.read(n)
+            nread += len(data2)
+            data += data2
+        return data
     
     @property
     def profiles(self):
