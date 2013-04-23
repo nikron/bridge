@@ -5,9 +5,7 @@ with the correct information.
 from abc import ABCMeta, abstractmethod
 import bitstring #maybe get rid of this depedance but it makes things easier
 
-class Command():
-    __metaclass__ = ABCMeta
-
+class Command(metaclass = ABCMeta):
     @abstractmethod
     def encode(self):
         pass
@@ -16,8 +14,6 @@ class Command():
     @abstractmethod
     def decode(cls, buf):
         pass
-
-
 
 class InsteonCommand(Command):
     """Base class for all insteon commands."""

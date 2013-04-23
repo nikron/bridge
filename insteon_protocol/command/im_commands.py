@@ -11,6 +11,7 @@ class IMInsteonCommand(InsteonCommand):
     Base class for commands sent over the IM, basically attach '\x02\x62' infront of them
     and strip the from address.
     """
+    __relative__ = False #Is the response to this command relative to this one?
 
     def __init__(self, to_address, broadcast, group, ack, extended, cur_hops, max_hops, cmd1, cmd2, extended_data, okay=None):
         InsteonCommand.__init__(self, b'\x02\x62', to_address, broadcast, group, ack, extended, cur_hops, max_hops, cmd1, cmd2, extended_data)
@@ -46,18 +47,30 @@ class IMInsteonCommand(InsteonCommand):
 
         return cls(to, broad, group, ack, ext, curh, maxh, cmd1, cmd2, ext, okay)
 
-#Create a command where cmd1 and cmd2 are static, and our message flag is 0x0f
-def _create_direct_static_standard_command(name, cmd1, cmd2):
-    def __init__(self, address):
-        IMInsteonCommand.__init__(self, address, False, False, False, False, 3, 3, cmd1, cmd2, b'')
+    @classmethod
+    def is_relative(cls):
+        return cls.__relative__
 
-    return type(name, (IMInsteonCommand,), {'__init__' : __init__})
 
-def _create_direct_variable_standard_command(name, cmd1):
-    def __init__(self, address, cmd2):
-        IMInsteonCommand.__init__(self, address, False, False, False, False, 3, 3, cmd1, cmd2, b'')
+def create_standard_im_command(name, cmd_bytes):
+    """
+    Create an InsteonIMCommand object out of a command bytes object.
+    """
+    _dict = {}
 
-    return type(name, (IMInsteonCommand,), {'__init__' : __init__})
+    if not cmd_bytes.is_variable():
+        def __init__(self, address):
+            IMInsteonCommand.__init__(self, address, False, False, False, False, 3, 3, cmd_bytes.cmd1, cmd_bytes.cmd2, b'')
+        _dict['__init__'] = __init__
+    else:
+        def __init__(self, address, cmd2):
+            IMInsteonCommand.__init__(self, address, False, False, False, False, 3, 3, cmd_bytes.cmd1, cmd_bytes.cmd2, b'')
+        _dict['__init__'] = __init__
+
+    _dict['__relative__'] = cmd_bytes.is_relative()
+
+    return type(name, (IMInsteonCommand,), _dict)
+
 
 #create an extended command where the data is supplied
 def _create_direct_simple_extended_command(name, cmd1, cmd2):
@@ -69,28 +82,28 @@ def _create_direct_simple_extended_command(name, cmd1, cmd2):
 #The long wall of standard insteon commands, names should be self explinatory
 
 #STANDARD COMMANDS
-AssignToAllLinkGroup =  _create_direct_variable_standard_command('AssignToAllLinkGroup', ASSIGNTOALLLINKGROUP.cmd1)
-DeleteFromAllLinkGroup =  _create_direct_variable_standard_command('DeleteFromAllLinkGroup', DELETEFROMALLLINKGROUP.cmd1)
-ProductDataRequest = _create_direct_static_standard_command('ProductDataRequest', PRODUCTDATAREQUEST.cmd1, PRODUCTDATAREQUEST.cmd2)
-FXUsernameRequest = _create_direct_static_standard_command('FXUsernameRequest', b'\x03', b'\x01')
-DeviceTextStringRequest = _create_direct_static_standard_command('DeviceTextStringRequest', b'\x03', b'\x02')
+AssignToAllLinkGroup =  create_standard_im_command('AssignToAllLinkGroup', ASSIGNTOALLLINKGROUP)
+DeleteFromAllLinkGroup =  create_standard_im_command('DeleteFromAllLinkGroup', DELETEFROMALLLINKGROUP)
+ProductDataRequest = create_standard_im_command('ProductDataRequest', PRODUCTDATAREQUEST)
+FXUsernameRequest = create_standard_im_command('FXUsernameRequest', FXUSERNAMEREQUEST)
+DeviceTextStringRequest = create_standard_im_command('DeviceTextStringRequest', DEVICETEXTSTRINGREQUEST)
 
-EnterLinkingMode =  _create_direct_variable_standard_command('EnterLinkingMode', b'\x09')
-EnterUnlinkingMode =  _create_direct_variable_standard_command('EnterUnlinkingMode', b'\x0A')
+EnterLinkingMode =  create_standard_im_command('EnterLinkingMode', ENTERLINKINGMODE)
+EnterUnlinkingMode =  create_standard_im_command('EnterUnlinkingMode', ENTERUNLINKINGMODE)
 
-GetINSTEONVersion = _create_direct_static_standard_command('GetINSTEONVersion', b'\x0D', b'\x00')
+GetINSTEONVersion = create_standard_im_command('GetINSTEONVersion', GETINSTEONVERSION)
 
-Ping = _create_direct_static_standard_command('Ping', b'\x0F', b'\x00')
-IDRequest = _create_direct_static_standard_command('IDRequest', b'\x10', b'\x00')
+Ping = create_standard_im_command('Ping', PING)
+IDRequest = create_standard_im_command('IDRequest', IDREQUEST)
 
-TurnOn = _create_direct_static_standard_command('TurnOn', b'\x11', b'\x00')
-TurnOnLevel = _create_direct_variable_standard_command('TurnOnLevel', b'\x11')
+TurnOn = create_standard_im_command('TurnOn',TURNON)
+TurnOnLevel = create_standard_im_command('TurnOnLevel', TURNONLEVEL)
 
-TurnOnFast= _create_direct_static_standard_command('TurnOnFast', TURNONFAST.cmd1, TURNONFAST.cmd2)
-TurnOnFastLevel = _create_direct_variable_standard_command('TurnOnFastLevel', TURNONFAST.cmd1)
+TurnOnFast= create_standard_im_command('TurnOnFast', TURNONFAST)
+TurnOnFastLevel = create_standard_im_command('TurnOnFastLevel', TURNONFAST)
 
-TurnOff = _create_direct_static_standard_command('TurnOff', TURNOFF.cmd1, TURNOFF.cmd2)
-TurnOffFast = _create_direct_static_standard_command('TurnOffFast', b'\x14', b'\x00')
+TurnOff = create_standard_im_command('TurnOff', TURNOFF)
+TurnOffFast = create_standard_im_command('TurnOffFast', TURNOFFFAST)
 
 #EXTENDED COMMANDS
 SetDeviceTextString =  _create_direct_simple_extended_command('SetDeviceTextString', b'\x03', b'\x03')

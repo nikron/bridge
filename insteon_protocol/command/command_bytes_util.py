@@ -1,5 +1,5 @@
 class CMDS():
-    def __init__(self, cmd1, cmd2=None):
+    def __init__(self, cmd1, cmd2=None, **kwargs):
         self.cmd1 = cmd1
         self.cmd2 = cmd2
         if self.cmd2:
@@ -9,6 +9,8 @@ class CMDS():
         else:
             self.both = cmd1
             self.variable = False
+
+        self.relative = kwargs.get('relative', False)
 
     def __eq__(self, other):
         return self.both == other.both
