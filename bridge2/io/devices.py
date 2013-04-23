@@ -70,6 +70,12 @@ class Domain(object):
         """Return whether or not this Domain is ready for access."""
         pass
     
+    @abc.abstractmethod
+    def check_address(self, address):
+        """Determine whether or not the specified address is valid within
+           this Domain."""
+        pass
+    
     @abc.abstractproperty
     def profiles(self):
         """Return a list of DeviceProfiles supported by this Domain."""
@@ -91,8 +97,18 @@ class Locator(object):
     def __init__(self, domain, address):
         assert isinstance(domain, Domain)
         assert isinstance(address, bytes)
-        self.domain = domain
-        self.address = address
+        if not domain.check_address(address):
+            raise ValueError("'address' is not valid for this Domain")
+        self._domain = domain
+        self._address = address
+
+    @property
+    def address(self):
+        return self._address
+
+    @property
+    def domain(self):
+        return self._domain
 
     def __str__(self):
         return self.__unicode__().encode()
