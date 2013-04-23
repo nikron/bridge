@@ -29,7 +29,7 @@ class InsteonIdiom(ModelIdiom):
     def create_asset(self, name, real_id, product_name):
         if type(real_id) == str:
             try:
-                check = unhexlify(real_id) #make sure string is valid
+                check = unhexlify(real_id.encode()) #make sure string is valid
             except binascii.Error:
                 raise IdiomError("Could not unhexlify `{0}`.".format(real_id))
 
