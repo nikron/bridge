@@ -2,9 +2,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import gevent
 import gevent.coros
 import gevent.event
+from bridge2.config.config import ConfigurableEntity
 from bridge2.io.devices import DeviceProfile, Locator
 
-class Asset(object):
+class Asset(ConfigurableEntity):
     """Represents a unit of equipment accessible on a Domain."""
     def _CacheEntry(object):
         def __init__(self):
