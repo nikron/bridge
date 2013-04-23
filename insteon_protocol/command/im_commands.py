@@ -66,12 +66,6 @@ def _create_direct_simple_extended_command(name, cmd1, cmd2):
 
     return type(name, (IMInsteonCommand,), {'__init__' : __init__})
 
-def _create_interdevice_extended_command(name, cmd1, cmd2):
-    def __init__(self, from_address, to_address, extended_data):
-        InsteonCommand.__init__(self, from_address, to_address, False, False, False, True, 3, 3, cmd1, cmd2, extended_data)
-
-    return type(name, (InsteonCommand,), {'__init__' : __init__})
-
 #The long wall of standard insteon commands, names should be self explinatory
 
 #STANDARD COMMANDS
@@ -100,5 +94,3 @@ TurnOffFast = _create_direct_static_standard_command('TurnOffFast', b'\x14', b'\
 
 #EXTENDED COMMANDS
 SetDeviceTextString =  _create_direct_simple_extended_command('SetDeviceTextString', b'\x03', b'\x03')
-
-TestInterdevice = _create_interdevice_extended_command('TestInterdevice', b'\x03', b'\x04')
