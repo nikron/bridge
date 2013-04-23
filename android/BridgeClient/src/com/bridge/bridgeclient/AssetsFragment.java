@@ -1,36 +1,31 @@
 package com.bridge.bridgeclient;
 
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuInflater;
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-
 import android.os.Bundle;
+import android.os.Handler;
+
+import android.content.Intent;
+
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
-import android.widget.ExpandableListView;
-
+import android.widget.ListView;
 import android.widget.Toast;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
-public class AssetsFragment extends SherlockFragment
+public class AssetsFragment extends SherlockFragment implements BridgeClientReceiver.Receiver
 {
-    URI serverURL;
-    AssetExpandableListAdapter deviceAdapter;
-    SharedPreferences sharedPref;
-    AssetList assetList;
+    SherlockFragmentActivity context;
+    BridgeClientReceiver receiver;
+    ListView devices;
 
     public AssetsFragment()
     {
         super();
-        this.serverURL = null;
-        this.assetList = new AssetList(serverURL);
     }
 
     @Override
@@ -38,22 +33,24 @@ public class AssetsFragment extends SherlockFragment
     {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        this.sharedPref = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        receiver = new BridgeClientReceiver(new Handler());
+        receiver.setReceiver(this);
+
+        context = getSherlockActivity();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.assetsfragment, container);
-        final ExpandableListView devices = (ExpandableListView) view.findViewById(R.id.expandassetlist);
-        deviceAdapter = new AssetExpandableListAdapter(getActivity(), this.assetList);
-        devices.setAdapter(deviceAdapter);
+        devices = (ListView) view.findViewById(R.id.assetlist);
 
         return view;
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+    {
         inflater.inflate(R.menu.assetsfragment, menu);
     }
 
@@ -70,26 +67,36 @@ public class AssetsFragment extends SherlockFragment
         }
     }
 
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData)
+    {
+        switch (resultCode)
+        {
+            case BridgeClientService.STATUS_RUNNING:
+                context.setSupportProgressBarIndeterminateVisibility(true);
+                break;
+
+            case BridgeClientService.STATUS_FINISHED:
+                context.setSupportProgressBarIndeterminateVisibility(false);
+                break; case BridgeClientService.STATUS_ERROR:
+                context.setSupportProgressBarIndeterminateVisibility(false);
+                displayError(resultData.getString(Intent.EXTRA_TEXT));
+                break;
+        }
+    }
+
     private void displayError(String message)
     {
+        Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+        toast.show();
     }
 
     private void refresh()
     {
-        String server = sharedPref.getString("pref_server", "");
-        String port = sharedPref.getString("pref_port", "8080");
-        URI url;
+        final Intent intent = new Intent(Intent.ACTION_SYNC, null, context, BridgeClientService.class);
+        intent.putExtra(BridgeClientService.RECEIVER_KEY, receiver);
+        intent.putExtra(BridgeClientService.COMMAND_KEY, BridgeClientService.GET_ASSETS_COMMAND);
 
-        try
-        {
-            url = new URI(server + ":" + port + "/assets");
-            this.assetList.setURL(url);
-        }
-            catch (URISyntaxException e)
-        {
-            displayError(e.getMessage());
-        }
-
-        deviceAdapter.refresh();
+        context.startService(intent);
     }
 }

@@ -9,6 +9,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.view.Window;
 
 public class BridgeActivity extends SherlockFragmentActivity
 {
@@ -16,8 +17,10 @@ public class BridgeActivity extends SherlockFragmentActivity
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        setSupportProgressBarIndeterminateVisibility(false);
     }
 
     @Override

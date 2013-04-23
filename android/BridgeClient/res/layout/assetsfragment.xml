@@ -4,11 +4,11 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-    <ExpandableListView
-        android:id="@+id/expandassetlist"
+    <ListView
+        android:id="@+id/assetlist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:indicatorRight="0dp"
         android:indicatorLeft="0dp">
-    </ExpandableListView>
+    </ListView>
 </LinearLayout>

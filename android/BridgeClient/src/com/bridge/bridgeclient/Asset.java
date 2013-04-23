@@ -1,30 +1,22 @@
 package com.bridge.bridgeclient;
 
 import java.util.Iterator;
-import java.io.IOException;
 import java.net.URI;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.apache.http.client.ClientProtocolException;
-import java.net.URISyntaxException;
 
-class Asset
+public class Asset
 {
     private String name;
     private String realID;
     private String url;
     private String uuid;
     private String[][] status;
-    private Action[] actions;
+    private String[] actionURLs;
 
-    public Asset(URI url) throws JSONException, ClientProtocolException, IOException, URISyntaxException
-    {
-        this(Utility.getURL(url));
-    }
-
-    public Asset(String assetJSON) throws JSONException, ClientProtocolException, IOException, URISyntaxException
+    public Asset(String assetJSON) throws JSONException
     {
         JSONObject obj = new JSONObject(assetJSON);
 
@@ -45,13 +37,10 @@ class Asset
             j++;
         }
 
-        JSONArray actionURLs = obj.getJSONArray("action_urls");
-        actions = new Action[actionURLs.length()];
-
-        for (j = 0; j < actionURLs.length(); j++)
-        {
-            actions[j] = new Action(actionURLs.getString(j));
-        }
+        JSONArray actionJSONURLs = obj.getJSONArray("action_urls");
+        actionURLs = new String[actionJSONURLs.length()];
+        for (j = 0; j < actionJSONURLs.length(); j++)
+            actionURLs[j] = actionJSONURLs.getString(j);
 
     }
 
@@ -68,16 +57,6 @@ class Asset
     public String getUUID()
     {
         return uuid;
-    }
-
-    public Action getAction(int i)
-    {
-        return actions[i];
-    }
-
-    public int numberOfActions()
-    {
-        return actions.length;
     }
 
     public int numberOfCategories()
