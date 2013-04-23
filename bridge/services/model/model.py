@@ -67,7 +67,10 @@ class Model():
 
         return True
 
-    def transform_action_to_method(self, uuid, action, *args, **kwargs):
+    def get_asset_control_message(self, uuid, category, state):
+        return self.get_asset(uuid).get_control_message(category, state)
+
+    def transform_action_to_message(self, uuid, action, *args, **kwargs):
         """Perform an action on uuid asset."""
         asset = self.assets.get(uuid)
 

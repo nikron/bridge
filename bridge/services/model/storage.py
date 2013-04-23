@@ -111,8 +111,3 @@ class ModelStorage():
             self.file_name = file_name
 
             return  file_name
-
-class PickleStorage(ModelStorage):
-    DEFAULT = 'default.pickle'
-
-

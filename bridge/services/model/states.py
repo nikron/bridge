@@ -164,6 +164,12 @@ class States():
 
         self.categories[trigger.category].remove_trigger(trigger)
 
+    def set_default_control(self, category, state, control):
+        self.categories[category].set_default_control(control)
+
+    def set_control(self, category, state, control):
+        self.categories[category].set_control(state, control)
+
     def serializable(self):
         ser = {}
 

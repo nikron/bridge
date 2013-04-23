@@ -171,23 +171,44 @@ class HTTPAPIService(BridgeService):
             asset_uuid = self._make_uuid(asset)
             asset_json = self._get_asset_json(asset_uuid)
 
+            change_name = False #it's only correct to do patch changes
+            state_changes = [] #if the full patch is accepted
+
             patch = request.body.read(request.MEMFILE_MAX).decode()
             try:
                 result = jsonpatch.apply_patch(asset_json, patch)
             except jsonpatch.JsonPatchException:
                 raise HTTPError(400, "Not a correct json-patch.")
 
-            changed = self._report_keys_changed(asset_json, result)
+            changed = self._report_keys_changed(asset_json, result, {'name', 'state'})
 
-            if not changed.issubset({"name"}):
-                raise HTTPError(422, "Only accepts changes on name.")
+            if 'name' in changed:
+                if type(result['name']) == str:
+                    todo_change_name = True
+                else:
+                    raise HTTPError(422, "Name must be a string.")
 
-            for key in changed:
-                if key == "name":
-                    if type(result[key]) == str:
-                        self.remote_async_service_method('model', 'set_asset_name', asset_uuid, result[key])
+            #check if state is changed in a valid way, it's a bit of a doozy
+            #can't think of better way to do it (except with like a state_url so this makes
+            #sense in its own method
+            if 'state' in changed:
+                state_json = asset_json['state']
+                allowable = {category for category in state_json if state_json[category]['controllable']}
+                categories_changed = self._report_keys_changed(state_json, result['state'], allowable)
+
+                for category in categories_changed:
+                    self._report_keys_changed(state_json[category], result['state'][category], {'current'})
+                    current_state = asset_json['state'][category]['current']
+
+                    if type(current_state) == str:
+                        state_changes.append((category, current_state))
                     else:
-                        raise HTTPError(422, "Name must be a string.")
+                        raise HTTPError(422, "Current must be a string.")
+
+            if change_name:
+                self.remote_async_service_method('model', 'set_asset_name', changed['name'])
+            for state_change in state_changes:
+                self.remote_async_service_method('model', 'control_asset', state_change[0], state_change[1])
 
             response.status = 204
             return None
@@ -289,11 +310,14 @@ class HTTPAPIService(BridgeService):
             raise HTTPError(404, "Asset not found.")
 
     @staticmethod
-    def _report_keys_changed(first, second):
+    def _report_keys_changed(first, second, allowable):
         first_set = set(first.keys())
         second_set = set(second.keys())
         changed = {key for key in first_set.intersection(second_set) if first[key] != second[key]}
         changed.union(first_set.symmetric_difference(second_set))
+
+        if changed.issubset(allowable):
+            HTTPError(422, "Patching something that can't be patched.")
 
         return changed
 

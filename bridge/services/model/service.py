@@ -96,7 +96,7 @@ class ModelService(BridgeService):
     def perform_asset_action(self, uuid, action, *args, **kwargs):
         """Perform an action on an asset."""
         try:
-            msg = self.model.transform_action_to_method(uuid, action, *args, **kwargs)
+            msg = self.model.transform_action_to_message(uuid, action, *args, **kwargs)
             self.hub_connection.send(msg)
         except ActionError as err:
             return err.message
@@ -104,6 +104,10 @@ class ModelService(BridgeService):
             return "Asset not found."
 
         return None
+
+    def control_asset(self, uuid, category, state):
+        msg = self.model.get_asset_control_message(uuid, category, state)
+        self.hub_connection.send(msg)
 
     def io_update(self, service, real_id, update):
         """

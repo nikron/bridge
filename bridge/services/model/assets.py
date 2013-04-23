@@ -59,6 +59,9 @@ class Asset(metaclass = Actions):
         """The product name of the asset ie ApplianceLinc V2"""
         return self.backing.product_name
 
+    def get_control_message(self, category, state):
+        return self.states.get_control(category, state)
+
     def set_name(self, name):
         self.name = name
 
@@ -99,6 +102,8 @@ class OnOffAsset(Asset):
     def __init__(self, name, real_id, service, product_name):
         backing = Backing(real_id, service, product_name, [('turn_on', []), ('turn_off', [])])
         super().__init__(name, self.on_off_states, backing)
+        self.states.set_control('main', True, self.backing.bridge_messages[0])
+        self.states.set_control('main', False, self.backing.bridge_messages[1])
 
     @action("Turn On")
     def turn_on(self):
