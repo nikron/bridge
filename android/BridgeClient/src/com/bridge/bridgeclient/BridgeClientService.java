@@ -28,7 +28,7 @@ public class BridgeClientService extends IntentService
     public static final int GET_ASSETS_COMMAND = 1;
 
     public static final int STATUS_ERROR = 0;
-    public static final int STATUS_FINISHED = 1;
+    public static final int STATUS_GET_ASSETS_FINISHED = 1;
     public static final int STATUS_RUNNING = 2;
 
     public BridgeClientService()
@@ -61,7 +61,7 @@ public class BridgeClientService extends IntentService
                         assetJSON[i] = Utility.getURL(urlArray.getString(i));
                     }
                     b.putStringArray(RESULTS_KEY, assetJSON);
-                    receiver.send(STATUS_FINISHED, b);
+                    receiver.send(STATUS_GET_ASSETS_FINISHED, b);
                 }
                 catch (Exception e)
                 {

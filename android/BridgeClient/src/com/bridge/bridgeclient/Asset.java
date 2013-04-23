@@ -73,4 +73,9 @@ public class Asset
     {
         return status[i][1];
     }
+
+    public String toString()
+    {
+        return getName();
+    }
 }

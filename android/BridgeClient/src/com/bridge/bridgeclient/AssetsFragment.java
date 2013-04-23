@@ -17,10 +17,13 @@ import android.view.LayoutInflater;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+
 public class AssetsFragment extends SherlockFragment implements BridgeClientReceiver.Receiver
 {
     SherlockFragmentActivity context;
     BridgeClientReceiver receiver;
+    AssetsArrayAdapter assetsAdapter;
     ListView devices;
 
     public AssetsFragment()
@@ -44,6 +47,8 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
     {
         View view = inflater.inflate(R.layout.assetsfragment, container);
         devices = (ListView) view.findViewById(R.id.assetlist);
+        assetsAdapter = new AssetsArrayAdapter(context, R.xml.asset, R.id.assetname);
+        devices.setAdapter(assetsAdapter);
 
         return view;
     }
@@ -62,6 +67,7 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
             case R.id.menu_refresh_assets:
                 refresh();
                 return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -76,9 +82,13 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
                 context.setSupportProgressBarIndeterminateVisibility(true);
                 break;
 
-            case BridgeClientService.STATUS_FINISHED:
+            case BridgeClientService.STATUS_GET_ASSETS_FINISHED:
                 context.setSupportProgressBarIndeterminateVisibility(false);
-                break; case BridgeClientService.STATUS_ERROR:
+                newAssetData(resultData.getStringArray(BridgeClientService.RESULTS_KEY));
+
+                break;
+            
+            case BridgeClientService.STATUS_ERROR:
                 context.setSupportProgressBarIndeterminateVisibility(false);
                 displayError(resultData.getString(Intent.EXTRA_TEXT));
                 break;
@@ -89,6 +99,26 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
     {
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
         toast.show();
+    }
+
+    private void newAssetData(String[] assetsJSON)
+    {
+        assetsAdapter.clear();
+        for (int i = 0; i < assetsJSON.length; i++)
+        {
+            try
+            {
+                Toast toast = Toast.makeText(context, new Asset(assetsJSON[i]).toString(), Toast.LENGTH_SHORT);
+                toast.show();
+                assetsAdapter.add(new Asset(assetsJSON[i]));
+            }
+                catch (JSONException e)
+            {
+                displayError(e.getMessage());
+            }
+        }
+
+        assetsAdapter.notifyDataSetChanged();
     }
 
     private void refresh()
