@@ -1,7 +1,7 @@
 """
 An asset is the internal representation of a device.
 """
-from bridge.services.model.states import States
+from bridge.services.model.states import States, BinaryStateCategory
 from bridge.services.model.actions import Actions, action, get_actions
 from bridge.service import BridgeMessage
 import logging
@@ -94,7 +94,7 @@ class OnOffAsset(Asset):
     A device that is either simply on or off.
     """
 
-    on_off_states = States(main=bool)
+    on_off_states = States(BinaryStateCategory('main'))
 
     def __init__(self, name, real_id, service, product_name):
         backing = Backing(real_id, service, product_name, [('turn_on', []), ('turn_off', [])])

@@ -1,5 +1,5 @@
 import unittest
-from bridge.services.model.states import States, Trigger
+from bridge.services.model.states import States, BinaryStateCategory, Trigger
 
 class TestState(unittest.TestCase):
     def setUp(self):
@@ -9,7 +9,7 @@ class TestState(unittest.TestCase):
             self.flipped = True
 
         trigger = Trigger('bams', True, flip)
-        self.state = States(bams=bool)
+        self.state = States(BinaryStateCategory('bams'))
         self.state.add_trigger(trigger)
 
     def test_flip_from_transition(self):

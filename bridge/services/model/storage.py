@@ -59,6 +59,9 @@ class ModelStorage():
         except FileNotFoundError:
             return model
 
+        except ValueError:
+            return model
+
     def write_model(self, model, file_name = None):
         """
         Write model to the file.

@@ -22,27 +22,17 @@ class Trigger():
         self.func()
 
 class StateCategory():
-    BINARY = 'binary'
-    RANGE = 'range'
-
-    UNKNOWN_STATE = 'unknown' #all categories can be unknown
-
-    def __init__(self, category, states):
+    def __init__(self, category, states, _type):
         self.category = category
-        self.current_state = self.UNKNOWN_STATE
-
-        if type(states) is range:
-            self.type = self.RANGE
-            self.states = list(states).append(self.UNKNOWN_STATE)
-
-        elif states == bool:
-            self.type = self.BINARY
-            self.states = [True, False, self.UNKNOWN_STATE]
-
-        else:
-            raise TypeError('State is not binary or a range.')
+        self.current_state = None
+        self.states = states
+        self.unknown = True
+        self.controllable = False
+        self.default_control = None
+        self.type = _type
 
         self.triggers = defaultdict(lambda : [])
+        self.controls = {}
 
     def transition(self, state):
         if state in self.states:
@@ -55,8 +45,27 @@ class StateCategory():
 
         else: return False
 
+    def get_category(self):
+        return self.category
+
     def get_type(self):
         return self.type
+
+    def set_default_control(self, func):
+        self.default_control = func
+        self._check_controllable()
+
+    def set_control(self, state, control):
+        self.controls[state] = control
+        self.controllable = True
+        self._check_controllable()
+
+    def get_control(self, state):
+        #maybe raise an error if not controllable, probably shouldn't
+        if state in self.controls:
+            return self.controls[state]
+        else:
+            return self.default_control(state)
 
     def add_trigger(self, trigger):
         self.triggers[trigger.state].append(trigger)
@@ -68,12 +77,20 @@ class StateCategory():
         ser = {}
         ser['current'] = self.current_state
         ser['type'] = self.type
-        if self.type == self.RANGE:
-            ser['possibilities'] = str(self.states)
-        elif self.type == self.BINARY:
-            ser['possibilities'] =  "boolean"
+        ser['controllable'] = self.controllable
+        ser['possible states'] = self.states
 
         return ser
+
+    def _check_controllable(self):
+        if self.default_control:
+            self.controllable = True
+        else:
+            self.controllable = True
+            for state in self.states:
+                if state not in self.controls:
+                    self.controllable = False
+                    return
 
     def __contains__(self, state):
         return state in self.states
@@ -87,16 +104,20 @@ class StateCategory():
     def __str__(self):
         return self.category
 
+class BinaryStateCategory(StateCategory):
+    BINARY_TYPE = 'binary'
+    def __init__(self, category):
+        super().__init__(category, [True, False], self.BINARY_TYPE)
 
 class States():
     """
     States is effectively a collection of categories that can have different states.  Currently can only trigger events when one category changes to a state.
     """
-    def __init__(self, **states):
+    def __init__(self, *states):
 
         self.categories = {}
         for state in states:
-            self.categories[state] = StateCategory(state, states[state])
+            self.categories[state.get_category()] = state
 
         self.triggers = []
         self.orient()
