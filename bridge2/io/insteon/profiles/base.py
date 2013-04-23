@@ -6,6 +6,7 @@ class InsteonDeviceProfile(DeviceProfile):
     __metaclass__ = abc.ABCMeta
     
     def bind(self, locator):
+        assert isinstance(locator, Locator)
         return locator.domain._bind(locator, self)
     
     @abc.abstractmethod
