@@ -70,44 +70,8 @@ class ModemPDU(object):
     
     def encode(self):
         return b"\x02" + chr(self.command) + self.payload
-    
-    @staticmethod
-    def readfrom(src, readfn=None):
-        """Read a command from an IM interface, needs to support read(number)"""
-        
-        # If not told otherwise, use the read function
-        if readfn == None:
-            readfn = src.read
-            
-        # Read the PDU header
-        magic = ord(readfn(src, 1))
-        if magic != 0x02:
-            raise IOError("STX byte expected when reading PDU")
-        cmd = ord(readfn(src, 1))
-        ctuple = ModemPDU._receivables.get(cmd)
-        if ctuple == None:
-            raise IOError("An unrecognized modem PDU was received")
-        
-        # Read the payload
-        l, ctor = ctuple
-        if cmd == ModemPDU.SEND_INSTEON_MSG:
-            payload = ModemPDU._readmsg(src, readfn)
-        else:
-            payload = readfn(src, l)
-        
-        # Return a ModemPDU instance representing the message
-        logging.debug("Read buffer {0}".format(repr(payload)))
-        return ModemPDU.decode(cmd, payload)
 
-    @staticmethod
-    def _readmsg(src, readfn):
-        control = readfn(src, 4)
-        flags = ord(control[3])
-        if flags & 8 != 0:
-            body = readfn(src, 17) #16 bytes left for ed insteon
-        else:
-            body = readfn(src, 3) #two bytes left for a sd insteon
-        return control + body
+
 
 #
 # Transmissible PDUs
@@ -219,7 +183,7 @@ class SendInsteonMsgModemRespPDU(ModemPDU):
         rv.successful = (ord(payload[-1]) == 0x06)
         return rv
         
-ModemPDU._receivables = {
+_pdutable = {
     ModemPDU.STD_INSTEON_MSG_RCVD: (9, StdInsteonMessageRcvdModemPDU),
     ModemPDU.EXT_INSTEON_MSG_RCVD: (23, ExtInsteonMessageRcvdModemPDU),
     ModemPDU.X10_MSG_RCVD: (2, None),
@@ -250,3 +214,80 @@ ModemPDU._receivables = {
     ModemPDU.RF_SLEEP: (1, None),
     ModemPDU.GET_IM_CONFIG: (4, None)
 }
+
+#
+# Modem client
+#
+
+class ModemClient(object):    
+    def __init__(self, devfile):
+        assert isinstance(devfile, unicode)
+        self._dev = serial.Serial(devfile, 19200, timeout=0, writeTimeout=0)
+
+    def close(self):
+        """Close the underlying serial device."""
+        self._dev.close()
+        self._dev = None
+
+    def _readmsg(self):
+        control = self._readnb(4)
+        flags = ord(control[3])
+        if flags & 8 != 0:
+            body = self._readnb(17) #16 bytes left for ed insteon
+        else:
+            body = self._readnb(3) #two bytes left for a sd insteon
+        return control + body
+        
+    def _readnb(self, n):
+        # Use select to yield until the device is ready, then write
+        data = ""
+        nread = 0
+        while nread < n:
+            gevent.select.select([self._dev], [], [])
+            data2 = self._dev.read(n)
+            nread += len(data2)
+            data += data2
+        return data
+
+    def recv(self):
+        """Read a ModemPDU from the serial interface."""
+        # Do a sanity check
+        if self._dev == None:
+            raise IOError("The device has already been closed")
+        
+        # Read the PDU header
+        magic = ord(self._readnb(1))
+        if magic != 0x02:
+            raise IOError("STX byte expected when reading PDU")
+        cmd = ord(self._readnb(1))
+        ctuple = _pdutable.get(cmd)
+        if ctuple == None:
+            raise IOError("An unrecognized modem PDU was received")
+        
+        # Read the payload
+        if cmd == ModemPDU.SEND_INSTEON_MSG:
+            payload = self._readmsg()
+        else:
+            payload = self._readnb(ctuple[0])
+        
+        # Return a ModemPDU instance representing the message
+        logging.debug("Read buffer {0}".format(repr(payload)))
+        return ModemPDU.decode(cmd, payload)
+
+    def send(self, pdu):
+        """Transmit a ModemPDU on the serial interface."""
+        # Do a sanity check
+        if self._dev == None:
+            raise IOError("The device has already been closed")
+            
+        # Transmit the data
+        self._writenb(pdu.encode())
+
+    def _writenb(self, data):
+        # Use select to yield until the device is ready, then write
+        n = len(data)
+        nwritten = 0
+        while nwritten < n:
+            gevent.select.select([], [self._dev], [])
+            nwritten += self._dev.write(data[nwritten:])
+        return n
