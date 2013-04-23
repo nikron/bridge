@@ -6,8 +6,8 @@ with the correct information.
 import binascii
 
 class InsteonMessage(object):
-    """Base class for all insteon commands."""
-    
+    """Represents a standard-length Insteon message, and serves as a base
+       class for all other types of Insteon message objects."""
     DIRECT_CMD = 0b000
     DIRECT_ACK = 0b001
     LINK_CLEANUP_CMD = 0b010
@@ -45,10 +45,12 @@ class InsteonMessage(object):
 
     @property
     def c1(self):
+        """Return the first command byte for this InsteonMessage."""
         return self._c1
     
     @property
     def c2(self):
+        """Return the second command byte for this InsteonMessage."""
         return self._c2
 
     @classmethod
@@ -72,7 +74,7 @@ class InsteonMessage(object):
         self._c2 = ord(buf[2])
         
     def encode(self):
-        """Encode the message as a bytestring."""
+        """Encode this InsteonMessage as a bytestring."""
         flags = 0
         flags |= self._mclass << 5
         flags |= (0b10000 if self.extended else 0)
@@ -82,18 +84,24 @@ class InsteonMessage(object):
 
     @property
     def extended(self):
+        """Return whether or not this InsteonMessage is an extended message."""
         return False
     
     @property
     def max_ttl(self):
+        """Return the maximum number of forwards permitted for this
+           InsteonMessage."""
         return self._max_ttl
     
     @property
     def mclass(self):
+        """Return the message class of this InsteonMessage."""
         return self._mclass
 
     @property
     def ttl(self):
+        """Return the remaining number of forwards permitted for this
+           InsteonMessage."""
         return self._ttl
 
     def __str__(self):
@@ -105,7 +113,8 @@ class InsteonMessage(object):
         mcn += InsteonMessage._mcnames[self._mclass]
         return fmt.format(mcn, self._c1, self._c2, self._ttl, self._max_ttl)
 
-class ExtInsteonMessage(InsteonMessage):   
+class ExtInsteonMessage(InsteonMessage):
+    """Represents an extended-length Insteon message."""
     def __init__(self, mclass, ttl, max_ttl, c1, c2, extdata):
         assert isinstance(extdata, bytes)
         assert len(extdata) == 14
@@ -118,11 +127,13 @@ class ExtInsteonMessage(InsteonMessage):
         self._extdata = buf[3:17]
     
     def encode(self):
+        """Encode this ExtInsteonMessage as a bytestring."""
         basebuf = super(ExtInsteonMessage, self).encode()
         return basebuf + self._extdata
     
     @property
     def extdata(self):
+        """Return the extended data from this ExtInsteonMessage."""
         return self._extdata
     
     @property

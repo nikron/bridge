@@ -3,6 +3,7 @@ Decode messages from an Insteon PLM.
 """
 
 from __future__ import absolute_import, division, print_function, unicode_literals
+import binascii
 import logging
 from bridge2.io.insteon.messages import ExtInsteonMessage, InsteonMessage
 
@@ -42,8 +43,12 @@ class ModemPDU(object):
     GET_IM_CONFIG = 0x73            # Get IM Configuration
     
     def __init__(self, command, payload):
-        self.command = command
-        self.payload = payload
+        self._command = command
+        self._payload = payload
+    
+    @property
+    def command(self):
+        return self._command
     
     @classmethod
     def decode(cls, command, payload):
@@ -71,7 +76,17 @@ class ModemPDU(object):
     def encode(self):
         return b"\x02" + chr(self.command) + self.payload
 
+    @property
+    def payload(self):
+        return self._payload
 
+    def __str__(self):
+        return self.__unicode__().encode()
+    
+    def __unicode__(self):
+        fmt = "{0:#02x} PDU: {1}"
+        payloads = binascii.hexlify(self._payload)
+        return fmt.format(self._command, payloads)
 
 #
 # Transmissible PDUs
@@ -84,8 +99,21 @@ class SendInsteonMsgModemPDU(ModemPDU):
         cmd = ModemPDU.SEND_INSTEON_MSG
         payload = dest + message.encode()
         super(SendInsteonMsgModemPDU, self).__init__(cmd, payload)
-        self.dest = dest
-        self.message = message
+        self._dest = dest
+        self._message = message
+    
+    @property
+    def dest(self):
+        return self._dest
+        
+    @property
+    def message(self):
+        return self._message
+    
+    def __unicode__(self):
+        fmt = "SendInsteonMsg PDU: [{0}] {1}"
+        dests = binascii.hexlify(self._dest)
+        return fmt.format(dests, self._message)
 
 #
 # Receivable PDUs
@@ -94,13 +122,33 @@ class SendInsteonMsgModemPDU(ModemPDU):
 class StdInsteonMessageRcvdModemPDU(ModemPDU):
     def __init__(self, src, dest, message):
         raise NotImplementedError()
-        
+    
     @classmethod
     def _decode(cls, command, payload):
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
-        rv.message = InsteonMessage.decode(payload)
+        rv._src = payload[0:3]
+        rv._dest = payload[3:6]
+        rv._message = InsteonMessage.decode(payload[6:9])
         return rv
+    
+    @property
+    def dest(self):
+        return self._dest
+    
+    @property
+    def message(self):
+        return self._message
+    
+    @property
+    def src(self):
+        return self._src
+        
+    def __unicode__(self):
+        fmt = "StdInsteonMessageRcvd PDU: [{0}->{1}] -> {2}"
+        srcs = binascii.hexlify(self._src)
+        dests = binascii.hexlify(self._dest)
+        return fmt.format(srcs, dests, self._message)
 
 class ExtInsteonMessageRcvdModemPDU(ModemPDU):
     def __init__(self, src, dest, message):
@@ -110,92 +158,77 @@ class ExtInsteonMessageRcvdModemPDU(ModemPDU):
     def _decode(cls, command, payload):
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
-        rv.message = ExtInsteonMessage.decode(payload)
+        rv._src = payload[0:3]
+        rv._dest = payload[3:6]
+        rv._message = ExtInsteonMessage.decode(payload[6:23])
         return rv
-
-class ButtonEventReportModemPDU(ModemPDU):
-    BUTTON_SET = 0
-    BUTTON_2 = 1
-    BUTTON_3 = 2
-    EVENT_TAP = 2
-    EVENT_HOLD = 3
-    EVENT_RELEASE = 4
+        
+    @property
+    def dest(self):
+        return self._dest
     
-    def __init__(self, command, payload):
-        raise NotImplementedError()
-        
-    @classmethod
-    def _decode(cls, button, event):
-        rv = cls.__new__(cls)
-        super(cls, rv).__init__(command, payload)
-        v = ord(payload[0])
-        rv.button = v >> 4
-        rv.event = v & 0xF
-        return rv
+    @property
+    def message(self):
+        return self._message
+    
+    @property
+    def src(self):
+        return self._src
+    
+    def __unicode__(self):
+        fmt = "ExtInsteonMessageRcvd PDU: [{0}->{1}] -> {2}"
+        srcs = binascii.hexlify(self._src)
+        dests = binascii.hexlify(self._dest)
+        return fmt.format(srcs, dests, self._message)
 
-class UserResetDetectedModemPDU(ModemPDU):
-    def __init__(self):
-        raise NotImplementedError()
-        
-    @classmethod
-    def _decode(cls, command, payload):
-        rv = cls.__new__(cls)
-        super(cls, rv).__init__(command, payload)
-        return rv
-
-class LinkCleanupFailureRptModemPDU(ModemPDU):
-    def __init__(self, link_group, src):
-        raise NotImplementedError()
-        
-    @classmethod
-    def _decode(cls, command, payload):
-        rv = cls.__new__(cls)
-        super(cls, rv).__init__(command, payload)
-        rv.link_group = ord(payload[1])
-        rv.src = payload[2:5]
-        return rv
-
-class LinkCleanupStatusRptModemPDU(ModemPDU):
-    def __init__(self, successful):
-        raise NotImplementedError()
-        
-    @classmethod
-    def _decode(cls, command, payload):
-        rv = cls.__new__(cls)
-        super(cls, rv).__init__(command, payload)
-        rv.successful = (ord(payload[0]) == 0x06)
-        return rv
-
-class SendInsteonMsgModemRespPDU(ModemPDU):
+class SendInsteonMsgRespModemPDU(ModemPDU):
     def __init__(self, dest, message, successful):
         raise NotImplementedError()
-        
+    
     @classmethod
     def _decode(cls, command, payload):
         rv = cls.__new__(cls)
         super(cls, rv).__init__(command, payload)
-        rv.dest = payload[0:3]
+        rv._dest = payload[0:3]
         msgdata = payload[3:-1]
         if len(msgdata) == 17:
-            rv.message = ExtInsteonMessage.decode(msgdata)
+            rv._message = ExtInsteonMessage.decode(msgdata)
         else:
-            rv.message = InsteonMessage.decode(msgdata)
-        rv.successful = (ord(payload[-1]) == 0x06)
+            rv._message = InsteonMessage.decode(msgdata)
+        rv._successful = (ord(payload[-1]) == 0x06)
         return rv
+        
+    @property
+    def dest(self):
+        return self._dest
+        
+    @property
+    def message(self):
+        return self._message
+        
+    @property
+    def successful(self):
+        return self._successful
+        
+    def __unicode__(self):
+        fmt = "SendInsteonMsgResp PDU: [{0}] {1} -> {2}"
+        dests = binascii.hexlify(self._dest)
+        stat = "OK" if self._successful else "FAIL"
+        return fmt.format(dests, stat, self._message)
         
 _pdutable = {
     ModemPDU.STD_INSTEON_MSG_RCVD: (9, StdInsteonMessageRcvdModemPDU),
     ModemPDU.EXT_INSTEON_MSG_RCVD: (23, ExtInsteonMessageRcvdModemPDU),
     ModemPDU.X10_MSG_RCVD: (2, None),
     ModemPDU.LINKING_COMPLETED: (8, None),
-    ModemPDU.BUTTON_EVENT_REPORT: (1, ButtonEventReportModemPDU),
-    ModemPDU.USER_RESET_DETECTED: (0, UserResetDetectedModemPDU),
-    ModemPDU.LINK_CLEANUP_FAILURE_RPT: (5, LinkCleanupFailureRptModemPDU),
+    ModemPDU.BUTTON_EVENT_REPORT: (1, None),
+    ModemPDU.USER_RESET_DETECTED: (0, None),
+    ModemPDU.LINK_CLEANUP_FAILURE_RPT: (5, None),
     ModemPDU.LINK_REC_RESPONSE: (8, None),
-    ModemPDU.LINK_CLEANUP_STATUS_RPT: (1, LinkCleanupStatusRptModemPDU),
+    ModemPDU.LINK_CLEANUP_STATUS_RPT: (1, None),
     ModemPDU.GET_IM_INFO: (7, None),
     ModemPDU.SEND_LINK_COMMAND: (4, None),
-    ModemPDU.SEND_INSTEON_MSG: (None, SendInsteonMsgModemRespPDU), # var. len.
+    ModemPDU.SEND_INSTEON_MSG: (None, SendInsteonMsgRespModemPDU), # var. len.
     ModemPDU.SEND_X10_MSG: (3, None),
     ModemPDU.START_LINKING: (3, None),
     ModemPDU.CANCEL_LINKING: (1, None),
@@ -216,10 +249,10 @@ _pdutable = {
 }
 
 #
-# Modem client
+# Direct modem interface
 #
 
-class ModemClient(object):    
+class ModemInterface(object):    
     def __init__(self, devfile):
         assert isinstance(devfile, unicode)
         self._dev = serial.Serial(devfile, 19200, timeout=0, writeTimeout=0)
@@ -277,6 +310,7 @@ class ModemClient(object):
     def send(self, pdu):
         """Transmit a ModemPDU on the serial interface."""
         # Do a sanity check
+        assert isinstance(pdu, ModemPDU)
         if self._dev == None:
             raise IOError("The device has already been closed")
             
