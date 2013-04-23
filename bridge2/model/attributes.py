@@ -54,13 +54,16 @@ class IntegerSpace(Space):
 class Attribute(object):
     """Represents a feature of a controllable element that may be accessed or
        controlled."""
-    def __init__(self, identifier, space, readable=True, writable=True, cacheable=True, config=False):
+    def __init__(self, identifier, space, readable=True, writable=True, cacheable=None, config=False):
+        if cacheable == None:
+            cacheable = readable
         assert isinstance(identifier, unicode)
         assert isinstance(space, Space)
         assert isinstance(readable, bool)
         assert isinstance(writable, bool)
         assert isinstance(cacheable, bool)
         assert isinstance(config, bool)
+        assert readable or not cacheable
         self._identifier = identifier
         self._space = space
         self._readable = readable

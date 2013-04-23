@@ -69,12 +69,6 @@ class Asset(ConfigurableEntity):
         """Return the identifier for this Asset."""
         return self._identifier
     
-    def load_cache(self):
-        # Run a query on every readable/cacheable attribute to fill the cache
-        for attr in self.attributes:
-            if attr.readable and attr.cacheable:
-                self.query_async(attr, max_staleness=float("inf"))
-    
     @property
     def locator(self):
         """Return the Locator of this Asset."""
