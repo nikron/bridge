@@ -151,7 +151,7 @@ class HTTPAPIService(BridgeService):
             asset_uuids = self.remote_block_service_method('model', 'get_assets')
             asset_urls = self.transform_to_urls(asset_uuids)
 
-            return self.encode({ 'assets_urls' : asset_urls })
+            return self.encode({ 'asset_urls' : asset_urls })
 
         return inner_assets
 
