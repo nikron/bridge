@@ -4,6 +4,7 @@ Decode messages from an Insteon PLM.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import binascii
+import gevent.select
 import logging
 import serial
 from bridge2.io.insteon.messages import ExtInsteonMessage, InsteonMessage
@@ -54,7 +55,7 @@ class ModemPDU(object):
     @classmethod
     def decode(cls, command, payload):
         # Look up the command type
-        ctuple = ModemPDU._receivables.get(command)
+        ctuple = _pdutable.get(command)
         if ctuple == None:
             raise ValueError("The specified command type is not decodable")
         l, ctor = ctuple

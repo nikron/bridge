@@ -31,9 +31,15 @@ class Bridge(object):
         # TODO: Stall indefinitely
 
 def find_creds(uname):
-    entry = pwd.getpwnam(uname)
+    # Find the /etc/passwd entry for uname
+    try:
+        entry = pwd.getpwnam(uname)
+    except KeyError:
+        raise ValueError(b"The specified user account does not exist")
     uid = entry.pw_uid
     gid = entry.pw_gid
+    
+    # Look up supplementary groups from /etc/group and return
     sgroups = []
     for group in grp.getgrall():
         if uname in group.gr_mem:
@@ -44,7 +50,7 @@ def go():
     try:
         args = parse_args()
         if args.uname != None:
-            creds = find_creds(self._uname)
+            creds = find_creds(args.uname)
         # TODO: Load configuration
         bridge = Bridge(cds)
         bridge.init()
@@ -57,6 +63,7 @@ def go():
         return 1
 
 def parse_args():
+    # Use argparse to handle command line arguments
     desc = "Provide access to a home automation system over the network."
     ap = argparse.ArgumentParser(description=desc)
     ap.add_argument("-p",
@@ -74,12 +81,15 @@ def parse_args():
                     dest="config")
     args = ap.parse_args()
     if args.port < 1 or args.port > 65535:
-        raise ValueError("argument -p: value out of range")
+        raise ValueError(b"argument -p: value out of range")
     return args
 
 def switch_creds(uid, gid, sgroups):
+    # Switch to the new set of groups
     os.setresgid(gid, gid, gid)
     os.setgroups(sgroups)
+    
+    # Switch to the new UID (this also clears capabilities)
     os.setresuid(uid, uid, uid)
 
 if __name__ == "__main__":
