@@ -113,13 +113,11 @@ class OnOffAsset(Asset):
     @action("Turn On")
     def turn_on(self):
         """Action to turn on the asset."""
-        self.states.transition('main', 'unknown')
 
         return self.backing.bridge_messages['on']
 
     @action("Turn Off")
     def turn_off(self):
         """Action to turn off the asset."""
-        self.states.transition('main', 'unknown')
 
         return self.backing.bridge_messages['off']

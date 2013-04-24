@@ -34,16 +34,8 @@ class StateCategory():
         self.triggers = defaultdict(lambda : [])
         self.controls = {}
 
-    def transition(self, state):
-        if state in self.states:
-            self.current_state = state
-
-            for trigger in self.triggers[state]:
-                trigger.trigger()
-
-            return True
-
-        else: return False
+    def add_trigger(self, trigger):
+        self.triggers[trigger.state].append(trigger)
 
     def get_category(self):
         return self.category
@@ -51,24 +43,12 @@ class StateCategory():
     def get_type(self):
         return self.type
 
-    def set_default_control(self, func):
-        self.default_control = func
-        self._check_controllable()
-
-    def set_control(self, state, control):
-        self.controls[state] = control
-        self.controllable = True
-        self._check_controllable()
-
     def get_control(self, state):
         #maybe raise an error if not controllable, probably shouldn't
         if state in self.controls:
             return self.controls[state]
         else:
             return self.default_control(state)
-
-    def add_trigger(self, trigger):
-        self.triggers[trigger.state].append(trigger)
 
     def remove_trigger(self, trigger):
         del self.triggers[trigger.state]
@@ -82,6 +62,33 @@ class StateCategory():
         ser['possible states'] = self.states
 
         return ser
+
+    def set_default_control(self, func):
+        self.default_control = func
+        self._check_controllable()
+
+    def set_control(self, state, control):
+        self.controls[state] = control
+        self.controllable = True
+        self._check_controllable()
+
+    def set_unknown(self, unknown):
+        if unknown:
+            self.current = None
+
+        self.unknown = unknown
+
+    def transition(self, state):
+        if state in self.states:
+            self.current_state = state
+
+            for trigger in self.triggers[state]:
+                trigger.trigger()
+
+            self.set_unknown(False)
+            return True
+
+        else: return False
 
     def _check_controllable(self):
         if self.default_control:
