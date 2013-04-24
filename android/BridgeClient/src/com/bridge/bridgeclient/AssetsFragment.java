@@ -85,7 +85,6 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
             case BridgeClientService.STATUS_GET_ASSETS_FINISHED:
                 context.setSupportProgressBarIndeterminateVisibility(false);
                 newAssetData(resultData.getStringArray(BridgeClientService.RESULTS_KEY));
-
                 break;
 
             case BridgeClientService.STATUS_ERROR:
