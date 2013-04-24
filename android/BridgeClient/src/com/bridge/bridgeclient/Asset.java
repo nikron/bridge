@@ -1,6 +1,7 @@
 package com.bridge.bridgeclient;
 
 import java.util.Iterator;
+import java.util.HashMap;
 import java.net.URI;
 
 import org.json.JSONObject;
@@ -13,7 +14,7 @@ public class Asset
     private String realID;
     private String url;
     private String uuid;
-    private String[][] status;
+    private HashMap<String, State> status;
     private String[] actionURLs;
 
     public Asset(String assetJSON) throws JSONException
@@ -24,23 +25,19 @@ public class Asset
         realID = obj.getString("real id");
         uuid = obj.getString("uuid");
         JSONObject statusObj = obj.getJSONObject("state");
-        status = new String[statusObj.length()][2];
+        status = new HashMap<String, State>();
 
-        int j = 0;
         Iterator<String> categories = statusObj.keys();
         for (String category; categories.hasNext();)
         {
             category = categories.next();
-            status[j] = new String[2];
-            status[j][0] = category;
-            status[j][1] = statusObj.getString(category);
-            j++;
+            status.put(category, new State(statusObj.getJSONObject(category)));
         }
 
         JSONArray actionJSONURLs = obj.getJSONArray("action_urls");
         actionURLs = new String[actionJSONURLs.length()];
-        for (j = 0; j < actionJSONURLs.length(); j++)
-            actionURLs[j] = actionJSONURLs.getString(j);
+        for (int i = 0; i < actionJSONURLs.length(); i++)
+            actionURLs[i] = actionJSONURLs.getString(i);
 
     }
 
@@ -61,21 +58,20 @@ public class Asset
 
     public int numberOfCategories()
     {
-        return status.length;
-    }
-
-    public String getCategory(int i)
-    {
-        return status[i][0];
-    }
-
-    public String getStatus(int i)
-    {
-        return status[i][1];
+        return status.size();
     }
 
     public String toString()
     {
         return getName();
+    }
+
+    public boolean hasSwitchableMain()
+    {
+        State main = status.get("main");
+        if (main != null && main.isSwitchable())
+            return true;
+        else
+            return false;
     }
 }

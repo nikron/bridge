@@ -10,6 +10,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.jraf.android.backport.switchwidget.Switch; //should figure out if we need this
+// or other
+
 public class AssetsArrayAdapter extends ArrayAdapter<Asset>
 {
     Context context;
@@ -33,9 +36,16 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset>
     @Override
     public View getView (int position, View convertView, ViewGroup parent)
     {
+        Asset asset = getItem(position);
+
         RelativeLayout layout = (RelativeLayout) LayoutInflater.from(context).inflate(resource, parent, false);
+
         TextView assetName = (TextView) layout.findViewById(textViewResourceId);
-        assetName.setText(super.getItem(position).toString());
+        assetName.setText(asset.toString());
+
+        Switch mainSwitch = (Switch) layout.findViewById(R.id.assetswitch);
+        mainSwitch.setEnabled(asset.hasSwitchableMain());
+
 
         return layout;
     }
