@@ -1,3 +1,5 @@
+import logging
+
 class CMDS():
     def __init__(self, cmd1, cmd2 = None, **kwargs):
         self.cmd1 = cmd1
@@ -54,8 +56,11 @@ class CommandBytesMap():
         cmd2 = insteon_command.cmd2
         cmd = CMDS(cmd1, cmd2)
 
+        logging.debug(cmd.both)
+
         if relative_cmd is not None:
             rcmd =  CMDS(relative_cmd.cmd1, relative_cmd.cmd2)
+            logging.debug(rcmd.both)
 
         obj = self.objs.get(cmd, None)
         if obj:

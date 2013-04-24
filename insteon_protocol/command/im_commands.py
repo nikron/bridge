@@ -24,6 +24,7 @@ class IMInsteonCommand(InsteonCommand):
         NOTE: This ASSUMES the command comes from an IM (That it has either 06 or 15 appeneded
         to it.
         """
+        buf = buf[2:] #strip the start of command and command type
 
         to = buf[0:3]
 
@@ -104,6 +105,8 @@ TurnOnFastLevel = create_standard_im_command('TurnOnFastLevel', TURNONFAST)
 
 TurnOff = create_standard_im_command('TurnOff', TURNOFF)
 TurnOffFast = create_standard_im_command('TurnOffFast', TURNOFFFAST)
+
+LightStatusRequest = create_standard_im_command('LightStatusRequest', LIGHTSTATUSREQUEST)
 
 #EXTENDED COMMANDS
 SetDeviceTextString =  _create_direct_simple_extended_command('SetDeviceTextString', b'\x03', b'\x03')

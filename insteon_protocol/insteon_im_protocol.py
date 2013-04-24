@@ -78,10 +78,8 @@ def read_command(im):
 def decode(buf):
     """Decode a buf into a the corresponding object."""
 
-    buf = buf[1:] #Remove the \x02
-
     try:
-        return MODEM_COMMANDS[buf[0:1]][1](buf[1:])
+        return MODEM_COMMANDS[buf[1:2]][1](buf)
     except TypeError:
         return None
     except KeyError:

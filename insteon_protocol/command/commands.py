@@ -60,9 +60,11 @@ class InsteonCommand(Command):
     @classmethod
     def decode(cls, buf):
         """Decode a byte string into an InsteonCommand."""
+        buf = buf[2:]
 
         fro = buf[0:3]
         to = buf[3:6]
+        print(len(to))
 
         flag = bitstring.BitString(buf[6:7])
         broad = flag[0]

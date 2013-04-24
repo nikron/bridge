@@ -68,7 +68,9 @@ class InsteonIdiom(ModelIdiom):
 
     def change_state(self, asset, update):
         try:
-            (category, status) = LINCMAPPING.get_with_command(asset.get_product_name(), update.command, update.relative)
+            print(update.command.encode())
+            print(update.relative)
+            category, status = LINCMAPPING.get_with_command(asset.get_product_name(), update.command, update.relative)
             asset.transition(category, status)
 
         except KeyError:
@@ -81,3 +83,11 @@ LINCMAPPING = LincMap()
 LINCMAPPING.register_with_product('ApplianceLinc V2', InsteonIdiom.create_onoff)
 LINCMAPPING.register_with_command('ApplianceLinc V2', TURNONFAST, ('main', True))
 LINCMAPPING.register_with_command('ApplianceLinc V2', TURNOFF, ('main', False))
+
+def bytes_to_state(cmd_bytes):
+    if cmd_bytes.cmd2 == 0:
+        return ('main', False)
+    else:
+        return ('main', True)
+
+LINCMAPPING.register_with_command('ApplianceLinc V2', LIGHTSTATUSREQUEST, bytes_to_state)

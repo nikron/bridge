@@ -63,21 +63,20 @@ class ModelService(BridgeService):
         Create an asset, make sure service exists  and real id doesn't already exist.
         """
 
-        try:
-            idiom = self.io_idioms[service]
-        except KeyError:
-            return (False, "Service `{0}` not valid.".format(service))
+        if service not in self.io_idioms :
+            return False, "Service `{0}` not valid.".format(service)
+
+        if self.model.get_asset_uuid(service, real_id):
+            return False, "Already have an asset on that id."
 
         try:
-            asset = idiom.create_asset(name, real_id, product_name)
+            asset = self.io_idioms[service].create_asset(name, real_id, product_name)
+            self._add_asset(service, asset, True)
+
+            return True, asset.uuid
+
         except IdiomError as err:
-            return (False, err.reason)
-
-        self.model.add_asset(asset)
-        logging.debug("Added asset {0}.".format(repr(asset)))
-        self.dirty = True
-
-        return (True, asset.uuid)
+            return False, err.reason
 
     def delete_asset(self, uuid):
         return self.model.remove_asset(uuid)
@@ -117,7 +116,7 @@ class ModelService(BridgeService):
 
         idiom = self.io_idioms[service]
         if idiom:
-            uuid = self.model.get_uuid(service, real_id)
+            uuid = self.model.get_asset_uuid(service, real_id)
 
             if uuid:
                 try:
@@ -130,12 +129,8 @@ class ModelService(BridgeService):
             else:
                 logging.debug("Got an update about device {0} that we don't know about.".format(real_id))
 
-                (asset, positive) = idiom.guess_asset(real_id, update)
-                self.model.add_asset(service, asset)
-                self.dirty = True
-
-                if not positive:
-                    self.remote_async_service_method(service, 'asset_info', asset.get_real_id())
+                asset, positive = idiom.guess_asset(real_id, update)
+                self._add_asset(service, asset, positive)
 
         else:
             logging.error("Do not know about io service {0}.".format(service))
@@ -145,3 +140,13 @@ class ModelService(BridgeService):
 
     def io_service_online(self, service):
         self.io_idioms[service].online = True
+
+    def _add_asset(self, service, asset, positive):
+        logging.debug("Adding asset {0}.".format(str(asset)))
+        self.model.add_asset(asset)
+        self.dirty = True
+
+        self.remote_async_service_method(service, 'asset_status', asset.get_real_id())
+
+        if not positive:
+            self.remote_async_service_method(service, 'asset_info', asset.get_real_id())

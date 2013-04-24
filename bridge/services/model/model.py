@@ -33,7 +33,7 @@ class Model():
         """Get all the pretty names of the assets."""
         return self.asset_names
 
-    def get_uuid(self, service, real_id):
+    def get_asset_uuid(self, service, real_id):
         """Get the uuid corresponding to a particular service + id. """
         if service in self.r2u:
             return self.r2u[service].get(real_id)
