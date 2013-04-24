@@ -10,18 +10,19 @@ import uuid
 
 class Backing():
     """Backing attributes of an Asset."""
-    def __init__(self, real_id, service, product_name, io_args):
+    def __init__(self, real_id, service, product_name, **message_args):
         self.real_id = real_id
         self.service = service
         self.product_name = product_name
-        self.io_args = io_args
-        self.bridge_messages = []
+        self.bridge_messages = {}
 
-        self._create_messages()
+        self.add_messages(**message_args)
 
-    def _create_messages(self):
-        for method, args in self.io_args:
-            self.bridge_messages.append(BridgeMessage.create_async(self.service, method, self.real_id, *args))
+    def add_messages(self, **message_args):
+        for name in message_args:
+            method, args = message_args[name]
+            msg = BridgeMessage.create_async(self.service, method, self.real_id, *args)
+            self.bridge_messages[name] = msg
 
 class Asset(metaclass = Actions):
     """
@@ -32,6 +33,7 @@ class Asset(metaclass = Actions):
         self.states = states
         self.name = name
         self.backing = backing
+        self.backing.add_messages(get_status = ('asset_info', []))
 
         self.uuid = uuid.uuid1()
         self.failed_transitions = []
@@ -77,6 +79,9 @@ class Asset(metaclass = Actions):
 
         return ser
 
+    @action("Get Status")
+    def get_status(self):
+        return self.backing.bridge_messages['get_status']
 
 class BlankAsset(Asset):
     """
@@ -100,21 +105,21 @@ class OnOffAsset(Asset):
     on_off_states = States(BinaryStateCategory('main'))
 
     def __init__(self, name, real_id, service, product_name):
-        backing = Backing(real_id, service, product_name, [('turn_on', []), ('turn_off', [])])
+        backing = Backing(real_id, service, product_name, on = ('turn_on', []), off = ('turn_off', []))
         super().__init__(name, self.on_off_states, backing)
-        self.states.set_control('main', True, self.backing.bridge_messages[0])
-        self.states.set_control('main', False, self.backing.bridge_messages[1])
+        self.states.set_control('main', True, self.backing.bridge_messages['on'])
+        self.states.set_control('main', False, self.backing.bridge_messages['off'])
 
     @action("Turn On")
     def turn_on(self):
         """Action to turn on the asset."""
         self.states.transition('main', 'unknown')
 
-        return self.backing.bridge_messages[0]
+        return self.backing.bridge_messages['on']
 
     @action("Turn Off")
     def turn_off(self):
         """Action to turn off the asset."""
         self.states.transition('main', 'unknown')
 
-        return self.backing.bridge_messages[1]
+        return self.backing.bridge_messages['off']
