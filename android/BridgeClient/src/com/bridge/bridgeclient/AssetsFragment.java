@@ -87,7 +87,7 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
                 newAssetData(resultData.getStringArray(BridgeClientService.RESULTS_KEY));
 
                 break;
-            
+
             case BridgeClientService.STATUS_ERROR:
                 context.setSupportProgressBarIndeterminateVisibility(false);
                 displayError(resultData.getString(Intent.EXTRA_TEXT));
@@ -108,8 +108,6 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
         {
             try
             {
-                Toast toast = Toast.makeText(context, new Asset(assetsJSON[i]).toString(), Toast.LENGTH_SHORT);
-                toast.show();
                 assetsAdapter.add(new Asset(assetsJSON[i]));
             }
                 catch (JSONException e)

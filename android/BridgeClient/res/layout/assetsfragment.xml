@@ -8,6 +8,7 @@
         android:id="@+id/assetlist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:padding="15dp"
         >
     </ListView>
 </LinearLayout>
