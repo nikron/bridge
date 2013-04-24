@@ -78,6 +78,7 @@ class StateCategory():
         ser['current'] = self.current_state
         ser['type'] = self.type
         ser['controllable'] = self.controllable
+        ser['unknown'] = self.unknown
         ser['possible states'] = self.states
 
         return ser
