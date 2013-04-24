@@ -68,10 +68,8 @@ class InsteonIdiom(ModelIdiom):
 
     def change_state(self, asset, update):
         try:
-            print(update.command.encode())
-            print(update.relative)
-            category, status = LINCMAPPING.get_with_command(asset.get_product_name(), update.command, update.relative)
-            asset.transition(category, status)
+            category, state = LINCMAPPING.get_with_command(asset.get_product_name(), update.command, update.relative)
+            asset.transition(category, state)
 
         except KeyError:
             raise IdiomError("Update not implemented.")
@@ -85,6 +83,7 @@ LINCMAPPING.register_with_command('ApplianceLinc V2', TURNONFAST, ('main', True)
 LINCMAPPING.register_with_command('ApplianceLinc V2', TURNOFF, ('main', False))
 
 def bytes_to_state(cmd_bytes):
+    logging.debug("Using the to figure out status requests.")
     if cmd_bytes.cmd2 == 0:
         return ('main', False)
     else:

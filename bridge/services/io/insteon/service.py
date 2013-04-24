@@ -41,6 +41,9 @@ class InsteonIMService(IOService):
 
                 frm = update_cmd.from_address
                 update = InsteonIMUpdate(update_cmd, self.relative.get(frm, None))
+                if update.relative is not None:
+                    del self.relative[frm]
+
                 self.update_model(hexlify(frm).decode(), update)
 
     def _create_fd(self, filename):

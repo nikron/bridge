@@ -7,6 +7,7 @@ from bridge.service import BridgeService
 from external_libs.bottle import run, Bottle, request, response, HTTPError
 from external_libs import mimeparse, jsonpatch
 import json
+import logging
 
 import uuid
 
@@ -198,17 +199,19 @@ class HTTPAPIService(BridgeService):
 
                 for category in categories_changed:
                     self._report_keys_changed(state_json[category], result['state'][category], {'current'})
-                    current_state = asset_json['state'][category]['current']
+                    current_state = result['state'][category]['current']
 
-                    if type(current_state) == str:
+                    if current_state in result['state'][category]['possible states']:
                         state_changes.append((category, current_state))
                     else:
                         raise HTTPError(422, "Current must be a string.")
 
             if change_name:
-                self.remote_async_service_method('model', 'set_asset_name', changed['name'])
+                logging.debug("Attempting to change name")
+                self.remote_async_service_method('model', 'set_asset_name', asset_uuid, changed['name'])
             for state_change in state_changes:
-                self.remote_async_service_method('model', 'control_asset', state_change[0], state_change[1])
+                logging.debug("Attempting to control")
+                self.remote_async_service_method('model', 'control_asset', asset_uuid, state_change[0], state_change[1])
 
             response.status = 204
             return None

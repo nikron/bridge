@@ -167,6 +167,9 @@ class States():
         for trigger in triggers:
             self.add_trigger(trigger)
 
+    def get_control(self, category, state):
+        return self.categories[category].get_control(state)
+
     def remove_trigger(self, trigger):
         self.triggers.remove(trigger)
 
