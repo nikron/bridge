@@ -10,6 +10,7 @@ public class State
     public static final int RANGE_TYPE = 1;
     public static final int UNKNOWN_TYPE = 2;
 
+    private String category;
     private boolean controllable;
     private boolean unknown;
     private boolean currentBool;
@@ -17,8 +18,9 @@ public class State
     private int type;
 
 
-    public State(JSONObject stateJSON) throws JSONException
+    public State(String category, JSONObject stateJSON) throws JSONException
     {
+        this.category = category;
         controllable = stateJSON.getBoolean("controllable");
         unknown = stateJSON.getBoolean("unknown");
         String strType = stateJSON.getString("type");
@@ -35,6 +37,11 @@ public class State
         {
             currentBool = stateJSON.getBoolean("current");
         }
+    }
+
+    public boolean getCurrent()
+    {
+        return currentBool;
     }
 
     public int getType()
@@ -55,5 +62,13 @@ public class State
     public boolean isEnabled()
     {
         return ! unknown && controllable;
+    }
+
+    public String setState(boolean state)
+    {
+        currentBool = state;
+
+        String patch = "[{ \"op\": \"replace\", \"path\": \"/state/" + category + "/current\", \"value\": " + Boolean.toString(currentBool) + " }]";
+        return patch;
     }
 }

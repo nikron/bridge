@@ -47,7 +47,7 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
     {
         View view = inflater.inflate(R.layout.assetsfragment, container);
         devices = (ListView) view.findViewById(R.id.assetlist);
-        assetsAdapter = new AssetsArrayAdapter(context);
+        assetsAdapter = new AssetsArrayAdapter(context, this);
         devices.setAdapter(assetsAdapter);
 
         return view;
@@ -91,6 +91,10 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
                 context.setSupportProgressBarIndeterminateVisibility(false);
                 displayError(resultData.getString(Intent.EXTRA_TEXT));
                 break;
+
+            default:
+                context.setSupportProgressBarIndeterminateVisibility(false);
+                break;
         }
     }
 
@@ -116,6 +120,17 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
         }
 
         assetsAdapter.notifyDataSetChanged();
+    }
+
+    public void sendAssetPatch(String url, String patch)
+    {
+        final Intent intent = new Intent(Intent.ACTION_SYNC, null, context, BridgeClientService.class);
+        intent.putExtra(BridgeClientService.RECEIVER_KEY, receiver);
+        intent.putExtra(BridgeClientService.COMMAND_KEY, BridgeClientService.PATCH_ASSET_COMMAND);
+        intent.putExtra(BridgeClientService.URL_KEY, url);
+        intent.putExtra(BridgeClientService.PATCH_KEY, patch);
+
+        context.startService(intent);
     }
 
     private void refresh()

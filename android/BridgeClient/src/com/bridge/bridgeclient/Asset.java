@@ -23,6 +23,8 @@ public class Asset
 
         name = obj.getString("name");
         realID = obj.getString("real id");
+        url = obj.getString("url");
+        uuid = obj.getString("uuid");
         uuid = obj.getString("uuid");
         JSONObject statusObj = obj.getJSONObject("state");
         status = new HashMap<String, State>();
@@ -31,7 +33,7 @@ public class Asset
         for (String category; categories.hasNext();)
         {
             category = categories.next();
-            status.put(category, new State(statusObj.getJSONObject(category)));
+            status.put(category, new State(category, statusObj.getJSONObject(category)));
         }
 
         JSONArray actionJSONURLs = obj.getJSONArray("action_urls");
@@ -40,6 +42,34 @@ public class Asset
             actionURLs[i] = actionJSONURLs.getString(i);
 
     }
+
+    public boolean isMainEnabled()
+    {
+        State main = status.get("main");
+        if (main == null)
+            return false;
+        else
+            return main.isEnabled();
+    }
+
+    public boolean getCurrentMainState()
+    {
+        State main = status.get("main");
+        if (main == null)
+            return false;
+        else
+            return main.getCurrent();
+    }
+
+    public int getMainType()
+    {
+        State main = status.get("main");
+        if (main == null)
+            return State.UNKNOWN_TYPE;
+        else
+            return main.getType();
+    }
+    
 
     public String getName()
     {
@@ -51,24 +81,21 @@ public class Asset
         return realID;
     }
 
+    public String getURL()
+    {
+        return url;
+    }
+
     public String getUUID()
     {
         return uuid;
     }
 
-
-    public String toString()
-    {
-        return getName();
-    }
-
-    public int getMainType()
+    public String setCurrentMainState(boolean state)
     {
         State main = status.get("main");
-        if (main == null)
-            return State.UNKNOWN_TYPE;
-        else
-            return main.getType();
+        String patch = main.setState(state);
+        return patch;
     }
 
     public int numberOfCategories()
@@ -76,13 +103,9 @@ public class Asset
         return status.size();
     }
 
-    public boolean isMainEnabled()
+    public String toString()
     {
-        State main = status.get("main");
-        if (main == null)
-            return false;
-        else
-            return main.isEnabled();
+        return getName();
     }
 
 }

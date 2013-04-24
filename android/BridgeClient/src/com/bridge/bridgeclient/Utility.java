@@ -9,6 +9,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
@@ -49,12 +50,21 @@ public class Utility
         return builder.toString();
     }
 
-    public static void postURL(String url) throws IOException
+    public static void postURL(String url, String postStr) throws IOException
     {
         HttpPost post = new HttpPost(url);
-        StringEntity entity = new StringEntity("");
+        StringEntity entity = new StringEntity(postStr, "utf-8");
         entity.setContentType("application/json");
         post.setEntity(entity);
         HttpResponse response = client.execute(post);
+    }
+
+    public static void patchURL(String url, String patchStr) throws IOException
+    {
+        HttpPatch patch = new HttpPatch(url);
+        StringEntity entity = new StringEntity(patchStr, "utf-8");
+        entity.setContentType("application/json-patch");
+        patch.setEntity(entity);
+        HttpResponse response = client.execute(patch);
     }
 }

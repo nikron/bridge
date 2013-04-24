@@ -23,13 +23,17 @@ public class BridgeClientService extends IntentService
     public static final String COMMAND_KEY = "command";
     public static final String RECEIVER_KEY = "receiver";
     public static final String RESULTS_KEY = "results";
+    public static final String PATCH_KEY = "patch";
+    public static final String URL_KEY = "url";
 
     public static final int NONE_COMMAND = 0; //please never use this
     public static final int GET_ASSETS_COMMAND = 1;
+    public static final int PATCH_ASSET_COMMAND = 2;
 
     public static final int STATUS_ERROR = 0;
     public static final int STATUS_GET_ASSETS_FINISHED = 1;
     public static final int STATUS_RUNNING = 2;
+    public static final int STATUS_PATCH_ASSET_FINISHED = 3;
 
     public BridgeClientService()
     {
@@ -69,6 +73,18 @@ public class BridgeClientService extends IntentService
                     receiver.send(STATUS_ERROR, b);
                 }
                 break;
+
+            case PATCH_ASSET_COMMAND:
+                try
+                {
+                    Utility.patchURL(intent.getStringExtra(URL_KEY), intent.getStringExtra(PATCH_KEY));
+                    receiver.send(STATUS_PATCH_ASSET_FINISHED, b);
+                }
+                catch (Exception e)
+                {
+                    b.putString(Intent.EXTRA_TEXT, e.getMessage());
+                    receiver.send(STATUS_ERROR, b);
+                }
         }
     }
 }
