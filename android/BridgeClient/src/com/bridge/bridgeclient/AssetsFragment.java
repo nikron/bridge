@@ -47,7 +47,7 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
     {
         View view = inflater.inflate(R.layout.assetsfragment, container);
         devices = (ListView) view.findViewById(R.id.assetlist);
-        assetsAdapter = new AssetsArrayAdapter(context, R.xml.asset, R.id.assetname);
+        assetsAdapter = new AssetsArrayAdapter(context);
         devices.setAdapter(assetsAdapter);
 
         return view;

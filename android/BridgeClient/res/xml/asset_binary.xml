@@ -11,7 +11,7 @@
         android:layout_alignParentLeft="true"
         />
     <org.jraf.android.backport.switchwidget.Switch
-        android:id="@+id/assetswitch"
+        android:id="@+id/assetcontrol"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"

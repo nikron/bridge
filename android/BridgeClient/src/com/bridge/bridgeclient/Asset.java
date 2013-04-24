@@ -56,22 +56,33 @@ public class Asset
         return uuid;
     }
 
-    public int numberOfCategories()
-    {
-        return status.size();
-    }
 
     public String toString()
     {
         return getName();
     }
 
-    public boolean hasSwitchableMain()
+    public int getMainType()
     {
         State main = status.get("main");
-        if (main != null && main.isSwitchable())
-            return true;
+        if (main == null)
+            return State.UNKNOWN_TYPE;
         else
-            return false;
+            return main.getType();
     }
+
+    public int numberOfCategories()
+    {
+        return status.size();
+    }
+
+    public boolean isMainEnabled()
+    {
+        State main = status.get("main");
+        if (main == null)
+            return false;
+        else
+            return main.isEnabled();
+    }
+
 }

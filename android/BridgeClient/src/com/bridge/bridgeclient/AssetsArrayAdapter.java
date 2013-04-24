@@ -10,43 +10,57 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.jraf.android.backport.switchwidget.Switch; //should figure out if we need this
-// or other
+import org.jraf.android.backport.switchwidget.Switch;
+//import android.widget.Switch;
 
-public class AssetsArrayAdapter extends ArrayAdapter<Asset>
+import android.widget.CompoundButton;
+
+public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements CompoundButton.OnCheckedChangeListener
 {
     Context context;
-    int resource;
-    int textViewResourceId;
+    static final int binaryAsset = R.xml.asset_binary;
+    static final int rangeAsset = R.xml.asset_range;
+    static final int textViewResourceId = R.id.assetname;
+    static final int controlResourceId = R.id.assetcontrol;
 
-    public AssetsArrayAdapter(Context context, int resource, int textViewResourceId)
+    public AssetsArrayAdapter(Context context)
     {
-        super(context, resource, textViewResourceId);
+        super(context, binaryAsset, textViewResourceId);
         this.context = context;
-        this.resource = resource;
-        this.textViewResourceId = textViewResourceId;
     }
 
+    /*
     @Override
     public void add(Asset asset)
     {
         super.add(asset);
     }
+    */
 
     @Override
     public View getView (int position, View convertView, ViewGroup parent)
     {
         Asset asset = getItem(position);
+        RelativeLayout layout;
 
-        RelativeLayout layout = (RelativeLayout) LayoutInflater.from(context).inflate(resource, parent, false);
+        switch (asset.getMainType())
+        {
+            case State.BINARY_TYPE:
+            default:
+                layout = (RelativeLayout) LayoutInflater.from(context).inflate(binaryAsset, parent, false);
+                Switch mainSwitch = (Switch) layout.findViewById(controlResourceId);;
+                mainSwitch.setEnabled(asset.isMainEnabled());
+                break;
+        }
 
         TextView assetName = (TextView) layout.findViewById(textViewResourceId);
         assetName.setText(asset.toString());
 
-        Switch mainSwitch = (Switch) layout.findViewById(R.id.assetswitch);
-        mainSwitch.setEnabled(asset.hasSwitchableMain());
-
-
         return layout;
+    }
+
+    @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+    {
     }
 }

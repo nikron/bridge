@@ -6,30 +6,45 @@ import org.json.JSONException;
 
 public class State
 {
-    public static final String BINARY_TYPE = "binary";
+    public static final int BINARY_TYPE = 0;
+    public static final int RANGE_TYPE = 1;
+    public static final int UNKNOWN_TYPE = 2;
 
     private boolean controllable;
     private boolean unknown;
     private boolean currentBool;
     private int currentInt;
-    private String type;
+    private int type;
 
 
     public State(JSONObject stateJSON) throws JSONException
     {
         controllable = stateJSON.getBoolean("controllable");
         unknown = stateJSON.getBoolean("unknown");
-        type = stateJSON.getString("type");
+        String strType = stateJSON.getString("type");
 
-        if (! isUnknown() && isBinary())
+        if (strType.equals("binary"))
+            type = BINARY_TYPE;
+        else if (strType.equals("range"))
+            type = RANGE_TYPE;
+        else
+            type = UNKNOWN_TYPE;
+
+
+        if (! unknown && type == BINARY_TYPE)
         {
             currentBool = stateJSON.getBoolean("current");
         }
     }
 
+    public int getType()
+    {
+        return type;
+    }
+
     public boolean isUnknown()
     {
-       return unknown;
+        return unknown;
     }
 
     public boolean isControllabel()
@@ -37,13 +52,8 @@ public class State
         return controllable;
     }
 
-    public boolean isBinary()
+    public boolean isEnabled()
     {
-        return type.equals(BINARY_TYPE);
-    }
-
-    public boolean isSwitchable()
-    {
-        return ! unknown && controllable && this.isBinary();
+        return ! unknown && controllable;
     }
 }
