@@ -1,16 +1,22 @@
 class CMDS():
-    def __init__(self, cmd1, cmd2=None, **kwargs):
+    def __init__(self, cmd1, cmd2 = None, **kwargs):
         self.cmd1 = cmd1
         self.cmd2 = cmd2
         if self.cmd2:
             self.both = cmd1 + cmd2
-            self.variable = True
+            self.variable = False
 
         else:
             self.both = cmd1
-            self.variable = False
+            self.variable = True
 
         self.relative = kwargs.get('relative', False)
+
+    def is_variable(self):
+        return self.variable
+
+    def is_relative(self):
+        return self.relative
 
     def __eq__(self, other):
         return self.both == other.both
@@ -22,28 +28,45 @@ class CMDS():
         return hash(self.both)
 
 class CommandBytesMap():
-    def __init__(self, cmdbytes, call=True):
-        self.variable = {cmd for cmd in cmdbytes if cmd.variable}
-        self.static = {cmd for cmd in cmdbytes if not cmd.variable}
-
+    def __init__(self, call):
         self.call = call
         self.objs = {}
+        self.relative = set()
 
-    def register(self, cmd, obj):
-        if cmd in self.variable or cmd in self.static:
+    def register(self, cmd, obj, relative_cmd = None):
+        if not cmd.is_relative():
             self.objs[cmd] = obj
 
-        #maybe raise an error if it isn't
+        else:
+            if cmd in self.relative:
+                if relative_cmd is None:
+                    self.objs[cmd][1][relative_cmd] = obj
+                else:
+                    self.objs[cmd][0] = obj
+            else:
+                if relative_cmd is None:
+                    self.objs[cmd] = (obj, {})
+                else:
+                    self.objs[cmd] = (None, obj)
 
-    def get(self, insteon_command):
-        """Will need to eventually store things based on product name too."""
+    def get(self, insteon_command, relative_cmd = None):
         cmd1 = insteon_command.cmd1
         cmd2 = insteon_command.cmd2
         cmd = CMDS(cmd1, cmd2)
 
-        obj = self.objs.get(cmd)
+        if relative_cmd is not None:
+            rcmd =  CMDS(relative_cmd.cmd1, relative_cmd.cmd2)
+
+        obj = self.objs.get(cmd, None)
         if obj:
-            return obj
+            if relative_cmd is None:
+                return obj
+            else:
+                if rcmd in obj[1]:
+                    return obj[1][rcmd]
+                elif self.call:
+                    return obj[0](rcmd)
+
         else:
             cmd = CMDS(cmd1)
             obj = self.objs[cmd1]

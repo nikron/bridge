@@ -37,7 +37,7 @@ class InsteonIdiom(ModelIdiom):
                 raise IdiomError("Insteon ID's are byte string of length 3.")
 
         try:
-            create_func = LINCMAPPING.get(product_name)
+            create_func = LINCMAPPING.get_with_product(product_name)
         except AttributeError:
             raise IdiomError("Invalid asset class.")
 
@@ -68,7 +68,7 @@ class InsteonIdiom(ModelIdiom):
 
     def change_state(self, asset, update):
         try:
-            (category, status) = LINCMAPPING.get(asset.get_product_name(), update)
+            (category, status) = LINCMAPPING.get_with_command(asset.get_product_name(), update.command, update.relative)
             asset.transition(category, status)
 
         except KeyError:
@@ -78,4 +78,6 @@ class InsteonIdiom(ModelIdiom):
         return LINCMAPPING.names()
 
 LINCMAPPING = LincMap()
-LINCMAPPING.register('ApplianceLinc V2', InsteonIdiom.create_onoff, [(TURNONFAST, ('main', 'on')), (TURNOFF, ('main', 'off'))])
+LINCMAPPING.register_with_product('ApplianceLinc V2', InsteonIdiom.create_onoff)
+LINCMAPPING.register_with_command('ApplianceLinc V2', TURNONFAST, ('main', True))
+LINCMAPPING.register_with_command('ApplianceLinc V2', TURNOFF, ('main', False))

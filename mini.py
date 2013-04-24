@@ -11,6 +11,7 @@ buff = b''
 
 #cmd = commands.ProductDataRequest(b'\x01\x3A\x26')
 cmd = im_commands.TurnOff(b'\x00\xF1\xD1')
+cmd = im_commands.GetINSTEONVersion(b'\x00\xF1\xD1')
 #cmd = commands.TurnOffFast(b'\x01\x3A\x26')
 #cmd = commands.ProductDataRequest(b'\x00\x00\x01')
 #cmd = commands.TurnOff(b'\x00\x00\x01')
