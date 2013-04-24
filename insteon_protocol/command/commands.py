@@ -64,7 +64,6 @@ class InsteonCommand(Command):
 
         fro = buf[0:3]
         to = buf[3:6]
-        print(len(to))
 
         flag = bitstring.BitString(buf[6:7])
         broad = flag[0]
