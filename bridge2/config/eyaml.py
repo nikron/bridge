@@ -1,17 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from yaml import *
+import yaml
 
-_Loader = Loader
-class Loader(_Loader):
+class ESafeLoader(yaml.SafeLoader):
 
     def compose_node(self, parent, index):
         anchor = None
-        if self.check_event(AliasEvent):
+        if self.check_event(yaml.AliasEvent):
             anchor = self.peek_event().anchor
 
-        node = super(Loader, self).compose_node(parent, index)
+        node = super(ESafeLoader, self).compose_node(parent, index)
 
         if anchor is not None:
             node.anchor = anchor
@@ -19,22 +18,21 @@ class Loader(_Loader):
         return node
 
     def construct_object(self, node, deep=False):
-        data = super(Loader, self).construct_object(node, deep)
+        data = super(ESafeLoader, self).construct_object(node, deep)
         if hasattr(node, 'anchor') and hasattr(data, '__dict__'):
             data.anchor = node.anchor
         return data
 
-_Dumper = Dumper
-class Dumper(_Dumper):
+class ESafeDumper(yaml.SafeDumper):
 
     ANCHOR_TEMPLATE = u'%s%03d'
 
     def __init__(self, *args, **kargs):
-        super(Dumper, self).__init__(*args, **kargs)
+        super(ESafeDumper, self).__init__(*args, **kargs)
         self.last_anchor_id_by_tag = {}
 
     def serialize(self, node):
-        super(Dumper, self).serialize(node)
+        super(ESafeDumper, self).serialize(node)
         self.last_anchor_id_by_tag = {}
 
     def generate_anchor(self, node):
@@ -54,34 +52,9 @@ class Dumper(_Dumper):
             anchor = data.anchor
             del data.anchor
 
-        node = super(Dumper, self).represent_yaml_object(tag, data, cls, flow_style)
+        node = super(ESafeDumper, self).represent_yaml_object(tag, data, cls, flow_style)
 
         if anchor is not None:
             node.anchor = anchor
 
         return node
-
-_YAMLObjectMetaclass = YAMLObjectMetaclass
-class YAMLObjectMetaclass(_YAMLObjectMetaclass):
-
-    def __init__(cls, name, bases, attrs):
-        if hasattr(cls, 'yaml_tag'):
-            yaml_tag = '!'+name
-            # PyYAML uses it to emit
-            cls.yaml_tag = yaml_tag
-            # PyYAML uses it to add constructor and representer (@ orignal YAMLObjectMetaclass)
-            attrs['yaml_tag'] = yaml_tag
-
-        super(YAMLObjectMetaclass, cls).__init__(name, bases, attrs)
-
-_YAMLObject = YAMLObject
-class YAMLObject(_YAMLObject):
-    __metaclass__ = YAMLObjectMetaclass
-
-_load = load
-def load(stream, Loader=Loader):
-    return _load(stream, Loader)
-
-_dump = dump
-def dump(data, stream=None, Dumper=Dumper, **kwds):
-    return dump_all([data], stream, Dumper=Dumper, **kwds)
