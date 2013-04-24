@@ -1,9 +1,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
 import binascii
-from bridge2.config.config import ConfigurableEntity
 
-class Device(ConfigurableEntity):
+class Device(object):
     """Represents an automation device that has been bound to a
        DeviceProfile."""
     __metaclass__ = abc.ABCMeta

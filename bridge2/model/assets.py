@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import gevent
 import gevent.coros
 import gevent.event
-from bridge2.config.config import ConfigurableEntity
+from bridge2.config.core import ConfigurableEntity
 from bridge2.io.devices import DeviceProfile, Locator
 
 class Asset(ConfigurableEntity):
@@ -64,6 +64,10 @@ class Asset(ConfigurableEntity):
             ce.cval = value
         return value
     
+    @classmethod
+    def fromconfig(cls, cnode):
+        raise NotImplementedError()
+    
     @property
     def identifier(self):
         """Return the identifier for this Asset."""
@@ -118,6 +122,9 @@ class Asset(ConfigurableEntity):
         
     def query_async(self, attribute, max_staleness=0.0, pending=False):
         return self._query(attribute, max_staleness, pending, True)
+
+    def toconfig(self):
+        raise NotImplementedError()
 
     def update(self, attribute, value):
         return self._update(attribute, value, False)

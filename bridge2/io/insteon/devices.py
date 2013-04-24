@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
 import gevent
+from bridge2.config.core import ConfigurableEntity
 from bridge2.io.devices import Device, DeviceProfile, Domain, Locator
 from bridge2.io.insteon.modem import ModemInterface
 from bridge2.io.insteon.profiles import *
@@ -34,7 +35,7 @@ class InsteonDevice(Device):
         # Delegate to the profile
         return self.profile._interrogate(self.locator, attribute)
 
-class InsteonDomain(Domain):
+class InsteonDomain(Domain, ConfigurableEntity):
     """Represents a network of Devices that can be accessed by the system."""
     _plist = [
         PowerDeviceProfile(),
@@ -68,6 +69,10 @@ class InsteonDomain(Domain):
             return False
         return True
     
+    @classmethod
+    def fromconfig(cls, cnode):
+        raise NotImplementedError()
+    
     def profiles(self):
         return InsteonDomain._plist
 
@@ -82,8 +87,13 @@ class InsteonDomain(Domain):
             self._active = False
 
     def start(self):
+        assert not self._active
         client = ModemInterface(self._devfile)
         self._greenlet = gevent.spawn(self._run, self, client)
 
     def stop(self):
+        assert self._active
         self._greenlet.kill(block=True)
+        
+    def toconfig(self):
+        raise NotImplementedError()

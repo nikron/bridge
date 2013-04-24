@@ -120,7 +120,7 @@ class ConfigurationDataSet(object):
             self._ctors[etype.__name__] = cls._yamlconstruct
 
     def load(self, src):
-        loader = eyaml.ELoader(src)
+        loader = eyaml.ESafeLoader(src)
         try:
             loader.yaml_constructors = self._ctors
             data = None
@@ -138,7 +138,7 @@ class ConfigurationDataSet(object):
             loader.dispose()
 
     def save(self, dest):
-        dumper = eyaml.EDumper(dest)
+        dumper = eyaml.ESafeDumper(dest)
         try:
             dumper.yaml_representers = self._reps
             dumper.open()
