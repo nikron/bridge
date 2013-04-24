@@ -1,6 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
 import binascii
+from bridge2.config.core import ConfigurationObject, ConfigurationNode
 
 class Device(object):
     """Represents an automation device that has been bound to a
@@ -93,13 +94,13 @@ class Domain(object):
         """Terminate the connection to the automation network."""
         pass
 
-class Locator(object):
+class Locator(ConfigurationObject):
     """Represents the network address of a Device."""
     def __init__(self, domain, address):
         assert isinstance(domain, Domain)
         assert isinstance(address, bytes)
         if not domain.check_address(address):
-            raise ValueError("The specified address is not acceptable")
+            raise ValueError(b"The specified address is not acceptable")
         self._domain = domain
         self._address = address
 
@@ -113,6 +114,22 @@ class Locator(object):
         """Return the Domain the address corresponds to."""
         return self._domain
 
+    @classmethod
+    def _fromconfig(cls, cnode):
+        domain = cnode.pop("domain", Domain)
+        address = cnode.pop("address", unicode)
+        try:
+            address = binascii.unhexlify(address)
+        except:
+            raise ValueError(b"'address' must be a hexadecimal string")
+        cnode.consumed()
+        return Locator(domain, address)
+        
+    def _toconfig(self):
+        cnode = ConfigurationNode()
+        cnode.push("domain", self.domain)
+        cnode.push("address", self.address)
+    
     def __str__(self):
         return self.__unicode__().encode()
 

@@ -1,7 +1,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
 import gevent
-from bridge2.config.core import ConfigurableEntity
+from bridge2.config.core import ConfigurationEntity, ConfigurationNode
 from bridge2.io.devices import Device, DeviceProfile, Domain, Locator
 from bridge2.io.insteon.modem import ModemInterface
 from bridge2.io.insteon.profiles import *
@@ -35,7 +35,7 @@ class InsteonDevice(Device):
         # Delegate to the profile
         return self.profile._interrogate(self.locator, attribute)
 
-class InsteonDomain(Domain, ConfigurableEntity):
+class InsteonDomain(Domain, ConfigurationEntity):
     """Represents a network of Devices that can be accessed by the system."""
     _plist = [
         PowerDeviceProfile(),
@@ -43,11 +43,11 @@ class InsteonDomain(Domain, ConfigurableEntity):
     ]
     _pmap = {p.identifier: p for p in _plist}
     
-    def __init__(self, identifier, devfile):
-        assert isinstance(devfile, unicode)
+    def __init__(self, identifier, port):
+        assert isinstance(port, unicode)
         super(InsteonDomain, self).__init__(identifier)
         self._bindings = {}
-        self._devfile = devfile
+        self._port = port
         self._active = False
     
     def active(self):
@@ -70,9 +70,12 @@ class InsteonDomain(Domain, ConfigurableEntity):
         return True
     
     @classmethod
-    def fromconfig(cls, cnode):
-        raise NotImplementedError()
+    def _fromconfig(cls, cnode):
+        port = cnode.pop("port", unicode)
+        cnode.consumed()
+        return InsteonDomain(cnode.identifier, port)
     
+    @property
     def profiles(self):
         return InsteonDomain._plist
 
@@ -88,12 +91,14 @@ class InsteonDomain(Domain, ConfigurableEntity):
 
     def start(self):
         assert not self._active
-        client = ModemInterface(self._devfile)
+        client = ModemInterface(self._port)
         self._greenlet = gevent.spawn(self._run, self, client)
 
     def stop(self):
         assert self._active
         self._greenlet.kill(block=True)
         
-    def toconfig(self):
-        raise NotImplementedError()
+    def _toconfig(self):
+        cnode = ConfigurationNode(self.identifier)
+        cnode.push("port", self._port)
+        return cnode

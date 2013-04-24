@@ -2,7 +2,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from bridge2.io.devices import DeviceProfile
 from bridge2.io.insteon.profiles.base import InsteonDeviceProfile
 from bridge2.model.attributes import Attribute, IntegerSpace
-from insteon_protocol.command import im_commands
 
 class DimmablePowerDeviceProfile(InsteonDeviceProfile):
     _alist = [

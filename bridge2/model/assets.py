@@ -2,10 +2,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import gevent
 import gevent.coros
 import gevent.event
-from bridge2.config.core import ConfigurableEntity
+from bridge2.config.core import ConfigurationEntity, ConfigurationNode
 from bridge2.io.devices import DeviceProfile, Locator
 
-class Asset(ConfigurableEntity):
+class Asset(ConfigurationEntity):
     """Represents a unit of equipment accessible on a Domain."""
     def _CacheEntry(object):
         def __init__(self):
@@ -23,7 +23,7 @@ class Asset(ConfigurableEntity):
         self._locator = locator
         self._profile = profile
         self._display_name = display_name
-        self._device = profile.bind(locator)
+        #self._device = profile.bind(locator)
         self._cache = {}
 
     @property
@@ -65,8 +65,17 @@ class Asset(ConfigurableEntity):
         return value
     
     @classmethod
-    def fromconfig(cls, cnode):
-        raise NotImplementedError()
+    def _fromconfig(cls, cnode):
+        locator = cnode.pop("locator", Locator)
+        display_name = cnode.pop("display_name", unicode)
+        prid = cnode.pop("profile", unicode)
+        for profile in locator.domain.profiles:
+            if profile.identifier == prid:
+                break
+        else:
+            raise ValueError(b"Profile '{0}' not recognized".format(prid))
+        cnode.consumed()
+        return Asset(cnode.identifier, locator, profile, display_name)
     
     @property
     def identifier(self):
@@ -123,8 +132,12 @@ class Asset(ConfigurableEntity):
     def query_async(self, attribute, max_staleness=0.0, pending=False):
         return self._query(attribute, max_staleness, pending, True)
 
-    def toconfig(self):
-        raise NotImplementedError()
+    def _toconfig(self):
+        cnode = ConfigurationNode(self._identifier)
+        #cnode.push("locator", self._locator)
+        cnode.push("display_name", self._display_name)
+        cnode.push("profile", self._profile.identifier)
+        return cnode
 
     def update(self, attribute, value):
         return self._update(attribute, value, False)
