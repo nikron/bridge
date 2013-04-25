@@ -4,13 +4,12 @@ Decode messages from an Insteon PLM.
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import binascii
-import gevent.select
 import logging
 import serial
 from bridge2.io.insteon.messages import ExtInsteonMessage, InsteonMessage
 
 #
-# Modem protocol core
+# Protocol data unit definitions
 #
 
 class ModemPDU(object):
@@ -90,11 +89,42 @@ class ModemPDU(object):
         payloads = binascii.hexlify(self._payload)
         return fmt.format(self._command, payloads)
 
-#
-# Transmissible PDUs
-#
-
 class SendInsteonMsgModemPDU(ModemPDU):
+    class Response(ModemPDU):
+        def __init__(self, dest, message, successful):
+            raise NotImplementedError()
+        
+        @classmethod
+        def _decode(cls, command, payload):
+            rv = cls.__new__(cls)
+            super(cls, rv).__init__(command, payload)
+            rv._dest = payload[0:3]
+            msgdata = payload[3:-1]
+            if len(msgdata) == 17:
+                rv._message = ExtInsteonMessage.decode(msgdata)
+            else:
+                rv._message = InsteonMessage.decode(msgdata)
+            rv._successful = (ord(payload[-1]) == 0x06)
+            return rv
+            
+        @property
+        def dest(self):
+            return self._dest
+            
+        @property
+        def message(self):
+            return self._message
+            
+        @property
+        def successful(self):
+            return self._successful
+            
+        def __unicode__(self):
+            fmt = "SendInsteonMsg <R> PDU: [{0}] {1} -> {2}"
+            dests = binascii.hexlify(self._dest)
+            stat = "OK" if self._successful else "FAIL"
+            return fmt.format(dests, stat, self._message)
+    
     def __init__(self, dest, message):
         assert isinstance(dest, bytes)
         assert len(dest) == 3
@@ -116,10 +146,6 @@ class SendInsteonMsgModemPDU(ModemPDU):
         fmt = "SendInsteonMsg PDU: [{0}] {1}"
         dests = binascii.hexlify(self._dest)
         return fmt.format(dests, self._message)
-
-#
-# Receivable PDUs
-#
 
 class StdInsteonMessageRcvdModemPDU(ModemPDU):
     def __init__(self, src, dest, message):
@@ -182,41 +208,6 @@ class ExtInsteonMessageRcvdModemPDU(ModemPDU):
         srcs = binascii.hexlify(self._src)
         dests = binascii.hexlify(self._dest)
         return fmt.format(srcs, dests, self._message)
-
-class SendInsteonMsgRespModemPDU(ModemPDU):
-    def __init__(self, dest, message, successful):
-        raise NotImplementedError()
-    
-    @classmethod
-    def _decode(cls, command, payload):
-        rv = cls.__new__(cls)
-        super(cls, rv).__init__(command, payload)
-        rv._dest = payload[0:3]
-        msgdata = payload[3:-1]
-        if len(msgdata) == 17:
-            rv._message = ExtInsteonMessage.decode(msgdata)
-        else:
-            rv._message = InsteonMessage.decode(msgdata)
-        rv._successful = (ord(payload[-1]) == 0x06)
-        return rv
-        
-    @property
-    def dest(self):
-        return self._dest
-        
-    @property
-    def message(self):
-        return self._message
-        
-    @property
-    def successful(self):
-        return self._successful
-        
-    def __unicode__(self):
-        fmt = "SendInsteonMsgResp PDU: [{0}] {1} -> {2}"
-        dests = binascii.hexlify(self._dest)
-        stat = "OK" if self._successful else "FAIL"
-        return fmt.format(dests, stat, self._message)
         
 _pdutable = {
     ModemPDU.STD_INSTEON_MSG_RCVD: (9, StdInsteonMessageRcvdModemPDU),
@@ -230,7 +221,7 @@ _pdutable = {
     ModemPDU.LINK_CLEANUP_STATUS_RPT: (1, None),
     ModemPDU.GET_IM_INFO: (7, None),
     ModemPDU.SEND_LINK_COMMAND: (4, None),
-    ModemPDU.SEND_INSTEON_MSG: (None, SendInsteonMsgRespModemPDU), # var. len.
+    ModemPDU.SEND_INSTEON_MSG: (None, SendInsteonMsgModemPDU.Response),
     ModemPDU.SEND_X10_MSG: (3, None),
     ModemPDU.START_LINKING: (3, None),
     ModemPDU.CANCEL_LINKING: (1, None),
@@ -251,38 +242,36 @@ _pdutable = {
 }
 
 #
-# Direct modem interface
+# Low-level modem interface
 #
 
-class ModemInterface(object):    
-    def __init__(self, devfile):
-        assert isinstance(devfile, unicode)
-        self._dev = serial.Serial(devfile, 19200, timeout=0, writeTimeout=0)
+class ModemInterface(object):
+    """Provides an interface for transmitting and receiving PDUs over a
+       serial connection to an Insteon powerline modem."""
+    def __init__(self, port):
+        assert isinstance(port, unicode)
+        self._port = port
+        self._dev = serial.Serial(port, 19200)
 
     def close(self):
         """Close the underlying serial device."""
         self._dev.close()
         self._dev = None
 
+    def _doread(self, n):
+        return self._dev.read(n)
+    
+    def _dowrite(self, data):
+        self._dev.write(data)
+
     def _readmsg(self):
-        control = self._readnb(4)
+        control = self._doread(4)
         flags = ord(control[3])
         if flags & 8 != 0:
-            body = self._readnb(17) #16 bytes left for ed insteon
+            body = self._doread(17) #16 bytes left for ed insteon
         else:
-            body = self._readnb(3) #two bytes left for a sd insteon
+            body = self._doread(3) #two bytes left for a sd insteon
         return control + body
-        
-    def _readnb(self, n):
-        # Use select to yield until the device is ready, then write
-        data = ""
-        nread = 0
-        while nread < n:
-            gevent.select.select([self._dev], [], [])
-            data2 = self._dev.read(n)
-            nread += len(data2)
-            data += data2
-        return data
 
     def recv(self):
         """Read a ModemPDU from the serial interface."""
@@ -291,10 +280,10 @@ class ModemInterface(object):
             raise IOError("The device has already been closed")
         
         # Read the PDU header
-        magic = ord(self._readnb(1))
+        magic = ord(self._doread(1))
         if magic != 0x02:
             raise IOError("STX byte expected when reading PDU")
-        cmd = ord(self._readnb(1))
+        cmd = ord(self._doread(1))
         ctuple = _pdutable.get(cmd)
         if ctuple == None:
             raise IOError("An unrecognized modem PDU was received")
@@ -303,7 +292,7 @@ class ModemInterface(object):
         if cmd == ModemPDU.SEND_INSTEON_MSG:
             payload = self._readmsg()
         else:
-            payload = self._readnb(ctuple[0])
+            payload = self._doread(ctuple[0])
         
         # Return a ModemPDU instance representing the message
         logging.debug("Read buffer {0}".format(repr(payload)))
@@ -317,13 +306,12 @@ class ModemInterface(object):
             raise IOError("The device has already been closed")
             
         # Transmit the data
-        self._writenb(pdu.encode())
+        self._dowrite(pdu.encode())
 
-    def _writenb(self, data):
-        # Use select to yield until the device is ready, then write
-        n = len(data)
-        nwritten = 0
-        while nwritten < n:
-            gevent.select.select([], [self._dev], [])
-            nwritten += self._dev.write(data[nwritten:])
-        return n
+__all__ = [
+    "ModemPDU",
+    "SendInsteonMsgModemPDU",
+    "StdInsteonMessageRcvdModemPDU",
+    "ExtInsteonMessageRcvdModemPDU",
+    "ModemInterface"
+]
