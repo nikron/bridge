@@ -7,12 +7,14 @@ import os
 
 class BridgeConfiguration():
     """
-    Takes an object with members configuration and std_err, and becomes the configuration for the 
-    bridge.
+    Reads in a .ini file and sets the relevant information as properties.
 
-    .model_file   -- File model service should use for storage.
-    .model_driver -- Storage driver model should use for storage.
-    .io_services  -- List of IO services bridge should create.
+    :param conf_file: Path to configuration file.
+    :type conf_file: str
+
+    :param stderr: If the log should be output to STDERR
+    :param stderr: bool
+
     """
     def __init__(self, conf_file, stderr):
         self.file = conf_file
@@ -30,7 +32,7 @@ class BridgeConfiguration():
             self.load_from_file()
 
     def load_from_file(self):
-        """Load configuration from stored file."""
+        """Load configuration from stored path."""
         config = configparser.ConfigParser()
         config.read(self.file)
 
@@ -45,4 +47,8 @@ class BridgeConfiguration():
             self.io_services.append((name, protocol, file_name))
 
     def model_dir(self):
-        return os.path.join(self.data_dir, 'model')
+        """
+        :return: The absolute path name of the directory the model service should use.
+        :rtype: str
+        """
+        return os.path.abspath(os.path.join(self.data_dir, 'model'))
