@@ -1,8 +1,6 @@
 """
-Hub process of bridge, used to start all services(calendar, io, net, and model).
-Then for processes to communicate, does a simple select over pipes.
-In the future this process needs to handle io errors and be able to take
-io services up and down.
+Basically the main of the bridge, starts all subprocesses and then
+ensures communications and validity.
 """
 
 import multiprocessing
@@ -21,68 +19,36 @@ ServiceInformation = namedtuple('ServiceInformation', ['connection', 'process'])
 
 class BridgeHub():
     """
-    Accepts a BridgeConfig to then start and manage processes and a threaded
-    log service.  Expects to gain control of process when run() is called.
+    Uses a BridgeConfiguration to configure and start bridge subprocesses.
+
+    :param configuration: Configuration object used to configure services.
+    :type configuration: BridgeConfiguration
     """
 
-
     def __init__(self, configuration):
-        """Requires BridgeConfig to set various options."""
         self.logging_service = LoggingService(configuration.log_file, configuration.stderr)
         self.configuration = configuration
         self.connections = []
         self.services = {}
-
-        #to pass to the model later
-        self.io_idioms = {}
+        self.io_idioms = {} #to pass to the model later
 
     def create_connection(self):
-        """For services to communicate, they needs a pipe."""
-        (its, ours) = multiprocessing.Pipe()
+        """
+        Creates a pipe, saves the end that the bridge uses.
 
-        self.connections.append(ours)
+        :return: Sockets used to communicate to services.
+        :rtype: Pipe
+        """
+        its_conn, ours_conn = multiprocessing.Pipe()
 
-        return (its, ours)
+        self.connections.append(ours_conn)
 
-    def add_service(self, con, service):
-        """Register a connection and a service to its name."""
-        self.services[service.name] = ServiceInformation(con, service)
-
-    def start_model(self):
-        """Start the model service. (Actually forks off process)"""
-        (its, ours) = self.create_connection()
-
-        #need to pass in the io services it is going to connect to
-        #and the the storage driver name
-        service = ModelService(self.io_idioms, self.configuration.model_dir(), its)
-
-        self.add_service(ours, service)
-
-        service.start()
-
-    def start_http_service(self):
-        (its, ours) = self.create_connection()
-        service = HTTPAPIService(its)
-        self.add_service(ours, service)
-
-        service.start()
-
-    def start_io_services(self):
-        """Fork off IO services."""
-        for io_config_args in self.configuration.io_services:
-            (its, ours) = self.create_connection()
-
-            io_config = IOConfig(*io_config_args)
-            io_service =  io_config.create_service(its)
-
-            self.add_service(ours, io_service)
-
-            self.io_idioms[io_service.name] = io_config.model_idiom()
-
-            io_service.start()
+        return its_conn, ours_conn
 
     def run(self):
-        """Effectively `main` method of bridge."""
+        """
+        Effective main of Bridge, starts services and starts select loop.
+        """
 
         #start the logging process immediately
         self.logging_service.start()
@@ -96,7 +62,9 @@ class BridgeHub():
         self.main_loop()
 
     def main_loop(self):
-        """Loop over pipes to services, relay messages."""
+        """
+        Loop over pipes to services, relay messages.
+        """
         spinning = True
 
         #now we just pass messages between processes
@@ -114,5 +82,47 @@ class BridgeHub():
 
                 spinning = False
 
-        #for service in self.services.values():
-        #    service.process.join()
+    def start_http_service(self):
+        """
+        Initialize and fork the http service.
+        """
+        its_conn, ours_conn = self.create_connection()
+        service = HTTPAPIService(its_conn)
+        self._add_service(ours_conn, service)
+
+        service.start()
+
+    def start_io_services(self):
+        """
+        Intilialize and fork off IO services.
+        """
+        for io_config_args in self.configuration.io_services:
+            its_conn, ours_conn = self.create_connection()
+            io_config = IOConfig(*io_config_args)
+            io_service = io_config.create_service(its_conn)
+            self._add_service(ours_conn, io_service)
+            self.io_idioms[io_service.name] = io_config.model_idiom()
+
+            io_service.start()
+
+    def start_model(self):
+        """
+        Initialize and fork the model service.
+        """
+        its_conn, ours_conn = self.create_connection()
+        service = ModelService(self.io_idioms, self.configuration.model_dir(), its_conn)
+        self._add_service(ours_conn, service)
+
+        service.start()
+
+    def _add_service(self, con, service):
+        """
+        Register a connection and a service to its name.
+
+        :param con: Connection used to used to send messages to a service.
+        :type con: Pipe
+
+        :param service: Service to store
+        :type service: BridgeService
+        """
+        self.services[service.name] = ServiceInformation(con, service)
