@@ -12,7 +12,7 @@ from bridge2.io.insteon.modem.messages import *
 
 class _AsyncModemInterface(ModemInterface):
     def __init__(self, port):
-        super(AsyncModemInterface, self).__init__(port)
+        super(_AsyncModemInterface, self).__init__(port)
         self._dev.timeout = 0
         self._dev.writeTimeout = 0
     
@@ -45,6 +45,7 @@ class InsteonClient(object):
         self._pendingmsgs = {}
         self._subscriber = None
         self._active = False
+        self._greenlet = None
     
     @property
     def active(self):
@@ -109,7 +110,7 @@ class InsteonClient(object):
     def start(self):
         """Start the receive loop on a dedicated greenthread."""
         assert not self._active
-        self._iface = _AsyncModemInterface(port)
+        self._iface = _AsyncModemInterface(self._port)
         try:
             self._active = True
             self._greenlet = gevent.spawn(self._run)

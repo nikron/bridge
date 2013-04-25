@@ -29,9 +29,13 @@ class InsteonMessage(object):
         LINK_CLEANUP_NAK: "C NAK"
     }
     
-    def __init__(self, mclass, ttl, max_ttl, c1, c2):
+    def __init__(self, mclass, c1, c2, ttl=None, max_ttl=None):
         # Validate arguments
         assert mclass >= 0 and mclass <= 0b111
+        if ttl == None:
+            ttl = 3 if (mclass & 0b101) == 0b100 else 1
+        if max_ttl == None:
+            max_ttl = 3 if (mclass & 0b101) == 0b100 else 1
         assert ttl >= 0 and ttl <= 3
         assert max_ttl >= 0 and max_ttl <= 3
         assert c1 >= 0 and c1 <= 0xFF
@@ -116,10 +120,10 @@ class InsteonMessage(object):
 
 class ExtInsteonMessage(InsteonMessage):
     """Represents an extended-length Insteon message."""
-    def __init__(self, mclass, ttl, max_ttl, c1, c2, extdata):
+    def __init__(self, mclass, c1, c2, extdata, ttl=None, max_ttl=None):
         assert isinstance(extdata, bytes)
         assert len(extdata) == 14
-        super(ExtInsteonMessage, self).__init__(mclass, ttl, max_ttl, c1, c2)
+        super(ExtInsteonMessage, self).__init__(mclass, c1, c2, ttl, max_ttl)
         self._extdata = extdata
     
     def _decode(self, buf):
