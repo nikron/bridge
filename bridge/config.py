@@ -32,7 +32,9 @@ class BridgeConfiguration():
             self.load_from_file()
 
     def load_from_file(self):
-        """Load configuration from stored path."""
+        """
+        Load configuration from stored path.
+        """
         config = configparser.ConfigParser()
         config.read(self.file)
 
