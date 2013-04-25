@@ -90,7 +90,7 @@ class BlankAsset(Asset):
     """
 
     def __init__(self, real_id, service):
-        super().__init__("", States(), Backing(real_id, service, "", []))
+        super().__init__("", States(), Backing(real_id, service, ""))
 
     def transition(self, category, state):
         self.failed_transitions.append((category, state))
