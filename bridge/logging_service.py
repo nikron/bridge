@@ -14,6 +14,9 @@ class LoggingService():
 
     :param log_file: Path to the file we should log to.
     :type log_file: str
+
+    :param stderr: Should the log be logged to stderr?
+    :type stderr: bool
     """
     LOG_FORMAT_BRIEF = "%(levelname)s :: %(msg)s"
 
@@ -42,7 +45,7 @@ def service_configure_logging(queue):
     Otherwise logs will get repeated.
 
     :param queue: The queue to send logs to.
-    :type queue: Queue
+    :type queue: :class:`Queue`
     """
     handler = logging.handlers.QueueHandler(queue)
     root = logging.getLogger()

@@ -21,7 +21,7 @@ class BridgeHub():
     Uses a BridgeConfiguration to configure and start bridge subprocesses.
 
     :param configuration: Configuration object used to configure services.
-    :type configuration: BridgeConfiguration
+    :type configuration: :class:`BridgeConfiguration`
     """
 
     def __init__(self, configuration):
@@ -36,7 +36,7 @@ class BridgeHub():
         Creates a pipe, saves the end that the bridge uses.
 
         :return: Sockets used to communicate to services.
-        :rtype: Pipe
+        :rtype: :class:`Pipe`
         """
         its_conn, ours_conn = multiprocessing.Pipe()
 
@@ -118,9 +118,9 @@ class BridgeHub():
         Register a connection and a service to its name.
 
         :param con: Connection used to used to send messages to a service.
-        :type con: Pipe
+        :type con: :class:`Pipe`
 
         :param service: Service to store
-        :type service: BridgeService
+        :type service: :class:`BridgeService`
         """
         self.services[service.name] = ServiceInformation(con, service)

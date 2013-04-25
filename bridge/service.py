@@ -60,9 +60,8 @@ class BridgeMessage():
         :type kwargs: dict
 
         :return: A message to be sent.
-        :rtype: BridgeMessage
+        :rtype: :class:`BridgeMessage`
         """
-
         return cls(to, cls.ASYNC, method, args, kwargs, None)
 
     @classmethod
@@ -86,9 +85,8 @@ class BridgeMessage():
         :type kwargs: dict
 
         :return: A message to be sent.
-        :rtype: BridgeMessage
+        :rtype: :class:`BridgeMessage`
         """
-
         return cls(to, cls.BLOCKING, method, args, kwargs, _from)
 
     @classmethod
@@ -97,10 +95,10 @@ class BridgeMessage():
         Create a message for internal use for blocking message calls.
 
         :param block_message: The message that was sent to this service.
-        :type block_message: BridgeMessage
+        :type block_message: :class:`BridgeMessage`
 
         :return: A reply message to be sent.
-        :rtype: BridgeMessage
+        :rtype: :class:`BridgeMessage`
         """
         return cls(block_message.ret, cls.REPLY, None, None, None, ret)
 
@@ -116,7 +114,7 @@ class BridgeService(Process):
     :type name: str
 
     :param hub_connection: Connection to the hub to pass messages to and from.
-    :type hub_connection: Pipe
+    :type hub_connection: :class:`Pipe`
     """
     def __init__(self, name, hub_connection):
         Process.__init__(self, name=name)
@@ -148,9 +146,8 @@ class BridgeService(Process):
         Finds and calls local method using the passed message.
 
         :param msg: Message from another service.
-        :type msg: BridgeMessage
+        :type msg: :class:`BridgeMessage`
         """
-
         if msg.type == BridgeMessage.CLOSE:
             self.close()
 
@@ -175,7 +172,7 @@ class BridgeService(Process):
     def read_and_do_remote_request(self):
         """
         For subclasses to read and execute a the object comming from the BridgeHub, assumes it is a
-        Bridgemessage.
+        :class:`Bridgemessage`.
         """
         msg = self.hub_connection.recv()
         self.do_remote_request(msg)
