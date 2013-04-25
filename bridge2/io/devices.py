@@ -2,7 +2,58 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import abc
 import binascii
 
-class Device(object):
+class Event(object):
+    """Represents a change to an Attribute of a device."""
+    def __init__(self, dref, attribute, ovalue, nvalue):
+        assert isinstance(dref, DeviceRef)
+        assert isinstance(attribute, Attribute)
+        assert attribute.space.validate(ovalue)
+        assert attribute.space.validate(nvalue)
+        self._dref = dref
+        self._attribute = attribute
+        self._ovalue = ovalue
+        self._nvalue = nvalue
+    
+    @property
+    def attribute(self):
+        """Return the Attribute that was altered."""
+        return self._attribute
+    
+    @property
+    def dref(self):
+        """Return the DeviceRef that produced the Event."""
+        return self._dref
+    
+    @property
+    def nvalue(self):
+        """Return the new value of the Attribute."""
+        return self._nvalue
+    
+    def ovalue(self):
+        """Return the old value of the Attribute."""
+        return self._ovalue
+
+class DeviceProfile(object):
+    """Represents a class of device that can be communicated with."""
+    __metaclass__ = abc.ABCMeta
+    
+    @abc.abstractproperty
+    def attributes(self):
+        """Return a list of Attributes supported by this DeviceProfile."""
+        pass
+    
+    @abc.abstractmethod
+    def bind(self, locator):
+        """Link this DeviceProfile to the specified Locator, returning a
+           DeviceRef to enable access to the automation device."""
+        pass
+
+    @abc.abstractproperty
+    def identifier(self):
+        """Return the identifier for this DeviceProfile."""
+        pass
+
+class DeviceRef(object):
     """Represents an automation device that has been bound to a
        DeviceProfile."""
     __metaclass__ = abc.ABCMeta
@@ -19,48 +70,27 @@ class Device(object):
     
     @abc.abstractmethod
     def control(self, attribute, value):
-        """Commit a new value to an Attribute of this Device."""
+        """Commit a new value to an Attribute of the device."""
         pass
     
     @abc.abstractmethod
     def interrogate(self, attribute):
-        """Query this Device for the value of an Attribute."""
+        """Query the device for the value of an Attribute."""
         pass
         
     @property
     def locator(self):
-        """Return the Locator for this Device."""
+        """Return the Locator for the device."""
         return self._locator
     
     @property
     def profile(self):
-        """Return the DeviceProfile associated with this Device."""
+        """Return the DeviceProfile associated with the device."""
         return self._profile
     
     @abc.abstractmethod
-    def subscribe(self, attribute, fn):
-        """Request that fn be called when the specified Attribute is
-           altered."""
-        pass
-
-class DeviceProfile(object):
-    """Represents a class of Device that can be communicated with."""
-    __metaclass__ = abc.ABCMeta
-    
-    @abc.abstractproperty
-    def attributes(self):
-        """Return a list of Attributes supported by this DeviceProfile."""
-        pass
-    
-    @abc.abstractmethod
-    def bind(self, locator):
-        """Link this DeviceProfile to the specified Locator, returning a
-           Device to enable access to the automation device."""
-        pass
-
-    @abc.abstractproperty
-    def identifier(self):
-        """Return the identifier for this DeviceProfile."""
+    def subscribe(self, fn):
+        """Request that fn be called when an Event occurs on the device."""
         pass
 
 class Domain(object):
@@ -129,29 +159,3 @@ class Locator(object):
     def __unicode__(self):
         addrstr = binascii.hexlify(self._address)
         return "{0}:{1}".format(self._domain.identifier, addrstr)
-
-class Event(object):
-    def __init__(self, device, attribute, ovalue, nvalue):
-        assert isinstance(device, Device)
-        assert isinstance(attribute, Attribute)
-        assert attribute.space.validate(ovalue)
-        assert attribute.space.validate(nvalue)
-        self._device = device
-        self._attribute = attribute
-        self._ovalue = ovalue
-        self._nvalue = nvalue
-    
-    @property
-    def attribute(self):
-        return self._attribute
-    
-    @property
-    def device(self):
-        return self._device
-    
-    @property
-    def nvalue(self):
-        return self._nvalue
-    
-    def ovalue(self):
-        return self._ovalue

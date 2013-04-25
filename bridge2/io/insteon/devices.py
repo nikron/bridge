@@ -3,12 +3,11 @@ import abc
 import gevent
 from bridge2.io.devices import *
 from bridge2.io.insteon.modem.client import *
-from bridge2.io.insteon.profiles import *
 from bridge2.model.attributes import *
 
-class _InsteonDevice(Device):
+class _InsteonDeviceRef(DeviceRef):
     def __init__(self, locator, profile):
-        super(_InsteonDevice, self).__init__(locator, profile)
+        super(_InsteonDeviceRef, self).__init__(locator, profile)
     
     def control(self, attribute, value):
         # Validate arguments
@@ -36,17 +35,28 @@ class _InsteonDevice(Device):
         addr = self.locator.address
         return self.profile._interrogate(addr, attribute)
     
-    def subscribe(self, attribute, fn):
+    def subscribe(self, fn):
+        pass
+
+class InsteonDeviceProfile(DeviceProfile):
+    def bind(self, locator):
+        assert isinstance(locator, Locator)
+        return locator.domain._bind(locator, self)
+    
+    @abc.abstractmethod
+    def _control(self, address, attribute, value):
+        pass
+        
+    @abc.abstractmethod
+    def _dispatch(self, src, dest, msg):
+        pass
+        
+    @abc.abstractmethod
+    def _interrogate(self, address, attribute):
         pass
 
 class InsteonDomain(Domain):
     """Represents a network of Devices that can be accessed by the system."""
-    _plist = [
-        PowerDeviceProfile(),
-        DimmablePowerDeviceProfile()
-    ]
-    _pmap = {p.identifier: p for p in _plist}
-    
     def __init__(self, identifier, port):
         super(InsteonDomain, self).__init__(identifier)
         self._client = InsteonClient(port)
@@ -58,12 +68,13 @@ class InsteonDomain(Domain):
     
     def _bind(self, locator, profile):
         # Store the binding, unless one already exists
+        assert profile in self._profiles
         if address in self._bindings:
-            raise ValueError("The specified address is already bound")
+            raise ValueError(b"The specified address is already bound")
         self._bindings[address] = profile
         
-        # Produce an InsteonDevice for the caller
-        return _InsteonDevice(locator, profile)
+        # Produce an _InsteonDeviceRef for the caller
+        return _InsteonDeviceRef(locator, profile)
     
     def check_address(self, address):
         if not isinstance(address, bytes):
@@ -89,10 +100,16 @@ class InsteonDomain(Domain):
     
     @property
     def profiles(self):
-        return InsteonDomain._plist
+        return self._profiles
     
     def start(self):
         self._client.start()
 
     def stop(self):
         self._client.stop()
+
+from bridge2.io.insteon.profiles import *
+InsteonDomain._profiles = [
+    PowerDeviceProfile(),
+    DimmablePowerDeviceProfile()
+]
