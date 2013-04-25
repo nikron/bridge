@@ -1,5 +1,5 @@
 """
-Drivers for storing the model to persistent storage.
+Read and write a model to disk.
 """
 from bridge.services.model.model import Model
 
@@ -9,7 +9,12 @@ import json
 import uuid
 
 class ModelStorage():
-    """Store and read model to a persistent state."""
+    """
+    Store and read model to storage.
+
+    :param directory: Directory to use to save models.
+    :type directory: str
+    """
 
     DEFAULT = "default.bridge"
 
@@ -19,30 +24,41 @@ class ModelStorage():
         self.last = os.path.abspath(os.path.join(self.directory, 'last'))
         self.file_name = os.path.abspath(os.path.join(self.data, self.DEFAULT))
 
-        self.create_files()
+        self._create_files()
 
-        self.read_last()
+        self._read_last()
 
-    def create_files(self):
-        if not os.path.exists(self.directory):
-            os.makedirs(self.directory)
+    def get_current_file(self):
+        """
+        :return: The current file used for storing a Model
+        :rtype: str
+        """
+        return self.file_name
 
-        if not os.path.exists(self.data):
-            os.makedirs(self.data)
-
-        if not os.path.exists(self.last):
-            fd = open(self.last, "w")
-            fd.close()
-            
-
-    def remove_files(self):
-        shutil.rmtree(self.directory)
+    def get_files(self):
+        """
+        :return:  All files inside the storage directory.
+        :rtype: list
+        """
+        return os.listdir(self.directory)
 
     def read_model(self, idioms, file_name = None):
-        """Read the save model from the file."""
+        """
+        Read model from file, stored as a JSON dict with enough information
+        for an idiom to recreate it.
+
+        :param idioms: Dicitionary of idioms to use to recreate the model.
+        :type model: dict
+
+        :param file_name: The path to write the model from, if none use last or default path.
+        :type file_name: str
+
+        :return: Returns a model, an empty model (not None) if it not able to read file.
+        :rtype: Model
+        """
         file_name = self._make_file_name(file_name)
 
-        self.write_last() #this is the last file name either way
+        self._write_last()
         model = Model()
 
         try:
@@ -62,14 +78,30 @@ class ModelStorage():
         except ValueError:
             return model
 
+    def remove_files(self):
+        """
+        Remove the file tree that the storage needs.
+        Mostly used for testing.
+        """
+        shutil.rmtree(self.directory)
+
     def write_model(self, model, file_name = None):
         """
-        Write model to the file.
-        Return if succesful or not.
+        Write model to the file, storing information the minimum information an idiom would need
+        to recreate it.
+
+        :param model: The model to write to disk
+        :type model: Model
+
+        :param file_name: The path to write the model to, if none use last or default path.
+        :type file_name: str
+
+        :return: Returns if the operation was successful
+        :rtype: bool
         """
         file_name = self._make_file_name(file_name)
 
-        with open(file_name, "w+") as fd:
+        with open(file_name, 'w+') as fd:
             save_dict = {'assets' : []}
 
             for asset_uuid in model.get_all_asset_uuids():
@@ -83,23 +115,32 @@ class ModelStorage():
                             })
 
             json.dump(save_dict, fd, indent=4)
-            self.write_last()
+            self._write_last()
             return True
 
         return False
 
-    def read_last(self):
-        with open(self.last, 'r+') as fd:
-            self.file_name = fd.readline()
+    def _create_files(self):
+        """
+        Create the files this classes needs if they do not exist inside its assigned directory.
+        """
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
 
-        if self.file_name == '':
-            self.file_name = os.path.join(self.data, self.DEFAULT)
+        if not os.path.exists(self.data):
+            os.makedirs(self.data)
 
-    def write_last(self):
-        with open(self.last, 'w+') as fd:
-            fd.write(self.file_name)
-
+        if not os.path.exists(self.last):
+            fd = open(self.last, "w")
+            fd.close()
+            
     def _make_file_name(self, file_name):
+        """
+        Make the current file name file_name if it is not None.
+
+        :param file_name: Path to save file.
+        :type file_name: str
+        """
         if file_name is None:
             return self.file_name
 
@@ -111,3 +152,20 @@ class ModelStorage():
             self.file_name = file_name
 
             return  file_name
+
+    def _read_last(self):
+        """
+        Read the last used saved file to disk, so we can use it next time.
+        """
+        with open(self.last, 'r+') as fd:
+            self.file_name = fd.readline()
+
+        if self.file_name == '':
+            self.file_name = os.path.join(self.data, self.DEFAULT)
+
+    def _write_last(self):
+        """
+        Write the last used saved file to disk, so we can use it next time.
+        """
+        with open(self.last, 'w+') as fd:
+            fd.write(self.file_name)
