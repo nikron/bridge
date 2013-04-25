@@ -3,14 +3,14 @@ import collections
 import gevent
 import gevent.event
 import gevent.select
-from bridge2.io.insteon.messages import InsteonMessage
-from bridge2.io.insteon.modem import SendInsteonMsgModemPDU
+from bridge2.io.insteon.modem.core import *
+from bridge2.io.insteon.modem.messages import *
 
 #
 # High-level modem interface
 #
 
-class AsyncModemInterface(ModemInterface):
+class _AsyncModemInterface(ModemInterface):
     def __init__(self, port):
         super(AsyncModemInterface, self).__init__(port)
         self._dev.timeout = 0
@@ -90,7 +90,7 @@ class InsteonClient(object):
     def start(self):
         """Start the receive loop on a dedicated greenthread."""
         assert not self._active
-        self._iface = AsyncModemInterface(port)
+        self._iface = _AsyncModemInterface(port)
         try:
             self._active = True
             self._greenlet = gevent.spawn(self._run)
@@ -106,7 +106,3 @@ class InsteonClient(object):
     _handlers = {
         SendInsteonMsgModemPDU.Response: _handlemsgresp
     }
-
-__all__ = [
-    "InsteonClient"
-]

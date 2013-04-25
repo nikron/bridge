@@ -3,6 +3,7 @@ Create an Insteon command by calling the appriate object
 with the correct information.
 """
 
+from __future__ import absolute_import, division, print_function, unicode_literals
 import binascii
 
 class InsteonMessage(object):

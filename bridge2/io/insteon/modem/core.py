@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import binascii
 import logging
 import serial
-from bridge2.io.insteon.messages import ExtInsteonMessage, InsteonMessage
+from bridge2.io.insteon.modem.messages import *
 
 #
 # Protocol data unit definitions
@@ -307,11 +307,3 @@ class ModemInterface(object):
             
         # Transmit the data
         self._dowrite(pdu.encode())
-
-__all__ = [
-    "ModemPDU",
-    "SendInsteonMsgModemPDU",
-    "StdInsteonMessageRcvdModemPDU",
-    "ExtInsteonMessageRcvdModemPDU",
-    "ModemInterface"
-]
