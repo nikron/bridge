@@ -2,7 +2,6 @@
 Basically the main of the bridge, starts all subprocesses and then
 ensures communications and validity.
 """
-
 import multiprocessing
 from select import select
 
@@ -49,7 +48,6 @@ class BridgeHub():
         """
         Effective main of Bridge, starts services and starts select loop.
         """
-
         #start the logging process immediately
         self.logging_service.start()
         service_configure_logging(self.logging_service.queue)

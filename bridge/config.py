@@ -14,8 +14,8 @@ class BridgeConfiguration():
 
     :param stderr: If the log should be output to STDERR
     :param stderr: bool
-
     """
+
     def __init__(self, conf_file, stderr):
         self.file = conf_file
         self.stderr = stderr
