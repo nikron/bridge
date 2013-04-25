@@ -21,8 +21,6 @@ import java.net.URISyntaxException;
 
 public class BridgeClientService extends IntentService
 {
-    private static final int PROGRESS_END = Window.PROGRESS_END;
-
     public static final String COMMAND_KEY = "command";
     public static final String RECEIVER_KEY = "receiver";
     public static final String RESULTS_KEY = "results";
@@ -49,14 +47,14 @@ public class BridgeClientService extends IntentService
     {
 
         final ResultReceiver receiver = intent.getParcelableExtra(RECEIVER_KEY);
-        Bundle progress = new Bundle();
-        progress.putInt(PROGRESS_KEY, 1);
-        receiver.send(STATUS_RUNNING, progress);
+        receiver.send(STATUS_RUNNING, Bundle.EMPTY);
 
-        int command = intent.getIntExtra(COMMAND_KEY, NONE_COMMAND);
+        Bundle progress = new Bundle();
         Bundle b = new Bundle();
+
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
+        int command = intent.getIntExtra(COMMAND_KEY, NONE_COMMAND);
         switch (command)
         {
             case GET_ASSETS_COMMAND:
@@ -67,20 +65,18 @@ public class BridgeClientService extends IntentService
                     URI bridge_uri =  new URI("http://" + server + ":" + port + "/assets");
                     JSONArray urlArray = new JSONObject(Utility.getURL(bridge_uri)).getJSONArray("asset_urls");
 
+                    int length = urlArray.length();
                     String[] assetJSON = new String[urlArray.length()];
 
-                    progress.putInt(PROGRESS_KEY,  PROGRESS_END / urlArray.length() + 1);
-                    receiver.send(STATUS_PROGRESS, progress);
+                    sendProgress(receiver, progress, 1, length + 1);
 
-                    for (int i = 0; i < urlArray.length(); i++)
+                    for (int i = 0; i < length; i++)
                     {
-                        progress.putInt(PROGRESS_KEY,  PROGRESS_END * i / urlArray.length() + 1);
-                        receiver.send(STATUS_PROGRESS, progress);
                         assetJSON[i] = Utility.getURL(urlArray.getString(i));
+
+                        sendProgress(receiver, progress, i + 2, length + 1);
                     }
 
-                    progress.putInt(PROGRESS_KEY,  PROGRESS_END);
-                    receiver.send(STATUS_PROGRESS, progress);
                     b.putStringArray(RESULTS_KEY, assetJSON);
                     receiver.send(STATUS_GET_ASSETS_FINISHED, b);
                 }
@@ -94,13 +90,11 @@ public class BridgeClientService extends IntentService
             case PATCH_ASSET_COMMAND:
                 try
                 {
-                    progress.putInt(PROGRESS_KEY,  PROGRESS_END / 2);
-                    receiver.send(STATUS_PROGRESS, progress);
+                    sendProgress(receiver, progress, 1, 2);
 
                     Utility.patchURL(intent.getStringExtra(URL_KEY), intent.getStringExtra(PATCH_KEY));
 
-                    progress.putInt(PROGRESS_KEY,  PROGRESS_END);
-                    receiver.send(STATUS_PROGRESS, progress);
+                    sendProgress(receiver, progress, 2, 2);
                     receiver.send(STATUS_PATCH_ASSET_FINISHED, b);
                 }
                 catch (Exception e)
@@ -109,5 +103,12 @@ public class BridgeClientService extends IntentService
                     receiver.send(STATUS_ERROR, b);
                 }
         }
+    }
+
+    private void sendProgress(ResultReceiver receiver, Bundle bundle, int progress, int end)
+    {
+        int shift = progress / end * Window.PROGRESS_END + Window.PROGRESS_START;
+        bundle.putInt(PROGRESS_KEY,  shift);
+        receiver.send(STATUS_PROGRESS, bundle);
     }
 }
