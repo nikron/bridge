@@ -14,7 +14,8 @@ import binascii
 
 class InsteonIdiom(ModelIdiom):
     """
-    Decipher InsteonUpdate objects.
+    Decipher :class:`InsteonIMUpdate` objects into asset transitions, or whole
+    assets.
     """
 
     def create_asset(self, name, real_id, product_name):
@@ -33,7 +34,7 @@ class InsteonIdiom(ModelIdiom):
         :type product_name: str
 
         :return: The initialized asset
-        :rtype: Asset
+        :rtype: :class:`Asset`
         """
         if isinstance(real_id, str):
             try:
@@ -53,7 +54,7 @@ class InsteonIdiom(ModelIdiom):
 
     def create_onoff(self, name, real_id, product_name):
         """
-        Create an OnOffAsset.
+        Create an :class:`OnOffAsset`.
 
         :param name: Name of the asset.
         :type name: str
@@ -65,9 +66,8 @@ class InsteonIdiom(ModelIdiom):
         :type product_name: str
 
         :return: An initialized OnOffAsset with an unknown state.
-        :rtype: OnOffAsset
+        :rtype: :class:`OnOffAsset`
         """
-
         return OnOffAsset(name, real_id, self.service, product_name)
 
     def change_state(self, asset, update):
@@ -76,7 +76,7 @@ class InsteonIdiom(ModelIdiom):
         of command bytes to tuples to find a transition.
 
         :param asset: Update from Insteon IO service
-        :type asset: InsteonIMUpdate
+        :type asset: :class`InsteonIMUpdate`
         """
         try:
             category, state = LINCMAPPING.get_with_command(asset.get_product_name(), update.command, update.relative)
@@ -93,16 +93,19 @@ class InsteonIdiom(ModelIdiom):
         :type real_id: str
 
         :param update: A random InsteonUpdate, could be anything.
-        :type update: InsteonIMUpdate
+        :type update: :class:`InsteonIMUpdate`
 
         :return: The guessed initialized asset.
-        :rtype: BlankAsset
+        :rtype: :class:`BlankAsset`
         """
         return BlankAsset(real_id, self.service), False
 
     def product_names(self):
         """
         Product names associated with IO service/idiom.
+
+        :return: List of strings of the available Products.
+        :rtype: [str]
         """
         return LINCMAPPING.names()
 

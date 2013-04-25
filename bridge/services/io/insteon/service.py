@@ -12,8 +12,7 @@ import serial
 
 class InsteonIMUpdate():
     """
-    Class to encapsulate information sent to the
-    model.
+    Class to encapsulate information sent to the model.
     """
     def __init__(self, command, relative):
         if relative is not None:
@@ -96,10 +95,10 @@ class InsteonIMService(IOService):
 
     def write_command(self, cmd):
         """
-        Write an InsteonCommand to the serial port.
+        Write a command to the serial port.
 
         :param cmd: Insteon command to write.
-        :type cmd: InsteonIMCommand
+        :type cmd: :class:`InsteonIMCommand`
         """
         if cmd.is_relative():
             obj = im_commands.IMInsteonCommand.decode(cmd.encode() + b'\x06')

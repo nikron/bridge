@@ -8,8 +8,8 @@ from bridge.service import BridgeService
 
 class IOService(BridgeService):
     """
-    An abstraction of an IO BridgeService, meant to run IO
-    on a paticular interface module/device.
+    An implementation abstraction of :class:`BridgeService`, meant to run IO
+    on a particular interface module/device.
 
     :param name: Name of the IO service.
     :type name: str
@@ -18,7 +18,7 @@ class IOService(BridgeService):
     :type file_name: str
 
     :param hub_connection: Connection to BridgeHub.
-    :type hub_connection: Pipe
+    :type hub_connection: :class:`Pipe`
     """
 
     def __init__(self, name, file_name, hub_connection):
@@ -44,6 +44,9 @@ class IOService(BridgeService):
         Find the current status of an asset.
         Should return model updates that update the current
         state of an asset.
+
+        :param real_id: Real ID to get state information about.
+        :type real_id: object
         """
         raise NotImplementedError
 

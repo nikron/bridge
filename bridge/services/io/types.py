@@ -35,7 +35,7 @@ class IOConfig():
         Return initialized service.
 
         :param hub_con: Hub connection to init io service with.
-        :type hub_con: Pipe
+        :type hub_con: :class:`Pipe`
         """
         return self.service(self.name, self.file_name, hub_con)
 
