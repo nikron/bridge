@@ -1,5 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
+import numbers
 
 #
 # Attribute spaces
@@ -23,20 +24,14 @@ class Space(object):
     def validate(self, value):
         """Determine whether a value is within this Space."""
         pass
-
-class NullSpace(Space):
-    """Enables the definition of a valueless Attribute (in other words, a
-       one-shot operation)."""
-    @property
-    def marker(self):
-        return "null"
     
-    @property
-    def parameters(self):
-        return {}
+    def __str__(self):
+        return self.__unicode__().encode()
     
-    def validate(self, value):
-        return value == None
+    def __unicode__(self):
+        params = self.parameters
+        assert isinstance(params, tuple)
+        return "{0}{1}".format(self.marker, params)
 
 class BooleanSpace(Space):
     """Represents the range of possible values for a boolean Attribute."""
@@ -53,26 +48,48 @@ class BooleanSpace(Space):
 
 class IntegerSpace(Space):
     """Represents the range of possible values for an integer Attribute."""
-    def __init__(self, min_value, max_value):
-        assert isinstance(min_value, int)
-        assert isinstance(max_value, int)
-        self.min_value = min_value
-        self.max_value = max_value
+    def __init__(self, lbound, ubound):
+        assert isinstance(lbound, numbers.Integral)
+        assert isinstance(ubound, numbers.Integral)
+        self._lbound = lbound
+        self._ubound = ubound
+    
+    @property
+    def lbound(self):
+        return self._lbound
     
     @property
     def marker(self):
         return "integer"
     
     @property
+    def ubound(self):
+        return self._ubound
+    
+    @property
     def parameters(self):
-        return {"min_value": min_value, "max_value": max_value}
+        return (self._lbound, self._rbound)
     
     def validate(self, value):
-        if not isinstance(value, int):
+        if not isinstance(value, numbers.Integral):
             return False
-        if value < self.min_value or value > self.max_value:
+        if value < self._lbound or value > self._ubound:
             return False
         return True
+
+class NullSpace(Space):
+    """Enables the definition of a valueless Attribute (in other words, a
+       one-shot operation)."""
+    @property
+    def marker(self):
+        return "null"
+    
+    @property
+    def parameters(self):
+        return {}
+    
+    def validate(self, value):
+        return value == None
 
 #
 # Attributes and signals
@@ -131,18 +148,23 @@ class Attribute(object):
 
 class Signal(object):
     """Represents an occurrence that may occur on an Asset."""
-    def __init__(self, classifier, space):
-        assert isinstance(classifier, unicode)
-        # TODO: Validate classifier
+    def __init__(self, attribute, condition, space):
+        assert isinstance(attribute, Attribute)
+        assert isinstance(condition, unicode)
+        # TODO: Validate condition
         assert isinstance(space, Space)
-        self._origin = origin
-        self._classifier = classifier
+        self._attribute = attribute
+        self._condition = condition
         self._space = space
     
     @property
-    def classifier(self):
-        """Return the classifier for this Signal."""
-        return self._classifier
+    def attribute(self):
+        return self._attribute
+    
+    @property
+    def condition(self):
+        """Return the condition identifier for this Signal."""
+        return self._condition
 
     @property
     def space(self):
