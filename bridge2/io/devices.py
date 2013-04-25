@@ -1,7 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
 import binascii
-from bridge2.config.core import ConfigurationObject, ConfigurationNode
 
 class Device(object):
     """Represents an automation device that has been bound to a
@@ -33,6 +32,11 @@ class Device(object):
     def profile(self):
         """Return the DeviceProfile associated with this Device."""
         return self._profile
+    
+    @abc.abstractmethod
+    def subscribe(self, signal, fn):
+        """Request that fn be called when the specified Signal is fired."""
+        pass
 
 class DeviceProfile(object):
     """Represents a class of Device that can be communicated with."""

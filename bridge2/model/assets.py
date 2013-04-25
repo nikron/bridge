@@ -2,10 +2,9 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import gevent
 import gevent.coros
 import gevent.event
-from bridge2.config.core import ConfigurationEntity, ConfigurationNode
-from bridge2.io.devices import DeviceProfile, Locator
+from bridge2.io.devices import *
 
-class Asset(ConfigurationEntity):
+class Asset(object):
     """Represents a unit of equipment accessible on a Domain."""
     def _CacheEntry(object):
         def __init__(self):
@@ -23,14 +22,24 @@ class Asset(ConfigurationEntity):
         self._locator = locator
         self._profile = profile
         self._display_name = display_name
-        #self._device = profile.bind(locator)
         self._cache = {}
+        self._device = None
 
     @property
     def attributes(self):
-        """Return a list of attributes valid against this Asset."""
+        """Return a list of Attributes valid against this Asset."""
         return self._profile.attributes
-        
+    
+    def bind(self):
+        """Link this Asset to the underlying device."""
+        assert self._device == None
+        self._device = profile.bind(locator)
+    
+    @property
+    def bound(self):
+        """Return whether or not this Asset has been bound."""
+        return self._device != None
+    
     @property
     def display_name(self):
         """Return the display name for this Asset."""
@@ -63,19 +72,6 @@ class Asset(ConfigurationEntity):
         if attribute.writable and attribute.cacheable:
             ce.cval = value
         return value
-    
-    @classmethod
-    def _fromconfig(cls, cnode):
-        locator = cnode.pop("locator", Locator)
-        display_name = cnode.pop("display_name", unicode)
-        prid = cnode.pop("profile", unicode)
-        for profile in locator.domain.profiles:
-            if profile.identifier == prid:
-                break
-        else:
-            raise ValueError(b"Profile '{0}' not recognized".format(prid))
-        cnode.consumed()
-        return Asset(cnode.identifier, locator, profile, display_name)
     
     @property
     def identifier(self):
@@ -132,12 +128,8 @@ class Asset(ConfigurationEntity):
     def query_async(self, attribute, max_staleness=0.0, pending=False):
         return self._query(attribute, max_staleness, pending, True)
 
-    def _toconfig(self):
-        cnode = ConfigurationNode(self._identifier)
-        #cnode.push("locator", self._locator)
-        cnode.push("display_name", self._display_name)
-        cnode.push("profile", self._profile.identifier)
-        return cnode
+    def unbind(self):
+        self._device.unbind()
 
     def update(self, attribute, value):
         return self._update(attribute, value, False)

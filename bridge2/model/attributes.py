@@ -10,6 +10,11 @@ class Space(object):
     __metaclass__ = abc.ABCMeta
     
     @abc.abstractproperty
+    def marker(self):
+        """Return an label for this type of Space."""
+        pass
+    
+    @abc.abstractproperty
     def parameters(self):
         """Return the parameters defining this Space."""
         pass
@@ -23,6 +28,10 @@ class NullSpace(Space):
     """Enables the definition of a valueless Attribute (in other words, a
        one-shot operation)."""
     @property
+    def marker(self):
+        return "null"
+    
+    @property
     def parameters(self):
         return {}
     
@@ -31,6 +40,10 @@ class NullSpace(Space):
 
 class BooleanSpace(Space):
     """Represents the range of possible values for a boolean Attribute."""
+    @property
+    def marker(self):
+        return "boolean"
+    
     @property
     def parameters(self):
         return {}
@@ -47,6 +60,10 @@ class IntegerSpace(Space):
         self.max_value = max_value
     
     @property
+    def marker(self):
+        return "integer"
+    
+    @property
     def parameters(self):
         return {"min_value": min_value, "max_value": max_value}
     
@@ -58,7 +75,7 @@ class IntegerSpace(Space):
         return True
 
 #
-# Attributes
+# Attributes and signals
 #
 
 class Attribute(object):
@@ -68,6 +85,7 @@ class Attribute(object):
         if cacheable == None:
             cacheable = readable
         assert isinstance(identifier, unicode)
+        # TODO: Validate identifier
         assert isinstance(space, Space)
         assert isinstance(readable, bool)
         assert isinstance(writable, bool)
@@ -110,3 +128,23 @@ class Attribute(object):
     def writable(self):
         """Return whether or not this Attribute is writable."""
         return self_.writable
+
+class Signal(object):
+    """Represents an occurrence that may occur on an Asset."""
+    def __init__(self, classifier, space):
+        assert isinstance(classifier, unicode)
+        # TODO: Validate classifier
+        assert isinstance(space, Space)
+        self._origin = origin
+        self._classifier = classifier
+        self._space = space
+    
+    @property
+    def classifier(self):
+        """Return the classifier for this Signal."""
+        return self._classifier
+
+    @property
+    def space(self):
+        """Return the space for the values of this Signal."""
+        return self._space

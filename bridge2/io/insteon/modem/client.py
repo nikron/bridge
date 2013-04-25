@@ -44,6 +44,12 @@ class InsteonClient(object):
         self._port = port
         self._pendingmsgs = {}
         self._subscriber = None
+        self._active = False
+    
+    @property
+    def active(self):
+        """Return whether or not the client is listening for messages."""
+        return self._active
     
     def _handlemsg(self, pdu):
         if self._subscriber != None:
@@ -60,6 +66,8 @@ class InsteonClient(object):
 
     @property
     def port(self):
+        """Return the path to the device node for the serial port that the
+           client is listening on."""
         return self._port
 
     def _run(self):
