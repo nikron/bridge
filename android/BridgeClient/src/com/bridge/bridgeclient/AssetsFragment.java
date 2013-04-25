@@ -79,22 +79,26 @@ public class AssetsFragment extends SherlockListFragment implements BridgeClient
         switch (resultCode)
         {
             case BridgeClientService.STATUS_RUNNING:
-                context.setSupportProgressBarIndeterminateVisibility(true);
+                context.setSupportProgressBarVisibility(true);
+                break;
+
+            case BridgeClientService.STATUS_PROGRESS:
+                context.setSupportProgress(resultData.getInt(BridgeClientService.PROGRESS_KEY));
                 break;
 
             case BridgeClientService.STATUS_GET_ASSETS_FINISHED:
-                context.setSupportProgressBarIndeterminateVisibility(false);
+                context.setSupportProgressBarVisibility(false);
                 newAssetData(resultData.getStringArray(BridgeClientService.RESULTS_KEY));
                 break;
 
             case BridgeClientService.STATUS_ERROR:
-                context.setSupportProgressBarIndeterminateVisibility(false);
+                context.setSupportProgressBarVisibility(false);
                 displayError(resultData.getString(Intent.EXTRA_TEXT));
                 assetsAdapter.clear();
                 break;
 
             default:
-                context.setSupportProgressBarIndeterminateVisibility(false);
+                context.setSupportProgressBarVisibility(false);
                 break;
         }
     }

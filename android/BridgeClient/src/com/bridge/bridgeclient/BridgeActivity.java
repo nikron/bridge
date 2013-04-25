@@ -17,10 +17,10 @@ public class BridgeActivity extends SherlockFragmentActivity
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        requestWindowFeature(Window.FEATURE_PROGRESS);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
-        setSupportProgressBarIndeterminateVisibility(false);
+        setSupportProgressBarVisibility(false);
     }
 
     @Override
