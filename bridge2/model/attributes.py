@@ -19,6 +19,16 @@ class Space(object):
         """Determine whether a value is within this Space."""
         pass
 
+class NullSpace(Space):
+    """Enables the definition of a valueless Attribute (in other words, a
+       one-shot operation)."""
+    @property
+    def parameters(self):
+        return {}
+    
+    def validate(self, value):
+        return value == None
+
 class BooleanSpace(Space):
     """Represents the range of possible values for a boolean Attribute."""
     @property
