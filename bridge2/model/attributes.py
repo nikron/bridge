@@ -11,8 +11,8 @@ class Space(object):
     __metaclass__ = abc.ABCMeta
     
     @abc.abstractproperty
-    def marker(self):
-        """Return an label for this type of Space."""
+    def identifier(self):
+        """Return an identifier for this type of Space."""
         pass
     
     @abc.abstractproperty
@@ -31,17 +31,17 @@ class Space(object):
     def __unicode__(self):
         params = self.parameters
         assert isinstance(params, tuple)
-        return "{0}{1}".format(self.marker, params)
+        return "{0}{1}".format(self.identifier, params)
 
 class BooleanSpace(Space):
     """Represents the range of possible values for a boolean Attribute."""
     @property
-    def marker(self):
+    def identifier(self):
         return "boolean"
     
     @property
     def parameters(self):
-        return {}
+        return ()
     
     def validate(self, value):
         return isinstance(value, bool)
@@ -59,7 +59,7 @@ class IntegerSpace(Space):
         return self._lbound
     
     @property
-    def marker(self):
+    def identifier(self):
         return "integer"
     
     @property
@@ -86,7 +86,7 @@ class NullSpace(Space):
     
     @property
     def parameters(self):
-        return {}
+        return ()
     
     def validate(self, value):
         return value == None
@@ -145,28 +145,3 @@ class Attribute(object):
     def writable(self):
         """Return whether or not this Attribute is writable."""
         return self_.writable
-
-class Signal(object):
-    """Represents an occurrence that may occur on an Asset."""
-    def __init__(self, attribute, condition, space):
-        assert isinstance(attribute, Attribute)
-        assert isinstance(condition, unicode)
-        # TODO: Validate condition
-        assert isinstance(space, Space)
-        self._attribute = attribute
-        self._condition = condition
-        self._space = space
-    
-    @property
-    def attribute(self):
-        return self._attribute
-    
-    @property
-    def condition(self):
-        """Return the condition identifier for this Signal."""
-        return self._condition
-
-    @property
-    def space(self):
-        """Return the space for the values of this Signal."""
-        return self._space
