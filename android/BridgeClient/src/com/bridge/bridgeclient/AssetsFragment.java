@@ -1,7 +1,7 @@
 package com.bridge.bridgeclient;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuInflater;
@@ -19,7 +19,7 @@ import android.widget.Toast;
 
 import org.json.JSONException;
 
-public class AssetsFragment extends SherlockFragment implements BridgeClientReceiver.Receiver
+public class AssetsFragment extends SherlockListFragment implements BridgeClientReceiver.Receiver
 {
     SherlockFragmentActivity context;
     BridgeClientReceiver receiver;
@@ -36,19 +36,19 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
     {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-        receiver = new BridgeClientReceiver(new Handler());
-        receiver.setReceiver(this);
 
         context = getSherlockActivity();
+        assetsAdapter = new AssetsArrayAdapter(context, this);
+        setListAdapter(assetsAdapter);
+
+        receiver = new BridgeClientReceiver(new Handler());
+        receiver.setReceiver(this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.assetsfragment, container);
-        devices = (ListView) view.findViewById(R.id.assetlist);
-        assetsAdapter = new AssetsArrayAdapter(context, this);
-        devices.setAdapter(assetsAdapter);
 
         return view;
     }
@@ -90,6 +90,7 @@ public class AssetsFragment extends SherlockFragment implements BridgeClientRece
             case BridgeClientService.STATUS_ERROR:
                 context.setSupportProgressBarIndeterminateVisibility(false);
                 displayError(resultData.getString(Intent.EXTRA_TEXT));
+                assetsAdapter.clear();
                 break;
 
             default:

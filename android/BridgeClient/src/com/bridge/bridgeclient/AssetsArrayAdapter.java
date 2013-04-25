@@ -22,6 +22,7 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset>
     final AssetsFragment fragment;
     static final int binaryAsset = R.xml.asset_binary;
     static final int rangeAsset = R.xml.asset_range;
+    static final int unknownAsset = R.xml.asset_unknown;
     static final int textViewResourceId = R.id.assetname;
     static final int controlResourceId = R.id.assetcontrol;
 
@@ -41,7 +42,6 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset>
         switch (asset.getMainType())
         {
             case State.BINARY_TYPE:
-            default:
                 layout = (RelativeLayout) LayoutInflater.from(context).inflate(binaryAsset, parent, false);
                 Switch mainSwitch = (Switch) layout.findViewById(controlResourceId);;
                 mainSwitch.setEnabled(asset.isMainEnabled());
@@ -51,6 +51,11 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset>
                         String message = asset.setCurrentMainState(isChecked);
                         fragment.sendAssetPatch(asset.getURL(), message);
                 }});
+
+                break;
+
+            default:
+                layout = (RelativeLayout) LayoutInflater.from(context).inflate(unknownAsset, parent, false);
                 break;
         }
 

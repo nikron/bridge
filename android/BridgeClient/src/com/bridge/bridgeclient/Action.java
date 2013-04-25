@@ -42,11 +42,6 @@ class Action
         return name;
     }
 
-    public void doAction() throws IOException
-    {
-        Utility.postURL(url);
-    }
-
     public boolean hasArguments()
     {
         if (arguments == null) return true;
