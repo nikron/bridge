@@ -13,6 +13,10 @@ class Device(object):
         self._locator = locator
         self._profile = profile
     
+    @property
+    def attributes(self):
+        return self._profile.attributes
+    
     @abc.abstractmethod
     def control(self, attribute, value):
         """Commit a new value to an Attribute of this Device."""
@@ -34,8 +38,9 @@ class Device(object):
         return self._profile
     
     @abc.abstractmethod
-    def subscribe(self, signal, fn):
-        """Request that fn be called when the specified Signal is fired."""
+    def subscribe(self, attribute, fn):
+        """Request that fn be called when the specified Attribute is
+           altered."""
         pass
 
 class DeviceProfile(object):
@@ -98,7 +103,7 @@ class Domain(object):
         """Terminate the connection to the automation network."""
         pass
 
-class Locator(ConfigurationObject):
+class Locator(object):
     """Represents the network address of a Device."""
     def __init__(self, domain, address):
         assert isinstance(domain, Domain)
@@ -117,22 +122,6 @@ class Locator(ConfigurationObject):
     def domain(self):
         """Return the Domain the address corresponds to."""
         return self._domain
-
-    @classmethod
-    def _fromconfig(cls, cnode):
-        domain = cnode.pop("domain", Domain)
-        address = cnode.pop("address", unicode)
-        try:
-            address = binascii.unhexlify(address)
-        except:
-            raise ValueError(b"'address' must be a hexadecimal string")
-        cnode.consumed()
-        return Locator(domain, address)
-        
-    def _toconfig(self):
-        cnode = ConfigurationNode()
-        cnode.push("domain", self.domain)
-        cnode.push("address", self.address)
     
     def __str__(self):
         return self.__unicode__().encode()
@@ -140,3 +129,29 @@ class Locator(ConfigurationObject):
     def __unicode__(self):
         addrstr = binascii.hexlify(self._address)
         return "{0}:{1}".format(self._domain.identifier, addrstr)
+
+class Event(object):
+    def __init__(self, device, attribute, ovalue, nvalue):
+        assert isinstance(device, Device)
+        assert isinstance(attribute, Attribute)
+        assert attribute.space.validate(ovalue)
+        assert attribute.space.validate(nvalue)
+        self._device = device
+        self._attribute = attribute
+        self._ovalue = ovalue
+        self._nvalue = nvalue
+    
+    @property
+    def attribute(self):
+        return self._attribute
+    
+    @property
+    def device(self):
+        return self._device
+    
+    @property
+    def nvalue(self):
+        return self._nvalue
+    
+    def ovalue(self):
+        return self._ovalue

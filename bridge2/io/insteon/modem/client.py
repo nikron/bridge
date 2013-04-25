@@ -53,7 +53,7 @@ class InsteonClient(object):
     
     def _handlemsg(self, pdu):
         if self._subscriber != None:
-            self._subscriber(pdu.dest, pdu.message)
+            self._subscriber(pdu.src, pdu.dest, pdu.message)
     
     def _handlemsgresp(self, pdu):
         # Signal a waiting sendmsg call
@@ -126,9 +126,9 @@ class InsteonClient(object):
         """Request that fn be called when an InsteonMessage is received."""
         if self._subscriber != None:
             fn2 = self._subscriber
-            def chain(dest, msg):
-                fn2(dest, msg)
-                fn(dest, msg)
+            def chain(src, dest, msg):
+                fn2(src, dest, msg)
+                fn(src, dest, msg)
             self._subscriber = chain
         else:
             self._subscriber = fn

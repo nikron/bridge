@@ -6,33 +6,38 @@ from bridge2.io.insteon.modem.client import *
 from bridge2.io.insteon.profiles import *
 from bridge2.model.attributes import *
 
-class InsteonDevice(Device):
+class _InsteonDevice(Device):
     def __init__(self, locator, profile):
-        super(InsteonDevice, self).__init__(locator, profile)
+        super(_InsteonDevice, self).__init__(locator, profile)
     
     def control(self, attribute, value):
         # Validate arguments
         assert isinstance(attribute, Attribute)
         if not attribute in self.profile.attributes:
-            raise ValueError("Only attributes of this device are permitted")
+            raise ValueError(b"Only attributes of this device are permitted")
         if not attribute.writable:
-            raise ValueError("The specified attribute is not writable")
+            raise ValueError(b"The specified attribute is not writable")
         if not attribute.space.validate(value):
-            raise ValueError("Illegal attribute value")
+            raise ValueError(b"Illegal attribute value")
             
         # Delegate to the profile
-        return self.profile._control(self.locator, attribute, value)
+        addr = self.locator.address
+        return self.profile._control(addr, attribute, value)
     
     def interrogate(self, attribute):
         # Validate arguments
         assert isinstance(attribute, Attribute)
         if not attribute in self.profile.attributes:
-            raise ValueError("Only attributes of this device are permitted")
+            raise ValueError(b"Only attributes of this device are permitted")
         if not attribute.readable:
-            raise ValueError("The specified attribute is not readable")
+            raise ValueError(b"The specified attribute is not readable")
             
         # Delegate to the profile
-        return self.profile._interrogate(self.locator, attribute)
+        addr = self.locator.address
+        return self.profile._interrogate(addr, attribute)
+    
+    def subscribe(self, attribute, fn):
+        pass
 
 class InsteonDomain(Domain):
     """Represents a network of Devices that can be accessed by the system."""
@@ -45,6 +50,7 @@ class InsteonDomain(Domain):
     def __init__(self, identifier, port):
         super(InsteonDomain, self).__init__(identifier)
         self._client = InsteonClient(port)
+        self._client.subscribe(self._handlemsg)
         self._bindings = {}
     
     def active(self):
@@ -57,7 +63,7 @@ class InsteonDomain(Domain):
         self._bindings[address] = profile
         
         # Produce an InsteonDevice for the caller
-        return InsteonDevice(locator, profile)
+        return _InsteonDevice(locator, profile)
     
     def check_address(self, address):
         if not isinstance(address, bytes):
@@ -65,6 +71,17 @@ class InsteonDomain(Domain):
         if len(address) != 3:
             return False
         return True
+    
+    def _handlemsg(self, src, dest, msg):
+        dev = self._bindings.get(src)
+        if dev == None:
+            return
+        srcl = Locator(self, src)
+        destl = Locator(self, dest)
+        dev.profile._dispatch(srcl, destl, msg)
+    
+    def _notify(self, target, event):
+        raise NotImplementedError()
     
     @property
     def port(self):
