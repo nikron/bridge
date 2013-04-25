@@ -24,7 +24,7 @@ public class BridgePreferencesActivity extends SherlockPreferenceActivity
                 Intent intent = new Intent(this, BridgeActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
-                return true;    
+                return true;
 
             default:
                 return super.onOptionsItemSelected(item);
