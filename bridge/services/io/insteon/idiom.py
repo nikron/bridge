@@ -1,72 +1,83 @@
 """
-Idiom for model to communicate with insteon io
-services.
+Idiom for model to communicate with insteon IO services.
 """
 from bridge.services.model.idiom import ModelIdiom, IdiomError
 from bridge.services.model.assets import BlankAsset, OnOffAsset
 
-from insteon_protocol.command.commands import InsteonCommand
-from insteon_protocol.command.command_bytes import *
+from insteon_protocol.command.command_bytes import TURNONFAST, TURNOFF, LIGHTSTATUSREQUEST
 from insteon_protocol.linc.lincs import LincMap
 from insteon_protocol.utils import check_insteon_id
-
 
 import logging
 from binascii import unhexlify
 import binascii
 
-
 class InsteonIdiom(ModelIdiom):
     """
-    Decipher InsteonCommand objects.
+    Decipher InsteonUpdate objects.
     """
 
-    def create_onoff(self, name, real_id, product_name):
-        """Create the onoff assets."""
-
-        return OnOffAsset(name, real_id, self.service, product_name)
-
     def create_asset(self, name, real_id, product_name):
-        if type(real_id) == str:
+        """
+        Create an asset out of minimum posible information.
+        Since http service can't know for sure if a given ID is correct
+        for a IO service, must check here.
+
+        :param name: Name of the asset.
+        :type name: str
+
+        :param real_id: Real id of the insteon device.
+        :type real_id: str
+
+        :param product_name: Product name of the insteon device.
+        :type product_name: str
+
+        :return: The initialized asset
+        :rtype: Asset
+        """
+        if isinstance(real_id, str):
             try:
                 check = unhexlify(real_id.encode()) #make sure string is valid
             except binascii.Error:
                 raise IdiomError("Could not unhexlify `{0}`.".format(real_id))
 
             if not check_insteon_id(check):
-                raise IdiomError("Insteon ID's are byte string of length 3.")
-
+                raise IdiomError("Insteon ID's are byte string of length 3.") 
         try:
             create_func = LINCMAPPING.get_with_product(product_name)
         except AttributeError:
             raise IdiomError("Invalid asset class.")
 
         asset = create_func(self, name, real_id, product_name)
-
         return asset
 
-
-    def guess_insteon_asset(self, real_id, command):
+    def create_onoff(self, name, real_id, product_name):
         """
-        We know it is an insteon command, let's try to guess what kind of device
-        it corresponds to.
+        Create an OnOffAsset.
+
+        :param name: Name of the asset.
+        :type name: str
+
+        :param real_id: Real ID of the asset.
+        :type real_id: str
+
+        :param product_name: Product name of the asset.
+        :type product_name: str
+
+        :return: An initialized OnOffAsset with an unknown state.
+        :rtype: OnOffAsset
         """
-        cmd1 = command.cmd1
-        cmd2 = command.cmd2
 
-        if cmd1 == b'\x03' and cmd2 == b'\x00':
-            logging.debug("Found a product description command with extended data: {0}.".format(
-                repr(command.extended_data)))
-
-        return (BlankAsset(real_id, self.service), False)
-
-    def guess_asset(self, real_id, update):
-        if issubclass(type(update), InsteonCommand):
-            return self.guess_insteon_asset(real_id, update)
-        else:
-            return (BlankAsset(real_id, self.service), False)
+        return OnOffAsset(name, real_id, self.service, product_name)
 
     def change_state(self, asset, update):
+        """
+        Change the state of the update using an update, looks into a mapping
+        of command bytes to tuples to find a transition.
+
+        :param asset: Update from Insteon IO service
+        :type asset: InsteonIMUpdate
+        """
         try:
             category, state = LINCMAPPING.get_with_command(asset.get_product_name(), update.command, update.relative)
             asset.transition(category, state)
@@ -74,7 +85,25 @@ class InsteonIdiom(ModelIdiom):
         except KeyError:
             raise IdiomError("Update not implemented.")
 
+    def guess_asset(self, real_id, update):
+        """
+        We currently don't guess assets, just return blank assets.
+
+        :param real_id: Real ID of insteon device.
+        :type real_id: str
+
+        :param update: A random InsteonUpdate, could be anything.
+        :type update: InsteonIMUpdate
+
+        :return: The guessed initialized asset.
+        :rtype: BlankAsset
+        """
+        return BlankAsset(real_id, self.service), False
+
     def product_names(self):
+        """
+        Product names associated with IO service/idiom.
+        """
         return LINCMAPPING.names()
 
 LINCMAPPING = LincMap()
@@ -83,10 +112,19 @@ LINCMAPPING.register_with_command('ApplianceLinc V2', TURNONFAST, ('main', True)
 LINCMAPPING.register_with_command('ApplianceLinc V2', TURNOFF, ('main', False))
 
 def bytes_to_state(cmd_bytes):
+    """
+    LincMap will call this function on a range of command bytes.
+
+    :param cmd_bytes: Bytes object to find a state transition from
+    :type cmd_byts: CMDS
+
+    :return: A tuple representing a state transition
+    :rtype: (str, bool)
+    """
     logging.debug("Using the to figure out status requests.")
     if cmd_bytes.cmd2 == 0:
-        return ('main', False)
+        return 'main', False
     else:
-        return ('main', True)
+        return 'main', True
 
 LINCMAPPING.register_with_command('ApplianceLinc V2', LIGHTSTATUSREQUEST, bytes_to_state)
