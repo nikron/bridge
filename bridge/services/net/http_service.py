@@ -12,7 +12,7 @@ import logging
 import uuid
 
 JSON_MIME = 'application/json'
-JSON_PATCH_MIME = 'application/json-patch'
+JSON_PATCH_MIME = 'application/json-patch+patch'
 
 def accept_only_json(func):
     """Raise an error if content type isn't json."""

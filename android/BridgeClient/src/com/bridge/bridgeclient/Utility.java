@@ -63,7 +63,7 @@ public class Utility
     {
         HttpPatch patch = new HttpPatch(url);
         StringEntity entity = new StringEntity(patchStr, "utf-8");
-        entity.setContentType("application/json-patch");
+        entity.setContentType("application/json-patch+patch");
         patch.setEntity(entity);
         HttpResponse response = client.execute(patch);
     }
