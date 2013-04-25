@@ -38,6 +38,12 @@ class InsteonIMService(IOService):
 
     def asset_info(self, real_id):
         real_id = unhexlify(real_id)
+        cmd = im_commands.IDRequest(real_id)
+
+        self.write_command(cmd)
+
+    def asset_status(self, real_id):
+        real_id = unhexlify(real_id)
         cmd = im_commands.LightStatusRequest(real_id)
 
         self.write_command(cmd)

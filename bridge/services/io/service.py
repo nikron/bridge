@@ -32,11 +32,21 @@ class IOService(BridgeService):
         """
         Get more info about device (by querying the IO).
         Must be implemented by each IO service.
+        Should return information that enables creation of an asset.
 
         :param real_id: Real ID to get asset information about.
         :type real_id: object
         """
         raise NotImplementedError
+
+    def asset_status(self, real_id):
+        """
+        Find the current status of an asset.
+        Should return model updates that update the current
+        state of an asset.
+        """
+        raise NotImplementedError
+
 
     def read_io(self):
         """
