@@ -51,6 +51,10 @@ class InsteonClient(object):
             del self._pendingmsgs[msgdata]
         ar.set(pdu.successful)
 
+    @property
+    def port(self):
+        return self._port
+
     def _run(self):
         try:
             while True:
