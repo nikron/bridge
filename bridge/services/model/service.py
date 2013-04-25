@@ -10,6 +10,19 @@ from bridge.services.model.idiom import IdiomError
 from bridge.services.model.actions import ActionError
 
 class ModelService(BridgeService):
+    """
+    Read events from most bridge services to manipulate and display assets/devices.
+
+    :param io_idioms: A dictionary of a IO service name to an idiom on how to use it.
+    :type io_idioms: dict
+
+    :param directory: Directory to store model information.
+    :type directory: str
+
+    :param hub_connection: Connection to talk to BridgeHub.
+    :type hub_connection: Pipe
+    """
+
     def __init__(self, io_idioms, directory, hub_connection):
         super().__init__('model', hub_connection)
         self.read_list = [self.hub_connection]
@@ -29,8 +42,19 @@ class ModelService(BridgeService):
                 self.read_and_do_remote_request()
 
     def get_info(self):
-        """Summary of this service status."""
-        return { 'model saved' : not self.dirty }
+        """
+        Summary of this service status.
+
+        :return: A dict of model status, currently only information saved state.
+        :rtype: dict
+        """
+        ser = { 
+                'model dirty' : self.dirty ,
+                'model current save file' : self.storage.get_current_file(),
+                'model save files' : self.storage.get_files()
+                }
+
+        return ser
 
     def save(self, file_name=None):
         try:
