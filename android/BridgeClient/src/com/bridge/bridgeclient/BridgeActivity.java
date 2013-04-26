@@ -53,7 +53,7 @@ public class BridgeActivity extends SherlockFragmentActivity implements BridgeCl
             case R.id.menu_save:
                 final Intent intent = new Intent(Intent.ACTION_SYNC, null, this, BridgeClientService.class);
                 intent.putExtra(BridgeClientService.RECEIVER_KEY, receiver);
-                intent.putExtra(BridgeClientService.COMMAND_KEY, BridgeClientService.GET_ASSETS_COMMAND);
+                intent.putExtra(BridgeClientService.COMMAND_KEY, BridgeClientService.GET_BRIDGE_INFO_COMMAND);
                 startService(intent);
 
                 return true;

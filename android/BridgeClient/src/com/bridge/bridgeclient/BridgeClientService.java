@@ -41,12 +41,10 @@ public class BridgeClientService extends IntentService
     public static final int STATUS_GET_BRIDGE_INFO_FINISHED = 6;
     public static final int STATUS_PATCH_ASSET_FINISHED = 5;
 
-    private SharedPreferences sharedPref;
 
     public BridgeClientService()
     {
         super("bridgeclientservice");
-        sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
     }
 
     protected void onHandleIntent(Intent intent)
@@ -126,6 +124,7 @@ public class BridgeClientService extends IntentService
 
     private URI getBridgeURI(String append) throws URISyntaxException
     {
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         String server = sharedPref.getString("pref_server", "127.0.0.1");
         String port = sharedPref.getString("pref_port", "8080");
         URI bridge_uri =  new URI("http://" + server + ":" + port + append);
