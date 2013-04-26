@@ -120,11 +120,12 @@ class ModelService(BridgeService):
         """Perform an action on an asset."""
         try:
             msg = self.model.transform_action_to_message(uuid, action, *args, **kwargs)
-            self.hub_connection.send(msg)
+            if msg:
+                self.hub_connection.send(msg)
+            else:
+                return "Asset not found."
         except ActionError as err:
             return err.message
-        except KeyError:
-            return "Asset not found."
 
         return None
 

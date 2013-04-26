@@ -46,8 +46,11 @@ class States():
         :param category: The category to get the control object.
         :type category: str
 
-        :param state: The state that the object controls
+        :param state: The state that the object controls.
         :type state: str
+
+        :return: The control object associated with changing to a state.
+        :rtype: object
         """
         return self.categories[category].get_control(state)
 
@@ -346,6 +349,7 @@ class BinaryStateCategory(StateCategory):
     """
     Convience class for binary states.
     """
+
     BINARY_TYPE = 'binary'
     def __init__(self, category):
         super().__init__(category, [True, False], self.BINARY_TYPE)
@@ -354,6 +358,7 @@ class Trigger():
     """
     Functions to be called when a state transitions.
     """
+
     def __init__(self, category, state, func):
         self.key = uuid.uuid1()
         self.category = category
