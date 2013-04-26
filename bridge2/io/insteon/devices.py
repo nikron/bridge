@@ -1,10 +1,10 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
-from bridge2.io.devices import *
-from bridge2.model.attributes import *
+from ..attributes import *
+from ..devices import *
 
 class InsteonDeviceProfile(DeviceProfile):
     def bind(self, locator):
-        from bridge2.io.insteon.domain import InsteonDomain
+        from .domain import InsteonDomain
         assert isinstance(locator, Locator)
         assert isinstance(locator.domain, InsteonDomain)
         return locator.domain._bind(locator, self)
@@ -24,7 +24,7 @@ class InsteonDeviceProfile(DeviceProfile):
 class InsteonDeviceRef(DeviceRef):
     def __init__(self, locator, profile):
         assert isinstance(profile, InsteonDeviceProfile)
-        super(_InsteonDeviceRef, self).__init__(locator, profile)
+        super(InsteonDeviceRef, self).__init__(locator, profile)
         self._subscriber = None
     
     def control(self, attribute, value):
