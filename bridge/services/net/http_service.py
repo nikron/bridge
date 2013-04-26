@@ -4,6 +4,7 @@ Don't blame me for globals, blame the library.
 """
 
 from bridge.service import BridgeService
+from bridge.services import MODEL
 from external_libs.bottle import run, Bottle, request, response, HTTPError
 from external_libs import mimeparse, jsonpatch
 import json
@@ -85,7 +86,7 @@ class HTTPAPIService(BridgeService):
         def inner_bridge_information():
             """Inner method."""
             base = request.url
-            info = self.remote_block_service_method('model', 'get_info')
+            info = self.remote_block_service_method(MODEL, 'get_info')
 
             info['services_url'] =  base + 'services/{service}'
             info['assets_url'] =  base + 'assets/{asset uuid}'
@@ -108,7 +109,7 @@ class HTTPAPIService(BridgeService):
             if not type(file_name) == str:
                 raise HTTPError(400, "File name must be str")
 
-            success, message = self.remote_block_service_method('model', 'save', file_name)
+            success, message = self.remote_block_service_method(MODEL, 'save', file_name)
 
             if success:
                 return self.encode({ 'message' : message })
@@ -122,7 +123,7 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_services():
             """Need to change the services to their url."""
-            servs = self.remote_block_service_method('model', 'get_io_services')
+            servs = self.remote_block_service_method(MODEL, 'get_io_services')
             servs_url_list = self.transform_to_urls(servs)
 
             return self.encode({ 'services' : servs_url_list })
@@ -134,7 +135,7 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_service_info(service):
             """Get service info from model; this might need to change to hub."""
-            service = self.remote_block_service_method('model', 'get_io_service_info', service)
+            service = self.remote_block_service_method(MODEL, 'get_io_service_info', service)
             self.transform_to_urls(service, key='assets',  newkey='asset_urls', prefix='assets/')
 
             if service:
@@ -149,7 +150,7 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_assets():
             """Return url list of assets in JSON."""
-            asset_uuids = self.remote_block_service_method('model', 'get_assets')
+            asset_uuids = self.remote_block_service_method(MODEL, 'get_assets')
             asset_urls = self.transform_to_urls(asset_uuids)
 
             return self.encode({ 'asset_urls' : asset_urls })
@@ -185,7 +186,7 @@ class HTTPAPIService(BridgeService):
 
             if 'name' in changed:
                 if type(result['name']) == str:
-                    todo_change_name = True
+                    change_name = True
                 else:
                     raise HTTPError(422, "Name must be a string.")
 
@@ -208,10 +209,10 @@ class HTTPAPIService(BridgeService):
 
             if change_name:
                 logging.debug("Attempting to change name")
-                self.remote_async_service_method('model', 'set_asset_name', asset_uuid, changed['name'])
+                self.remote_async_service_method(MODEL, 'set_asset_name', asset_uuid, changed['name'])
             for state_change in state_changes:
                 logging.debug("Attempting to control")
-                self.remote_async_service_method('model', 'control_asset', asset_uuid, state_change[0], state_change[1])
+                self.remote_async_service_method(MODEL, 'control_asset', asset_uuid, state_change[0], state_change[1])
 
             response.status = 204
             return None
@@ -223,7 +224,7 @@ class HTTPAPIService(BridgeService):
         def inner_delete_asset_by_uuid(asset):
             asset_uuid = self._make_uuid(asset)
 
-            success = self.remote_block_service_method('model', 'delete_asset', asset_uuid)
+            success = self.remote_block_service_method(MODEL, 'delete_asset', asset_uuid)
 
             if success:
                 response.status = 204
@@ -238,7 +239,6 @@ class HTTPAPIService(BridgeService):
         @accept_only_json
         def inner_create_asset():
             """Attempt to create asset, must have submitted correct attributes in json form."""
-
             try:
                 name = request.json['name']
                 real_id = request.json['real id']
@@ -252,7 +252,7 @@ class HTTPAPIService(BridgeService):
             if not type(name) == type(real_id) == type(asset_class) == type(service) == str:
                 raise HTTPError(400, "Asset attributes must be strings.")
 
-            okay, msg = self.remote_block_service_method('model', 'create_asset', name, real_id, service, asset_class)
+            okay, msg = self.remote_block_service_method(MODEL, 'create_asset', name, real_id, service, asset_class)
 
             if okay:
                 response.status = 201 #201 Created
@@ -271,7 +271,7 @@ class HTTPAPIService(BridgeService):
             """Get all actions of asset, output in json."""
             asset_uuid = self._make_uuid(asset)
 
-            info = self.remote_block_service_method('model', 'get_asset_action_info', asset_uuid, action)
+            info = self.remote_block_service_method(MODEL, 'get_asset_action_info', asset_uuid, action)
 
             if info:
                 return self.encode(info)
@@ -288,7 +288,7 @@ class HTTPAPIService(BridgeService):
             """Attempt to do action decribed by URL."""
             asset_uuid = self._make_uuid(asset)
 
-            msg = self.remote_block_service_method('model', 'perform_asset_action', asset_uuid, action)
+            msg = self.remote_block_service_method(MODEL, 'perform_asset_action', asset_uuid, action)
 
             if not msg:
                 return self.encode({ "message" : "Action will be performed." })
@@ -300,7 +300,7 @@ class HTTPAPIService(BridgeService):
 
     def _get_asset_json(self, asset_uuid):
         """Get asset JSON, with an uuid in string form."""
-        asset_info = self.remote_block_service_method('model', 'get_asset_info', asset_uuid)
+        asset_info = self.remote_block_service_method(MODEL, 'get_asset_info', asset_uuid)
 
         if asset_info:
             self.transform_to_urls(asset_info, key='uuid', newkey='url', prefix='assets/', delete=False)
