@@ -9,6 +9,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
+import android.support.v4.app.FragmentManager;
 import com.actionbarsherlock.view.Window;
 
 public class BridgeActivity extends SherlockFragmentActivity
@@ -38,6 +39,11 @@ public class BridgeActivity extends SherlockFragmentActivity
         {
             case R.id.menu_pref:
                 startActivity(new Intent(this, BridgePreferencesActivity.class));
+                return true;
+
+            case R.id.menu_save:
+                SaveBridgeModelDialogFragment frag = new SaveBridgeModelDialogFragment();
+                frag.show(getSupportFragmentManager(), "dialog");
                 return true;
 
             default:

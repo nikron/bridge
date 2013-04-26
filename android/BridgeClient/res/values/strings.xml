@@ -17,4 +17,8 @@
     <string name="pref_password">Password</string>
 
     <string name="disconnected"></string>
+
+    <string name="save_dialog_title">Save</string>
+    <string name="save_dialog_save">Save</string>
+    <string name="save_dialog_cancel">Cancel</string>
 </resources>
