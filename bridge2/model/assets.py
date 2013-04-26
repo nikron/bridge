@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import gevent
 import gevent.coros
 import gevent.event
-from bridge2.io.devices import *
+from bridge2.io import *
 
 class Asset(object):
     """Represents a unit of equipment accessible on a Domain."""

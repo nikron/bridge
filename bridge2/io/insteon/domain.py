@@ -1,9 +1,9 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from bridge2.io.devices import *
-from bridge2.io.insteon.devices import *
-from bridge2.io.insteon.modem.client import *
-from bridge2.io.insteon.profiles import *
 from bridge2.model.attributes import *
+from .devices import *
+from .modem import *
+from .profiles import *
 
 class InsteonDomain(Domain):
     """Represents a network of Devices that can be accessed by the system."""

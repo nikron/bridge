@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import binascii
 import logging
 import serial
-from bridge2.io.insteon.modem.messages import *
+from .messages import *
 
 #
 # Protocol data unit definitions
@@ -56,18 +56,18 @@ class ModemPDU(object):
         # Look up the command type
         ctuple = _pdutable.get(command)
         if ctuple == None:
-            raise ValueError("The specified command type is not decodable")
+            raise ValueError(b"The specified command type is not decodable")
         l, ctor = ctuple
         
         # Check the length, w/ special handling for message send responses
         assert isinstance(payload, bytes)
         if command == ModemPDU.SEND_INSTEON_MSG:
             if not len(payload) in (7, 21):
-                raise ValueError("'payload' is not of the expected length")
+                raise ValueError(b"Payload not of expected length")
         elif len(payload) != l:
-            raise ValueError("'payload' is not of the expected length")
+            raise ValueError(b"Payload not of expected length")
         if cls != ModemPDU and cls != ctor:
-            raise ValueError("'command' does not match this PDU type")
+            raise ValueError(b"Command value does not match PDU type")
             
         # Hand the PDU off to the actual decoder
         if ctor == None:
@@ -277,16 +277,16 @@ class ModemInterface(object):
         """Read a ModemPDU from the serial interface."""
         # Do a sanity check
         if self._dev == None:
-            raise IOError("The device has already been closed")
+            raise IOError(b"The device has already been closed")
         
         # Read the PDU header
         magic = ord(self._doread(1))
         if magic != 0x02:
-            raise IOError("STX byte expected when reading PDU")
+            raise IOError(b"STX byte expected when reading PDU")
         cmd = ord(self._doread(1))
         ctuple = _pdutable.get(cmd)
         if ctuple == None:
-            raise IOError("An unrecognized modem PDU was received")
+            raise IOError(b"An unrecognized modem PDU was received")
         
         # Read the payload
         if cmd == ModemPDU.SEND_INSTEON_MSG:
@@ -303,7 +303,7 @@ class ModemInterface(object):
         # Do a sanity check
         assert isinstance(pdu, ModemPDU)
         if self._dev == None:
-            raise IOError("The device has already been closed")
+            raise IOError(b"The device has already been closed")
             
         # Transmit the data
         self._dowrite(pdu.encode())

@@ -3,8 +3,8 @@ import collections
 import gevent
 import gevent.event
 import gevent.select
-from bridge2.io.insteon.modem.core import *
-from bridge2.io.insteon.modem.messages import *
+from .core import *
+from .messages import *
 
 #
 # High-level modem interface
