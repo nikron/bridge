@@ -1,6 +1,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
-from ..attributes import *
-from ..devices import *
+from bridge2.io.attributes import *
+from bridge2.io.devices import *
 from .devices import *
 from .modem import *
 from .profiles import *

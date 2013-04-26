@@ -1,7 +1,8 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
+from bridge2.io.attributes import *
 from bridge2.io.devices import *
 from bridge2.io.insteon.devices import *
-from bridge2.model.attributes import *
+from bridge2.io.insteon.modem import *
 
 class DimmablePowerDeviceProfile(InsteonDeviceProfile):
     _attr_intensity = Attribute("intensity", IntegerSpace(0, 0xFF))
