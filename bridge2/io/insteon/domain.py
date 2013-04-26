@@ -2,10 +2,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from bridge2.io.devices import *
 from bridge2.io.insteon.devices import *
 from bridge2.io.insteon.modem.client import *
+from bridge2.io.insteon.profiles import *
 from bridge2.model.attributes import *
 
 class InsteonDomain(Domain):
     """Represents a network of Devices that can be accessed by the system."""
+    _profiles = [
+        PowerDeviceProfile(),
+        DimmablePowerDeviceProfile()
+    ]
+    
     def __init__(self, identifier, port):
         super(InsteonDomain, self).__init__(identifier)
         self._client = InsteonClient(port)
@@ -40,8 +46,9 @@ class InsteonDomain(Domain):
         destl = Locator(self, dest)
         dev.profile._dispatch(srcl, destl, msg)
     
-    def _notify(self, target, event):
-        raise NotImplementedError()
+    def _notify(self, target, evt):
+        if target._subscriber != None:
+            target._subscriber(evt)
     
     @property
     def port(self):
@@ -56,10 +63,3 @@ class InsteonDomain(Domain):
 
     def stop(self):
         self._client.stop()
-
-from bridge2.io.insteon.profiles import *
-
-InsteonDomain._profiles = [
-    PowerDeviceProfile(),
-    DimmablePowerDeviceProfile()
-]

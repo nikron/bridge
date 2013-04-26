@@ -23,7 +23,7 @@ class PowerDeviceProfile(InsteonDeviceProfile):
             raise ValueError(b"Unexpected attribute received")
     
     def _dispatch(self, src, dest, msg):
-        pass
+        print("[{0} -> {1}] {2}".format(src, dest, msg))
     
     @property
     def identifier(self):
