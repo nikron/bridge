@@ -111,7 +111,10 @@ class Model():
         :return: A list of assets.
         :rtype: [uuid]
         """
-        return list(self.r2u[service].items())
+        if service in self.r2u:
+            return list(self.r2u[service].items())
+        else:
+            return []
 
     def remove_asset(self, uuid):
         """
