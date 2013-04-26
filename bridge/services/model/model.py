@@ -45,7 +45,7 @@ class Model():
 
     def get_all_asset_uuids(self):
         """
-        Get the uuid of all the assets associated with the model.
+        Get the UUID of all the assets associated with the model.
 
         :return: A list of uuids.
         :rtype: [uuid]
@@ -69,7 +69,7 @@ class Model():
         Get the control :class:`BridgeMessage` associated with controling an asset to
         transition to a particular state.
 
-        :param uuid: The universal identifier of an asset.
+        :param uuid: UUID of an asset.
         :type uuid: uuid
 
         :param category: The category to get the control object.
@@ -85,7 +85,7 @@ class Model():
 
     def get_asset_uuid(self, service, real_id):
         """
-        Get the uuid corresponding to a particular service + id.
+        Get the UUID corresponding to a particular service + id.
 
         :param service: Name of the service
         :type service: str
@@ -120,7 +120,7 @@ class Model():
         """
         Remove an asset.
 
-        :param uuid: The uuid of the asset to remove.
+        :param uuid: The UUID of the asset to remove.
         :type uuid: uuid
 
         :return: If the operation was successful.
@@ -164,7 +164,7 @@ class Model():
         """
         Return an asset in basic python primitives.
 
-        :param uuid: The asset to get info about..
+        :param uuid: The asset to get info about.
         :type uuid: uuid
 
         :return: The asset in serializable form.
@@ -177,9 +177,22 @@ class Model():
         else:
             return None
 
+    def set_asset_name(self, uuid, name):
+        """
+        Convenience method to set an asset name.
+
+        :param uuid: The UUID of an asset.
+        :type uuid: uuid
+
+        :param name: New name for the asset.
+        :type name: str
+        """
+        asset = self.get_asset(uuid)
+        asset.set_name(name)
+
     def transform_action_to_message(self, uuid, action, *args, **kwargs):
         """
-        Perform an action on uuid asset.
+        Perform an action on UUID asset.
         An action must return a BridgeMessge, so this gets that and returns it.
 
         :param uuid: The asset to perform the action on.
