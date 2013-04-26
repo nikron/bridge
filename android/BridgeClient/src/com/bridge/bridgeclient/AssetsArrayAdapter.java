@@ -34,7 +34,6 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
     static final int textViewResourceId = R.id.assetname;
     static final int controlResourceId = R.id.assetcontrol;
 
-
     public AssetsArrayAdapter(SherlockFragmentActivity context)
     {
         super(context, binaryAsset, textViewResourceId);
