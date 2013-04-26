@@ -6,7 +6,7 @@ import android.os.Bundle;
 
 import com.actionbarsherlock.app.SherlockDialogFragment;
 
-public class SaveBridgeModelDialogFragment extends SherlockDialogFragment
+public class BridgeSaveModelDialogFragment extends SherlockDialogFragment
 {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState)
