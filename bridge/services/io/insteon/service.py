@@ -1,13 +1,14 @@
 """
 Service to handle an Insteon IM.
 """
-import logging
 
 from bridge.services.io.service import IOService
+
 from insteon_protocol import insteon_im_protocol
 from insteon_protocol.command import im_commands
-from binascii import hexlify, unhexlify
 
+from binascii import hexlify, unhexlify
+import logging
 import serial
 
 class InsteonIMUpdate():

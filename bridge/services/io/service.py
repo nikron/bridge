@@ -5,6 +5,7 @@ import logging
 from select import select
 
 from bridge.service import BridgeService
+from bridge.services import MODEL
 
 class IOService(BridgeService):
     """
@@ -87,7 +88,7 @@ class IOService(BridgeService):
         :type update: object
         """
         logging.debug("Updating model with {0}".format(update))
-        self.remote_async_service_method('model', 'io_update', self.name, real_id, update)
+        self.remote_async_service_method(MODEL, 'io_update', self.name, real_id, update)
 
     def write_io(self, buf):
         """
@@ -106,13 +107,13 @@ class IOService(BridgeService):
         """
         Notify the model that the this service isn't connected.
         """
-        self.remote_async_service_method('model', 'io_service_offline', self.name)
+        self.remote_async_service_method(MODEL, 'io_service_offline', self.name)
 
     def notify_connected(self):
         """
         Notify the model that the this service is connected.
         """
-        self.remote_async_service_method('model', 'io_service_online', self.name)
+        self.remote_async_service_method(MODEL, 'io_service_online', self.name)
 
     def _create_fd(self, file_name):
         """
