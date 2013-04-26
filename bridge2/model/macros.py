@@ -1,4 +1,4 @@
-from __future__ import absolute_imports, division, print_function, unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 import abc
 
 #
@@ -17,7 +17,7 @@ class Action(object):
            ExecutionContext ctx."""
         pass
 
-class ExecutionContext():
+class ExecutionContext(object):
     def commit(self, label, newvalue):
         """Store the ExpressionValue newvalue in the variable named by
            label."""
@@ -27,9 +27,10 @@ class ExecutionContext():
         """Retrieve the value of the variable named by label."""
         pass
 
-class Expression(metaclass=abc.ABCMeta):
+class Expression(object):
     """Provides a base class for all expression types that may be included
        within a macro."""
+    __metaclass__ = abc.ABCMeta
     
     @abc.abstractmethod
     def evaluate(self, ctx):
@@ -45,7 +46,7 @@ class ExpressionValue():
     BOOLEAN = 2
     STATUS_CONTEXT = 3
 
-class Macro():    
+class Macro(object):
     def execute(self):
         ctx = ExecutionContext()
         self.body.execute(ctx)

@@ -2,39 +2,39 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import abc
 import binascii
 
-class Device(object):
-    """Represents an automation device that has been bound to a
-       DeviceProfile."""
-    __metaclass__ = abc.ABCMeta
-    
-    def __init__(self, locator, profile):
-        assert isinstance(locator, Locator)
-        assert isinstance(profile, DeviceProfile)
-        self._locator = locator
-        self._profile = profile
-    
-    @abc.abstractmethod
-    def control(self, attribute, value):
-        """Commit a new value to an Attribute of this Device."""
-        pass
-    
-    @abc.abstractmethod
-    def interrogate(self, attribute):
-        """Query this Device for the value of an Attribute."""
-        pass
-        
-    @property
-    def locator(self):
-        """Return the Locator for this Device."""
-        return self._locator
+class Event(object):
+    """Represents a change to an Attribute of a device."""
+    def __init__(self, dref, attribute, ovalue, nvalue):
+        assert isinstance(dref, DeviceRef)
+        assert isinstance(attribute, Attribute)
+        assert attribute.space.validate(ovalue)
+        assert attribute.space.validate(nvalue)
+        self._dref = dref
+        self._attribute = attribute
+        self._ovalue = ovalue
+        self._nvalue = nvalue
     
     @property
-    def profile(self):
-        """Return the DeviceProfile associated with this Device."""
-        return self._profile
+    def attribute(self):
+        """Return the Attribute that was altered."""
+        return self._attribute
+    
+    @property
+    def dref(self):
+        """Return the DeviceRef that produced the Event."""
+        return self._dref
+    
+    @property
+    def nvalue(self):
+        """Return the new value of the Attribute."""
+        return self._nvalue
+    
+    def ovalue(self):
+        """Return the old value of the Attribute."""
+        return self._ovalue
 
 class DeviceProfile(object):
-    """Represents a class of Device that can be communicated with."""
+    """Represents a class of device that can be communicated with."""
     __metaclass__ = abc.ABCMeta
     
     @abc.abstractproperty
@@ -45,12 +45,52 @@ class DeviceProfile(object):
     @abc.abstractmethod
     def bind(self, locator):
         """Link this DeviceProfile to the specified Locator, returning a
-           Device to enable access to the automation device."""
+           DeviceRef to enable access to the automation device."""
         pass
 
     @abc.abstractproperty
     def identifier(self):
         """Return the identifier for this DeviceProfile."""
+        pass
+
+class DeviceRef(object):
+    """Represents an automation device that has been bound to a
+       DeviceProfile."""
+    __metaclass__ = abc.ABCMeta
+    
+    def __init__(self, locator, profile):
+        assert isinstance(locator, Locator)
+        assert isinstance(profile, DeviceProfile)
+        self._locator = locator
+        self._profile = profile
+    
+    @property
+    def attributes(self):
+        return self._profile.attributes
+    
+    @abc.abstractmethod
+    def control(self, attribute, value):
+        """Commit a new value to an Attribute of the device."""
+        pass
+    
+    @abc.abstractmethod
+    def interrogate(self, attribute):
+        """Query the device for the value of an Attribute."""
+        pass
+        
+    @property
+    def locator(self):
+        """Return the Locator for the device."""
+        return self._locator
+    
+    @property
+    def profile(self):
+        """Return the DeviceProfile associated with the device."""
+        return self._profile
+    
+    @abc.abstractmethod
+    def subscribe(self, fn):
+        """Request that fn be called when an Event occurs on the device."""
         pass
 
 class Domain(object):
@@ -99,7 +139,7 @@ class Locator(object):
         assert isinstance(domain, Domain)
         assert isinstance(address, bytes)
         if not domain.check_address(address):
-            raise ValueError("The specified address is not acceptable")
+            raise ValueError(b"The specified address is not acceptable")
         self._domain = domain
         self._address = address
 
@@ -112,7 +152,7 @@ class Locator(object):
     def domain(self):
         """Return the Domain the address corresponds to."""
         return self._domain
-
+    
     def __str__(self):
         return self.__unicode__().encode()
 

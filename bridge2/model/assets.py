@@ -2,7 +2,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import gevent
 import gevent.coros
 import gevent.event
-from bridge2.io.devices import DeviceProfile, Locator
+from bridge2.io import *
 
 class Asset(object):
     """Represents a unit of equipment accessible on a Domain."""
@@ -22,14 +22,24 @@ class Asset(object):
         self._locator = locator
         self._profile = profile
         self._display_name = display_name
-        self._device = profile.bind(locator)
         self._cache = {}
+        self._device = None
 
     @property
     def attributes(self):
-        """Return a list of attributes valid against this Asset."""
+        """Return a list of Attributes valid against this Asset."""
         return self._profile.attributes
-        
+    
+    def bind(self):
+        """Link this Asset to the underlying device."""
+        assert self._device == None
+        self._device = profile.bind(locator)
+    
+    @property
+    def bound(self):
+        """Return whether or not this Asset has been bound."""
+        return self._device != None
+    
     @property
     def display_name(self):
         """Return the display name for this Asset."""
@@ -67,12 +77,6 @@ class Asset(object):
     def identifier(self):
         """Return the identifier for this Asset."""
         return self._identifier
-    
-    def load_cache(self):
-        # Run a query on every readable/cacheable attribute to fill the cache
-        for attr in self.attributes:
-            if attr.readable and attr.cacheable:
-                self.query_async(attr, max_staleness=float("inf"))
     
     @property
     def locator(self):
@@ -123,6 +127,9 @@ class Asset(object):
         
     def query_async(self, attribute, max_staleness=0.0, pending=False):
         return self._query(attribute, max_staleness, pending, True)
+
+    def unbind(self):
+        self._device.unbind()
 
     def update(self, attribute, value):
         return self._update(attribute, value, False)
