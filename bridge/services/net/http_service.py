@@ -16,17 +16,30 @@ JSON_MIME = 'application/json'
 JSON_PATCH_MIME = 'application/json-patch+patch'
 
 def accept_only_json(func):
-    """Raise an error if content type isn't json."""
+    """
+    Decorator for a function that checks if the current request.content_type is an acceptable for
+    the HTTP method.
+
+    :param func: Function to decorate.
+    :type func: func
+
+    :return: The decorated function.
+    :rtype: func
+    """
     acceptable = JSON_MIME
     acceptable_patch = JSON_PATCH_MIME
 
     def mime_okay(mimetype, acceptable=acceptable):
-        """Checks if the mimetype is acceptable."""
+        """
+        Checks if the mimetype is acceptable.
+        """
         accept = mimeparse.best_match([acceptable], mimetype)
         return accept == acceptable
 
     def error_non_json(*args, **kwargs):
-        """Inner function that raises error if mimetype not acceptable."""
+        """
+        Inner function that raises error if mimetype not acceptable.
+        """
         if request.method == 'GET':
             if not mime_okay(request.get_header('Accept', acceptable)):
                 raise HTTPError(406, "Please accept `{0}`".format(acceptable))
@@ -44,7 +57,9 @@ def accept_only_json(func):
     return error_non_json
 
 class HTTPAPIService(BridgeService):
-    """Service to provide a http api to bridge."""
+    """
+    Service to provide a http api to bridge.
+    """
 
     def __init__(self, hub_con, addr='0.0.0.0', port='8080', debug=True): 
         super().__init__('http_api', hub_con)
@@ -73,8 +88,9 @@ class HTTPAPIService(BridgeService):
         run(app=self.bottle, host=self.addr, port=self.port, debug=True)
 
     def encode(self, obj):
-        """Encode a python primitive collection to json, and set
-        response encoding to json."""
+        """
+        Encode a python primitive collection to json, and set response encoding to json.
+        """
         response.content_type = JSON_MIME
         return (self.json.encode(obj) + "\n").encode() #add a trailing newline
 
@@ -257,7 +273,7 @@ class HTTPAPIService(BridgeService):
             if okay:
                 response.status = 201 #201 Created
                 response.set_header('Location', request.url + "/" + str(msg))
-                return self.encode({ "message" : "Asset created." })
+                return self.encode({ 'message' : "Asset created." })
 
             else:
                 raise HTTPError(400, msg)
@@ -291,7 +307,7 @@ class HTTPAPIService(BridgeService):
             msg = self.remote_block_service_method(MODEL, 'perform_asset_action', asset_uuid, action)
 
             if not msg:
-                return self.encode({ "message" : "Action will be performed." })
+                return self.encode({ 'message' : "Action will be performed." })
 
             else:
                 raise HTTPError(400, msg)
@@ -338,7 +354,7 @@ class HTTPAPIService(BridgeService):
         """Transform a list to one appended with the current request.url, or a dict item
         to another dict key."""
         if 'prefix' in kwargs:
-            prefix = request.urlparts[0] + "://" + request.urlparts[1] + "/" + kwargs['prefix']
+            prefix = request.urlparts[0] + '://' + request.urlparts[1] + '/' + kwargs['prefix']
         else:
             prefix = request.url
 
