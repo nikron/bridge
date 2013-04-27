@@ -1,7 +1,7 @@
 """
-Meant to hold the status/state/attributes of a device.  Anything that will change
-on a device and should be controlled is considered a state.  Examples: lighting, volume,
-and status of LED buttons.
+Meant to hold the status/state/attributes of a device. Anything that will
+change on a device and should be controlled is considered a state. Examples:
+lighting, volume, and status of LED buttons.
 """
 import uuid
 
@@ -9,13 +9,15 @@ from collections import defaultdict
 
 class States():
     """
-    A collection of independant :class:`StateCategory`s.  A state is meant to be changed by transition
-    a category (of states) to another state.  Another important function of a state is the notion of whether
-    it is "controllable", it is considered controllable if all of its possible states have a control object
-    associated with it.
+    A collection of independent :class:`StateCategory`s.  A state is meant to
+    be changed by transition of a category (of states) to another state.
+    Another important function of a state is the notion of whether it is
+    "controllable", it is considered controllable if all of its possible
+    states have a control object associated with it.
 
-    States also currently will allow firing off a function whena paticular transition happens;
-    this feature may or may not be removed/changed in the near future.
+    States also currently allow firing of a function when a particular
+    transition happens; this feature may or may not be removed/changed in the
+    near future.
 
     :param *states: List of :class:`StateCategory`(s)
     :type *states: [:class:`StateCategory`]
@@ -75,8 +77,8 @@ class States():
 
     def serializable(self):
         """
-        Return a representation of the :class:`States` in a form of only python
-        primitives, one that is easy to serialize.
+        Return a representation of the :class:`States` in a form of only
+        Python primitives, one that is easy to serialize.
 
         :return: The serilizable dictionary representing this :class:`States`.
         :rtype: dict
@@ -91,7 +93,8 @@ class States():
     def set_default_control(self, category, control):
         """
         Set a callable object on a category, the object will be called
-        with the target state and the result will be returned when :func:`get_control`.
+        with the target state and the result will be returned when
+        :func:`get_control`.
 
         :param category: The category to get the control object.
         :type category: str
@@ -103,9 +106,9 @@ class States():
 
     def set_control(self, category, state, control):
         """
-        Set an object to be returned on :func:`get_control`, if a :class:`StateCategory`'s
-        all possible states have control objects, that :class:`StateCategory` will be considered
-        controllable.
+        Set an object to be returned on :func:`get_control`, if a
+        :class:`StateCategory`'s all possible states have control objects,
+        that :class:`StateCategory` will be considered controllable.
 
         :param category: The category to get set control object.
         :type category: str
@@ -120,7 +123,7 @@ class States():
 
     def sudden_transition(self, category, state):
         """
-        Attempt to transition a category to a paticular state.
+        Attempt to transition a category to a particular state.
         Will not call any triggers
 
         :param category: The category to change.
@@ -139,8 +142,8 @@ class States():
 
     def transition(self, category, state):
         """
-        Attempt to transition a category to a paticular state.
-        If succesful will also call any attached triggers.
+        Attempt to transition a category to a particular state.
+        If successful will also call any attached triggers.
 
         :param category: The category to change.
         :type category: str
@@ -158,17 +161,18 @@ class States():
 
 class StateCategory():
     """
-    A category of states, keeps track of various attributres of state, most
-    of important of which are whether it is "controllable", and whether the current
-    state is "known".
+    A category of states, keeps track of various attributes of state, most
+    of important of which are whether it is "controllable", and whether the
+    current state is "known".
 
     :param category: The name of the category
     :type category: str
 
-    :param states: A list like object that has all possible states of an object.
+    :param states: An iterable representing all possible states of an object.
     :type states: object
 
-    :param _type: The type of category it is, intended for clients to know what kind of control to display for this state
+    :param _type: The type of category it is, intended for clients to know
+                  what kind of control to display for this state
     :type _type: str
     """
     def __init__(self, category, states, _type):
@@ -249,7 +253,8 @@ class StateCategory():
 
     def set_control(self, state, control):
         """
-        Set the control object for a state, make it controllable if all possible states have controls.
+        Set the control object for a state, make it controllable if all
+        possible states have controls.
 
         :param state: State to set control to
         :type state: str
@@ -321,8 +326,8 @@ class StateCategory():
 
     def _check_controllable(self):
         """
-        Check if all the possible states have a control object
-        associated with them, set controllable to True if they do.
+        Check if all the possible states have a control object associated with
+        them, set controllable to True if they do.
         """
         if self.default_control:
             self.controllable = True
