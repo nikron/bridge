@@ -49,7 +49,10 @@ class InsteonIMService(IOService):
         self.write_command(cmd)
 
     def go_to_level(self, real_id, level):
+        real_id = unhexlify(real_id)
+        cmd = im_commands.TurnOnLevel(real_id, bytes([level]))
 
+        self.write_command(cmd)
 
     def read_io(self):
         """
