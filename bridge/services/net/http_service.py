@@ -76,11 +76,11 @@ def _bridge_information():
     info['services_url'] =  base + 'services/{service}'
     info['assets_url'] =  base + 'assets/{asset uuid}'
 
-    return _svc.encode(info)
+    return _svc._encode(info)
 
     return inner_bridge_information
 
-@_app.post("/")
+@_app.route("/", method="PATCH")
 @accept_only_json
 def _bridge_save(_svc):
     """Inner method."""
@@ -97,7 +97,7 @@ def _bridge_save(_svc):
     success, message = _svc.remote_block_service_method(MODEL, 'save', file_name)
 
     if success:
-        return _svc.encode({ 'message' : message })
+        return _svc._encode({ 'message' : message })
     else:
         HTTPError(500, message)
 
@@ -106,19 +106,19 @@ def _bridge_save(_svc):
 def _services():
     """Need to change the services to their url."""
     servs = _svc.remote_block_service_method(MODEL, 'get_io_services')
-    servs_url_list = _svc.transform_to_urls(servs)
+    servs_url_list = _svc._transform_to_urls(servs)
 
-    return _svc.encode({ 'services' : servs_url_list })
+    return _svc._encode({ 'services' : servs_url_list })
 
 @_app.get("/services/<service>")
 @accept_only_json
 def _service_info(service):
     """Get service info from model; this might need to change to hub."""
     service = _svc.remote_block_service_method(MODEL, 'get_io_service_info', service)
-    _svc.transform_to_urls(service, key='assets',  newkey='asset_urls', prefix='assets/')
+    _svc._transform_to_urls(service, key='assets',  newkey='asset_urls', prefix='assets/')
 
     if service:
-        return _svc.encode(service)
+        return _svc._encode(service)
     else:
         raise HTTPError(404, "Service not found.")
 
@@ -127,16 +127,16 @@ def _service_info(service):
 def _assets():
     """Return url list of assets in JSON."""
     asset_uuids = _svc.remote_block_service_method(MODEL, 'get_assets')
-    asset_urls = _svc.transform_to_urls(asset_uuids)
+    asset_urls = _svc._transform_to_urls(asset_uuids)
 
-    return _svc.encode({ 'asset_urls' : asset_urls })
+    return _svc._encode({ 'asset_urls' : asset_urls })
 
 @_app.get("/assets/<asset>")
 @accept_only_json
 def _get_asset_by_uuid(asset):
     """Return JSON of an asset, replace actions with their urls."""
     asset_uuid = _svc._make_uuid(asset)
-    return _svc.encode(_svc._get_asset_json(asset_uuid))
+    return _svc._encode(_svc._get_asset_json(asset_uuid))
 
 @_app.route("/assets/<asset>", method="PATCH")
 @accept_only_json
@@ -223,7 +223,7 @@ def _create_asset():
     if okay:
         response.status = 201 #201 Created
         response.set_header('Location', request.url + "/" + str(msg))
-        return _svc.encode({ 'message' : "Asset created." })
+        return _svc._encode({ 'message' : "Asset created." })
 
     else:
         raise HTTPError(400, msg)
@@ -237,7 +237,7 @@ def _get_asset_action(asset, action):
     info = _svc.remote_block_service_method(MODEL, 'get_asset_action_info', asset_uuid, action)
 
     if info:
-        return _svc.encode(info)
+        return _svc._encode(info)
 
     else:
         raise HTTPError(404, "Action not found.")
@@ -251,7 +251,7 @@ def _post_action(asset, action):
     msg = _svc.remote_block_service_method(MODEL, 'perform_asset_action', asset_uuid, action)
 
     if not msg:
-        return _svc.encode({ 'message' : "Action will be performed." })
+        return _svc._encode({ 'message' : "Action will be performed." })
 
     else:
         raise HTTPError(400, msg)
@@ -271,15 +271,7 @@ class HTTPAPIService(BridgeService):
         self.port = port
         self.json = json.JSONEncoder(sort_keys=True, indent=4)
 
-    def run(self):
-        global _svc
-        if _svc != None:
-            raise RuntimeError("Only one HTTPAPIService may be run at a time")
-        _svc = self
-        bottle.run(app=_app, host=self.addr, port=self.port, debug=True)
-        _svc = None
-
-    def encode(self, obj):
+    def _encode(self, obj):
         """
         Encode a python primitive collection to json, and set response encoding to json.
         """
@@ -300,17 +292,6 @@ class HTTPAPIService(BridgeService):
         else:
             raise HTTPError(404, "Asset not found.")
 
-    def _report_keys_changed(first, second, allowable):
-        first_set = set(first.keys())
-        second_set = set(second.keys())
-        changed = {key for key in first_set.intersection(second_set) if first[key] != second[key]}
-        changed.union(first_set.symmetric_difference(second_set))
-
-        if changed.issubset(allowable):
-            HTTPError(422, "Patching something that can't be patched.")
-
-        return changed
-
     @staticmethod
     def _make_uuid(asset):
         """Check if uuid `asset` is valid, raise HTTPerror if it isn't."""
@@ -321,7 +302,26 @@ class HTTPAPIService(BridgeService):
 
         return asset_uuid
 
-    def transform_to_urls(self, container, **kwargs):
+    def _report_keys_changed(first, second, allowable):
+        first_set = set(first.keys())
+        second_set = set(second.keys())
+        changed = {key for key in first_set.intersection(second_set) if first[key] != second[key]}
+        changed.union(first_set.symmetric_difference(second_set))
+
+        if changed.issubset(allowable):
+            raise HTTPError(422, "Patching something that can't be patched.")
+
+        return changed
+
+    def run(self):
+        global _svc
+        if _svc != None:
+            raise RuntimeError("Only one HTTPAPIService may be run at a time")
+        _svc = self
+        bottle.run(app=_app, host=self.addr, port=self.port, debug=True)
+        _svc = None
+
+    def _transform_to_urls(self, container, **kwargs):
         """Transform a list to one appended with the current request.url, or a dict item
         to another dict key."""
         if 'prefix' in kwargs:
@@ -339,7 +339,7 @@ class HTTPAPIService(BridgeService):
             else:
                 newkey = kwargs['newkey']
 
-            container[newkey] = self.transform_to_urls(container[key], **kwargs)
+            container[newkey] = self._transform_to_urls(container[key], **kwargs)
 
             if newkey != key:
                 if 'delete' in kwargs and kwargs['delete']:
