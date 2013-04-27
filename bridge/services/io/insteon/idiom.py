@@ -155,4 +155,4 @@ def bytes_to_bool(cmd_bytes):
     else:
         return 'main', True
 
-LINCMAPPING.register_with_command('ApplianceLinc V2', LIGHTSTATUSREQUEST, bytes_to_state)
+LINCMAPPING.register_with_command('ApplianceLinc V2', LIGHTSTATUSREQUEST, bytes_to_bool)
