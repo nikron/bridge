@@ -247,7 +247,7 @@ class StateCategory():
         ser['type'] = self.type
         ser['controllable'] = self.controllable
         ser['unknown'] = self.unknown
-        ser['possible states'] = self.states
+        ser['possible states'] = list(self.states) #Should the itertable not be expanded?
 
         return ser
 
@@ -362,12 +362,11 @@ class BinaryStateCategory(StateCategory):
 class RangeCategory(StateCategory):
     RANGE_TYPE = 'range'
 
-    def __init__(self, category, minimum, maximum):
-        super().__init__(category, range(minimum,maximum), self.RANGE_TYPE) 
+    def __init__(self, category, minimum, maximum, step = 1):
+        super().__init__(category, range(minimum, maximum, step), self.RANGE_TYPE) 
 
 class Trigger():
-    """
-    Functions to be called when a state transitions.
+    """ Functions to be called when a state transitions.
     """
 
     def __init__(self, category, state, func):

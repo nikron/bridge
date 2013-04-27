@@ -123,7 +123,7 @@ class OnOffAsset(Asset):
         return self.backing.bridge_messages['off']
 
 class DimmerAsset(Asset):
-    states = States(RangeCategory('main', 1, 32))
+    states = States(RangeCategory('main', 0, 255))
 
     def __init__(self, name, real_id, service, product_name):
         backing = Backing(real_id, service, product_name)
