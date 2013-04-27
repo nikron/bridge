@@ -70,7 +70,7 @@ class HTTPAPIService(BridgeService):
         self.json = json.JSONEncoder(sort_keys=True, indent=4)
 
         self.bottle.get('/', callback=self.bridge_information())
-        self.bottle.patch('/', callback=self.bridge_save())
+        self.bottle.route('/', method='PATCH', callback=self.bridge_save())
         self.bottle.get('/services', callback=self.services())
         self.bottle.get('/services/<service>', callback=self.service_info())
         self.bottle.get('/assets', callback=self.assets())
@@ -133,7 +133,7 @@ class HTTPAPIService(BridgeService):
         def inner_services():
             """Need to change the services to their url."""
             servs = self.remote_block_service_method(MODEL, 'get_io_services')
-            servs_url_list = self.transform_to_urls(servs)
+            servs_url_list = self._transform_to_urls(servs)
 
             return self._encode({ 'services' : servs_url_list })
 
@@ -145,7 +145,7 @@ class HTTPAPIService(BridgeService):
         def inner_service_info(service):
             """Get service info from model; this might need to change to hub."""
             service = self.remote_block_service_method(MODEL, 'get_io_service_info', service)
-            self.transform_to_urls(service, key='assets',  newkey='asset_urls', prefix='assets/')
+            self._transform_to_urls(service, key='assets',  newkey='asset_urls', prefix='assets/')
 
             if service:
                 return self._encode(service)
@@ -160,7 +160,7 @@ class HTTPAPIService(BridgeService):
         def inner_assets():
             """Return url list of assets in JSON."""
             asset_uuids = self.remote_block_service_method(MODEL, 'get_assets')
-            asset_urls = self.transform_to_urls(asset_uuids)
+            asset_urls = self._transform_to_urls(asset_uuids)
 
             return self._encode({ 'asset_urls' : asset_urls })
 
@@ -325,8 +325,8 @@ class HTTPAPIService(BridgeService):
         asset_info = self.remote_block_service_method(MODEL, 'get_asset_info', asset_uuid)
 
         if asset_info:
-            self.transform_to_urls(asset_info, key='uuid', newkey='url', prefix='assets/', delete=False)
-            self.transform_to_urls(asset_info, key='actions', newkey='action_urls')
+            self._transform_to_urls(asset_info, key='uuid', newkey='url', prefix='assets/', delete=False)
+            self._transform_to_urls(asset_info, key='actions', newkey='action_urls')
             asset_info['uuid'] = str(asset_info['uuid'])
 
             return asset_info
@@ -394,7 +394,7 @@ class HTTPAPIService(BridgeService):
             else:
                 newkey = kwargs['newkey']
 
-            container[newkey] = self.transform_to_urls(container[key], **kwargs)
+            container[newkey] = self._transform_to_urls(container[key], **kwargs)
 
             if newkey != key:
                 if 'delete' in kwargs and kwargs['delete']:
