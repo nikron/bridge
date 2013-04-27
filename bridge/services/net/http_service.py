@@ -82,7 +82,7 @@ def _bridge_information():
 
 @_app.route("/", method="PATCH")
 @accept_only_json
-def _bridge_save(_svc):
+def _bridge_save():
     """Inner method."""
     try:
         file_name = request.json['save']
