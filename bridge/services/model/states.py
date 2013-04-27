@@ -354,11 +354,11 @@ class BinaryStateCategory(StateCategory):
     def __init__(self, category):
         super().__init__(category, [True, False], self.BINARY_TYPE)
 
-class RangeCategory(StateCategory):	
+class RangeCategory(StateCategory):
     RANGE_TYPE = 'range'
 
     def __init__(self, category, minimum, maximum):
-        super().__init__(category, range(minimum,maximum), self.RANGE_TYPE)
+        super().__init__(category, range(minimum,maximum), self.RANGE_TYPE) 
 
 class Trigger():
     """
@@ -378,5 +378,7 @@ class Trigger():
         self.func()
 
     def __eq__(self, other):
-        if self.key == other.key: return True else:
+        if self.key == other.key: 
+            return True 
+        else:
             return False
