@@ -5,6 +5,7 @@ import logging
 from select import select
 
 from bridge.service import BridgeService
+from bridge.services import MODEL
 from bridge.services.model.storage import ModelStorage
 from bridge.services.model.idiom import IdiomError
 from bridge.services.model.actions import ActionError
@@ -24,7 +25,7 @@ class ModelService(BridgeService):
     """
 
     def __init__(self, io_idioms, directory, hub_connection):
-        super().__init__('model', hub_connection)
+        super().__init__(MODEL, hub_connection)
         self.read_list = [self.hub_connection]
 
         self.storage = ModelStorage(directory)

@@ -70,7 +70,7 @@ class HTTPAPIService(BridgeService):
         self.json = json.JSONEncoder(sort_keys=True, indent=4)
 
         self.bottle.get('/', callback=self.bridge_information())
-        self.bottle.post('/', callback=self.bridge_save())
+        self.bottle.patch('/', callback=self.bridge_save())
         self.bottle.get('/services', callback=self.services())
         self.bottle.get('/services/<service>', callback=self.service_info())
         self.bottle.get('/assets', callback=self.assets())
@@ -87,13 +87,6 @@ class HTTPAPIService(BridgeService):
     def run(self):
         run(app=self.bottle, host=self.addr, port=self.port, debug=True)
 
-    def encode(self, obj):
-        """
-        Encode a python primitive collection to json, and set response encoding to json.
-        """
-        response.content_type = JSON_MIME
-        return (self.json.encode(obj) + "\n").encode() #add a trailing newline
-
     def bridge_information(self):
         """
         Return a function listing api urls.
@@ -107,7 +100,7 @@ class HTTPAPIService(BridgeService):
             info['services_url'] =  base + 'services/{service}'
             info['assets_url'] =  base + 'assets/{asset uuid}'
 
-            return self.encode(info)
+            return self._encode(info)
 
         return inner_bridge_information
 
@@ -128,7 +121,7 @@ class HTTPAPIService(BridgeService):
             success, message = self.remote_block_service_method(MODEL, 'save', file_name)
 
             if success:
-                return self.encode({ 'message' : message })
+                return self._encode({ 'message' : message })
             else:
                 HTTPError(500, message)
 
@@ -142,7 +135,7 @@ class HTTPAPIService(BridgeService):
             servs = self.remote_block_service_method(MODEL, 'get_io_services')
             servs_url_list = self.transform_to_urls(servs)
 
-            return self.encode({ 'services' : servs_url_list })
+            return self._encode({ 'services' : servs_url_list })
 
         return inner_services
 
@@ -155,7 +148,7 @@ class HTTPAPIService(BridgeService):
             self.transform_to_urls(service, key='assets',  newkey='asset_urls', prefix='assets/')
 
             if service:
-                return self.encode(service)
+                return self._encode(service)
             else:
                 raise HTTPError(404, "Service not found.")
 
@@ -169,7 +162,7 @@ class HTTPAPIService(BridgeService):
             asset_uuids = self.remote_block_service_method(MODEL, 'get_assets')
             asset_urls = self.transform_to_urls(asset_uuids)
 
-            return self.encode({ 'asset_urls' : asset_urls })
+            return self._encode({ 'asset_urls' : asset_urls })
 
         return inner_assets
 
@@ -179,7 +172,7 @@ class HTTPAPIService(BridgeService):
         def inner_get_asset_by_uuid(asset):
             """Return JSON of an asset, replace actions with their urls."""
             asset_uuid = self._make_uuid(asset)
-            return self.encode(self._get_asset_json(asset_uuid))
+            return self._encode(self._get_asset_json(asset_uuid))
 
         return inner_get_asset_by_uuid
 
@@ -273,7 +266,7 @@ class HTTPAPIService(BridgeService):
             if okay:
                 response.status = 201 #201 Created
                 response.set_header('Location', request.url + "/" + str(msg))
-                return self.encode({ 'message' : "Asset created." })
+                return self._encode({ 'message' : "Asset created." })
 
             else:
                 raise HTTPError(400, msg)
@@ -290,7 +283,7 @@ class HTTPAPIService(BridgeService):
             info = self.remote_block_service_method(MODEL, 'get_asset_action_info', asset_uuid, action)
 
             if info:
-                return self.encode(info)
+                return self._encode(info)
 
             else:
                 raise HTTPError(404, "Action not found.")
@@ -307,12 +300,25 @@ class HTTPAPIService(BridgeService):
             msg = self.remote_block_service_method(MODEL, 'perform_asset_action', asset_uuid, action)
 
             if not msg:
-                return self.encode({ 'message' : "Action will be performed." })
+                return self._encode({ 'message' : "Action will be performed." })
 
             else:
                 raise HTTPError(400, msg)
 
         return inner_post_action
+
+    def _encode(self, obj):
+        """
+        Encode a python primitive collection to json, and set response encoding to json.
+
+        :param obj: Collection to encode
+        :type obj: object
+
+        :return: Byte string ready to be sent to HTTP client
+        :rtype: bytes
+        """
+        response.content_type = JSON_MIME
+        return (self.json.encode(obj) + "\n").encode() #add a trailing newline
 
     def _get_asset_json(self, asset_uuid):
         """Get asset JSON, with an uuid in string form."""
@@ -329,7 +335,20 @@ class HTTPAPIService(BridgeService):
             raise HTTPError(404, "Asset not found.")
 
     @staticmethod
+    def _make_uuid(asset):
+        """Check if uuid `asset` is valid, raise HTTPerror if it isn't."""
+        try:
+            asset_uuid = uuid.UUID(asset)
+        except ValueError:
+            raise HTTPError(404, "Asset not found/not valid UUID.")
+
+        return asset_uuid
+
+    @staticmethod
     def _report_keys_changed(first, second, allowable):
+        """
+        Throw an error if the keys between first and second
+        """
         first_set = set(first.keys())
         second_set = set(second.keys())
         changed = {key for key in first_set.intersection(second_set) if first[key] != second[key]}
@@ -340,19 +359,26 @@ class HTTPAPIService(BridgeService):
 
         return changed
 
-    @staticmethod
-    def _make_uuid(asset):
-        """Check if uuid `asset` is valid, raise HTTPerror if it isn't."""
-        try:
-            asset_uuid = uuid.UUID(asset)
-        except ValueError:
-            raise HTTPError(404, "Asset not found/not valid UUID.")
+    def _transform_to_urls(self, container, **kwargs):
+        """
+        Change items of a dict key to urls, a list of strings to urls, or a string to a url.
+        Using  either the current request url or a given prefix.
 
-        return asset_uuid
+        :param container: A container whoose keys need to be changed.
+        :type container: container
 
-    def transform_to_urls(self, container, **kwargs):
-        """Transform a list to one appended with the current request.url, or a dict item
-        to another dict key."""
+        :param prefix: A new prefix for the url instead of the current request.url
+        :type prefix: str
+
+        :param key: The key to change.
+        :type key: str
+
+        :param newkey: The new key for the key.
+        :type newkey: str
+
+        :param delete: Whether to delete the old key.
+        :type delete: bool
+        """
         if 'prefix' in kwargs:
             prefix = request.urlparts[0] + '://' + request.urlparts[1] + '/' + kwargs['prefix']
         else:
