@@ -5,12 +5,15 @@ Don't blame me for globals, blame the library.
 
 from bridge.service import BridgeService
 from bridge.services import MODEL
-from external_libs.bottle import run, Bottle, request, response, HTTPError
-from external_libs import mimeparse, jsonpatch
+from external_libs import bottle, mimeparse, jsonpatch
+from external_libs.bottle import request, response, HTTPError
 import json
 import logging
-
 import uuid
+
+#
+# Utility code
+#
 
 JSON_MIME = 'application/json'
 JSON_PATCH_MIME = 'application/json-patch+patch'
@@ -56,6 +59,207 @@ def accept_only_json(func):
 
     return error_non_json
 
+#
+# Request handlers 
+#
+
+_app = bottle.Bottle(catchall=False, autojson=False)
+_svc = None
+
+@_app.get("/")
+@accept_only_json
+def _bridge_information():
+    """Inner method."""
+    base = request.url
+    info = _svc.remote_block_service_method(MODEL, 'get_info')
+
+    info['services_url'] =  base + 'services/{service}'
+    info['assets_url'] =  base + 'assets/{asset uuid}'
+
+    return _svc.encode(info)
+
+    return inner_bridge_information
+
+@_app.post("/")
+@accept_only_json
+def _bridge_save(_svc):
+    """Inner method."""
+    try:
+        file_name = request.json['save']
+    except KeyError:
+        raise HTTPError(400, "Bad arguments.")
+    except TypeError:
+        raise HTTPError(400, "Bad arguments.")
+
+    if not type(file_name) == str:
+        raise HTTPError(400, "File name must be str")
+
+    success, message = _svc.remote_block_service_method(MODEL, 'save', file_name)
+
+    if success:
+        return _svc.encode({ 'message' : message })
+    else:
+        HTTPError(500, message)
+
+@_app.get("/services")
+@accept_only_json
+def _services():
+    """Need to change the services to their url."""
+    servs = _svc.remote_block_service_method(MODEL, 'get_io_services')
+    servs_url_list = _svc.transform_to_urls(servs)
+
+    return _svc.encode({ 'services' : servs_url_list })
+
+@_app.get("/services/<service>")
+@accept_only_json
+def _service_info(service):
+    """Get service info from model; this might need to change to hub."""
+    service = _svc.remote_block_service_method(MODEL, 'get_io_service_info', service)
+    _svc.transform_to_urls(service, key='assets',  newkey='asset_urls', prefix='assets/')
+
+    if service:
+        return _svc.encode(service)
+    else:
+        raise HTTPError(404, "Service not found.")
+
+@_app.get("/assets")
+@accept_only_json
+def _assets():
+    """Return url list of assets in JSON."""
+    asset_uuids = _svc.remote_block_service_method(MODEL, 'get_assets')
+    asset_urls = _svc.transform_to_urls(asset_uuids)
+
+    return _svc.encode({ 'asset_urls' : asset_urls })
+
+@_app.get("/assets/<asset>")
+@accept_only_json
+def _get_asset_by_uuid(asset):
+    """Return JSON of an asset, replace actions with their urls."""
+    asset_uuid = _svc._make_uuid(asset)
+    return _svc.encode(_svc._get_asset_json(asset_uuid))
+
+@_app.route("/assets/<asset>", method="PATCH")
+@accept_only_json
+def _change_asset_by_uuid(asset):
+    asset_uuid = _svc._make_uuid(asset)
+    asset_json = _svc._get_asset_json(asset_uuid)
+
+    change_name = False #it's only correct to do patch changes
+    state_changes = [] #if the full patch is accepted
+
+    patch = request.body.read(request.MEMFILE_MAX).decode()
+    try:
+        result = jsonpatch.apply_patch(asset_json, patch)
+    except jsonpatch.JsonPatchException:
+        raise HTTPError(400, "Not a correct json-patch.")
+
+    changed = _svc._report_keys_changed(asset_json, result, {'name', 'state'})
+
+    if 'name' in changed:
+        if type(result['name']) == str:
+            change_name = True
+        else:
+            raise HTTPError(422, "Name must be a string.")
+
+    #check if state is changed in a valid way, it's a bit of a doozy
+    #can't think of better way to do it (except with like a state_url so this makes
+    #sense in its own method
+    if 'state' in changed:
+        state_json = asset_json['state']
+        allowable = {category for category in state_json if state_json[category]['controllable']}
+        categories_changed = _svc._report_keys_changed(state_json, result['state'], allowable)
+
+        for category in categories_changed:
+            _svc._report_keys_changed(state_json[category], result['state'][category], {'current'})
+            current_state = result['state'][category]['current']
+
+            if current_state in result['state'][category]['possible states']:
+                state_changes.append((category, current_state))
+            else:
+                raise HTTPError(422, "Current must be a string.")
+
+    if change_name:
+        logging.debug("Attempting to change name")
+        _svc.remote_async_service_method(MODEL, 'set_asset_name', asset_uuid, changed['name'])
+    for state_change in state_changes:
+        logging.debug("Attempting to control")
+        _svc.remote_async_service_method(MODEL, 'control_asset', asset_uuid, state_change[0], state_change[1])
+
+    response.status = 204
+    return None
+
+@_app.delete("/assets/<asset>")
+@accept_only_json
+def _delete_asset_by_uuid(asset):
+    asset_uuid = _svc._make_uuid(asset)
+
+    success = _svc.remote_block_service_method(MODEL, 'delete_asset', asset_uuid)
+
+    if success:
+        response.status = 204
+        return None
+    else:
+        HTTPError(404, "Asset not found.")
+
+@_app.post("/assets")
+@accept_only_json
+def _create_asset():
+    """Attempt to create asset, must have submitted correct attributes in json form."""
+    try:
+        name = request.json['name']
+        real_id = request.json['real id']
+        asset_class = request.json['asset class']
+        service = request.json['service']
+    except KeyError:
+        raise HTTPError(400, "Bad arguments.")
+    except TypeError:
+        raise HTTPError(400, "Bad arguments.")
+
+    if not type(name) == type(real_id) == type(asset_class) == type(service) == str:
+        raise HTTPError(400, "Asset attributes must be strings.")
+
+    okay, msg = _svc.remote_block_service_method(MODEL, 'create_asset', name, real_id, service, asset_class)
+
+    if okay:
+        response.status = 201 #201 Created
+        response.set_header('Location', request.url + "/" + str(msg))
+        return _svc.encode({ 'message' : "Asset created." })
+
+    else:
+        raise HTTPError(400, msg)
+
+@_app.get("/assets/<asset>/<action>")
+@accept_only_json
+def _get_asset_action(asset, action):
+    """Get all actions of asset, output in json."""
+    asset_uuid = _svc._make_uuid(asset)
+
+    info = _svc.remote_block_service_method(MODEL, 'get_asset_action_info', asset_uuid, action)
+
+    if info:
+        return _svc.encode(info)
+
+    else:
+        raise HTTPError(404, "Action not found.")
+
+@_app.post("/assets/<asset>/<action>")
+@accept_only_json
+def _post_action(asset, action):
+    """Attempt to do action decribed by URL."""
+    asset_uuid = _svc._make_uuid(asset)
+
+    msg = _svc.remote_block_service_method(MODEL, 'perform_asset_action', asset_uuid, action)
+
+    if not msg:
+        return _svc.encode({ 'message' : "Action will be performed." })
+
+    else:
+        raise HTTPError(400, msg)
+
+#
+# Listener service
+#
+
 class HTTPAPIService(BridgeService):
     """
     Service to provide a http api to bridge.
@@ -63,29 +267,17 @@ class HTTPAPIService(BridgeService):
 
     def __init__(self, hub_con, addr='0.0.0.0', port='8080', debug=True): 
         super().__init__('http_api', hub_con)
-
         self.addr = addr
         self.port = port
-        self.bottle = Bottle(catchall=False, autojson=False)
         self.json = json.JSONEncoder(sort_keys=True, indent=4)
 
-        self.bottle.get('/', callback=self.bridge_information())
-        self.bottle.post('/', callback=self.bridge_save())
-        self.bottle.get('/services', callback=self.services())
-        self.bottle.get('/services/<service>', callback=self.service_info())
-        self.bottle.get('/assets', callback=self.assets())
-
-        self.bottle.get('/assets/<asset>', callback=self.get_asset_by_uuid())
-        self.bottle.route('/assets/<asset>', method='PATCH', callback=self.change_asset_by_uuid())
-        self.bottle.delete('/assets/<asset>', callback=self.delete_asset_by_uuid())
-
-        self.bottle.post('/assets/<asset>/<action>', callback=self.post_action())
-        self.bottle.get('/assets/<asset>/<action>', callback=self.get_asset_action())
-        self.bottle.post('/assets', callback=self.create_asset())
-
-
     def run(self):
-        run(app=self.bottle, host=self.addr, port=self.port, debug=True)
+        global _svc
+        if _svc != None:
+            raise RuntimeError("Only one HTTPAPIService may be run at a time")
+        _svc = self
+        bottle.run(app=_app, host=self.addr, port=self.port, debug=True)
+        _svc = None
 
     def encode(self, obj):
         """
@@ -93,228 +285,8 @@ class HTTPAPIService(BridgeService):
         """
         response.content_type = JSON_MIME
         return (self.json.encode(obj) + "\n").encode() #add a trailing newline
-
-    def bridge_information(self):
-        """
-        Return a function listing api urls.
-        """
-        @accept_only_json
-        def inner_bridge_information():
-            """Inner method."""
-            base = request.url
-            info = self.remote_block_service_method(MODEL, 'get_info')
-
-            info['services_url'] =  base + 'services/{service}'
-            info['assets_url'] =  base + 'assets/{asset uuid}'
-
-            return self.encode(info)
-
-        return inner_bridge_information
-
-    def bridge_save(self):
-        @accept_only_json
-        def inner_bridge_save():
-            """Inner method."""
-            try:
-                file_name = request.json['save']
-            except KeyError:
-                raise HTTPError(400, "Bad arguments.")
-            except TypeError:
-                raise HTTPError(400, "Bad arguments.")
-
-            if not type(file_name) == str:
-                raise HTTPError(400, "File name must be str")
-
-            success, message = self.remote_block_service_method(MODEL, 'save', file_name)
-
-            if success:
-                return self.encode({ 'message' : message })
-            else:
-                HTTPError(500, message)
-
-        return inner_bridge_save
-
-    def services(self):
-        """Function that output list of services."""
-        @accept_only_json
-        def inner_services():
-            """Need to change the services to their url."""
-            servs = self.remote_block_service_method(MODEL, 'get_io_services')
-            servs_url_list = self.transform_to_urls(servs)
-
-            return self.encode({ 'services' : servs_url_list })
-
-        return inner_services
-
-    def service_info(self):
-        """Return a function that outputs JSON of service info."""
-        @accept_only_json
-        def inner_service_info(service):
-            """Get service info from model; this might need to change to hub."""
-            service = self.remote_block_service_method(MODEL, 'get_io_service_info', service)
-            self.transform_to_urls(service, key='assets',  newkey='asset_urls', prefix='assets/')
-
-            if service:
-                return self.encode(service)
-            else:
-                raise HTTPError(404, "Service not found.")
-
-        return inner_service_info
-
-    def assets(self):
-        """Return a function that outputs JSON of the asset urls."""
-        @accept_only_json
-        def inner_assets():
-            """Return url list of assets in JSON."""
-            asset_uuids = self.remote_block_service_method(MODEL, 'get_assets')
-            asset_urls = self.transform_to_urls(asset_uuids)
-
-            return self.encode({ 'asset_urls' : asset_urls })
-
-        return inner_assets
-
-    def get_asset_by_uuid(self):
-        """Return function that displays asset data."""
-        @accept_only_json
-        def inner_get_asset_by_uuid(asset):
-            """Return JSON of an asset, replace actions with their urls."""
-            asset_uuid = self._make_uuid(asset)
-            return self.encode(self._get_asset_json(asset_uuid))
-
-        return inner_get_asset_by_uuid
-
-    def change_asset_by_uuid(self):
-        @accept_only_json
-        def inner_change_asset_by_uuid(asset):
-            asset_uuid = self._make_uuid(asset)
-            asset_json = self._get_asset_json(asset_uuid)
-
-            change_name = False #it's only correct to do patch changes
-            state_changes = [] #if the full patch is accepted
-
-            patch = request.body.read(request.MEMFILE_MAX).decode()
-            try:
-                result = jsonpatch.apply_patch(asset_json, patch)
-            except jsonpatch.JsonPatchException:
-                raise HTTPError(400, "Not a correct json-patch.")
-
-            changed = self._report_keys_changed(asset_json, result, {'name', 'state'})
-
-            if 'name' in changed:
-                if type(result['name']) == str:
-                    change_name = True
-                else:
-                    raise HTTPError(422, "Name must be a string.")
-
-            #check if state is changed in a valid way, it's a bit of a doozy
-            #can't think of better way to do it (except with like a state_url so this makes
-            #sense in its own method
-            if 'state' in changed:
-                state_json = asset_json['state']
-                allowable = {category for category in state_json if state_json[category]['controllable']}
-                categories_changed = self._report_keys_changed(state_json, result['state'], allowable)
-
-                for category in categories_changed:
-                    self._report_keys_changed(state_json[category], result['state'][category], {'current'})
-                    current_state = result['state'][category]['current']
-
-                    if current_state in result['state'][category]['possible states']:
-                        state_changes.append((category, current_state))
-                    else:
-                        raise HTTPError(422, "Current must be a string.")
-
-            if change_name:
-                logging.debug("Attempting to change name")
-                self.remote_async_service_method(MODEL, 'set_asset_name', asset_uuid, changed['name'])
-            for state_change in state_changes:
-                logging.debug("Attempting to control")
-                self.remote_async_service_method(MODEL, 'control_asset', asset_uuid, state_change[0], state_change[1])
-
-            response.status = 204
-            return None
-
-        return inner_change_asset_by_uuid
-
-    def delete_asset_by_uuid(self):
-        @accept_only_json
-        def inner_delete_asset_by_uuid(asset):
-            asset_uuid = self._make_uuid(asset)
-
-            success = self.remote_block_service_method(MODEL, 'delete_asset', asset_uuid)
-
-            if success:
-                response.status = 204
-                return None
-            else:
-                HTTPError(404, "Asset not found.")
-
-        return inner_delete_asset_by_uuid
-
-    def create_asset(self):
-        """Return a function that outputs JSON of asset `name`."""
-        @accept_only_json
-        def inner_create_asset():
-            """Attempt to create asset, must have submitted correct attributes in json form."""
-            try:
-                name = request.json['name']
-                real_id = request.json['real id']
-                asset_class = request.json['asset class']
-                service = request.json['service']
-            except KeyError:
-                raise HTTPError(400, "Bad arguments.")
-            except TypeError:
-                raise HTTPError(400, "Bad arguments.")
-
-            if not type(name) == type(real_id) == type(asset_class) == type(service) == str:
-                raise HTTPError(400, "Asset attributes must be strings.")
-
-            okay, msg = self.remote_block_service_method(MODEL, 'create_asset', name, real_id, service, asset_class)
-
-            if okay:
-                response.status = 201 #201 Created
-                response.set_header('Location', request.url + "/" + str(msg))
-                return self.encode({ 'message' : "Asset created." })
-
-            else:
-                raise HTTPError(400, msg)
-
-        return inner_create_asset
-
-    def get_asset_action(self):
-        """Return function that retrieves info about action."""
-        @accept_only_json
-        def inner_get_asset_action(asset, action):
-            """Get all actions of asset, output in json."""
-            asset_uuid = self._make_uuid(asset)
-
-            info = self.remote_block_service_method(MODEL, 'get_asset_action_info', asset_uuid, action)
-
-            if info:
-                return self.encode(info)
-
-            else:
-                raise HTTPError(404, "Action not found.")
-
-        return inner_get_asset_action
-
-    def post_action(self):
-        """Return function for performing an action."""
-        @accept_only_json
-        def inner_post_action(asset, action):
-            """Attempt to do action decribed by URL."""
-            asset_uuid = self._make_uuid(asset)
-
-            msg = self.remote_block_service_method(MODEL, 'perform_asset_action', asset_uuid, action)
-
-            if not msg:
-                return self.encode({ 'message' : "Action will be performed." })
-
-            else:
-                raise HTTPError(400, msg)
-
-        return inner_post_action
-
-    def _get_asset_json(self, asset_uuid):
+    
+    def _get_asset_json(asset_uuid):
         """Get asset JSON, with an uuid in string form."""
         asset_info = self.remote_block_service_method(MODEL, 'get_asset_info', asset_uuid)
 
@@ -328,7 +300,6 @@ class HTTPAPIService(BridgeService):
         else:
             raise HTTPError(404, "Asset not found.")
 
-    @staticmethod
     def _report_keys_changed(first, second, allowable):
         first_set = set(first.keys())
         second_set = set(second.keys())
