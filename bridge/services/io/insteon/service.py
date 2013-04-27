@@ -1,13 +1,14 @@
 """
 Service to handle an Insteon IM.
 """
-import logging
 
 from bridge.services.io.service import IOService
+
 from insteon_protocol import insteon_im_protocol
 from insteon_protocol.command import im_commands
-from binascii import hexlify, unhexlify
 
+from binascii import hexlify, unhexlify
+import logging
 import serial
 
 class InsteonIMUpdate():
@@ -44,6 +45,12 @@ class InsteonIMService(IOService):
     def asset_status(self, real_id):
         real_id = unhexlify(real_id)
         cmd = im_commands.LightStatusRequest(real_id)
+
+        self.write_command(cmd)
+
+    def go_to_level(self, real_id, level):
+        real_id = unhexlify(real_id)
+        cmd = im_commands.TurnOnLevel(real_id, bytes([level]))
 
         self.write_command(cmd)
 

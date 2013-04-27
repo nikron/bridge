@@ -2,9 +2,9 @@
 Idiom for model to communicate with insteon IO services.
 """
 from bridge.services.model.idiom import ModelIdiom, IdiomError
-from bridge.services.model.assets import BlankAsset, OnOffAsset
+from bridge.services.model.assets import BlankAsset, OnOffAsset, DimmerAsset
 
-from insteon_protocol.command.command_bytes import TURNONFAST, TURNOFF, LIGHTSTATUSREQUEST
+from insteon_protocol.command.command_bytes import TURNONFAST, TURNOFF, LIGHTSTATUSREQUEST, TURNONLEVEL
 from insteon_protocol.linc.lincs import LincMap
 from insteon_protocol.utils import check_insteon_id
 
@@ -70,6 +70,24 @@ class InsteonIdiom(ModelIdiom):
         """
         return OnOffAsset(name, real_id, self.service, product_name)
 
+    def create_dimmer(self, name, real_id, product_name):
+        """
+        Create an :class:`DimmerAsset`.
+
+        :param name: Name of the asset.
+        :type name: str
+
+        :param real_id: Real ID of the asset.
+        :type real_id: str
+
+        :param product_name: Product name of the asset.
+        :type product_name: str
+
+        :return: An initialized :class:`DimmerAsset` with an unknown state.
+        :rtype: :class:`OnOffAsset`
+        """
+        return DimmerAsset(name, real_id, self.service, product_name)
+
     def change_state(self, asset, update):
         """
         Change the state of the update using an update, looks into a mapping
@@ -111,10 +129,17 @@ class InsteonIdiom(ModelIdiom):
 
 LINCMAPPING = LincMap()
 LINCMAPPING.register_with_product('ApplianceLinc V2', InsteonIdiom.create_onoff)
+LINCMAPPING.register_with_product('DimmerLinc V2', InsteonIdiom.create_dimmer)
+
+def bytes_to_range(cmd_bytes):
+    return 'main', int(cmd_bytes.cmd1)
+
+LINCMAPPING.register_with_command('DimmerLinc V2', TURNONLEVEL, bytes_to_range)
+
 LINCMAPPING.register_with_command('ApplianceLinc V2', TURNONFAST, ('main', True))
 LINCMAPPING.register_with_command('ApplianceLinc V2', TURNOFF, ('main', False))
 
-def bytes_to_state(cmd_bytes):
+def bytes_to_bool(cmd_bytes):
     """
     LincMap will call this function on a range of command bytes.
 
