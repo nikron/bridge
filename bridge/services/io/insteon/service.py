@@ -47,6 +47,9 @@ class InsteonIMService(IOService):
 
         self.write_command(cmd)
 
+    def go_to_level(self, real_id, level):
+
+
     def read_io(self):
         """
         Read from the IO.  Note that the IO's protocol is stateful, so we must

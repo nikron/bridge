@@ -121,3 +121,15 @@ class OnOffAsset(Asset):
         """Action to turn off the asset."""
 
         return self.backing.bridge_messages['off']
+
+class DimmerAsset(asset):
+	
+	states = States(RangeCategory('main', 1, 32))
+
+    def __init__(self, name, real_id, service, product_name):
+        backing = Backing(real_id, service, product_name)
+        super().__init__(name, self.states, backing)
+		def dim_level_to_message(num):
+			return BridgeMessage.create_async(self.service, 'go_to_level', self.real_id, num)
+
+        self.states.set_default_control('main', dim_level_to_message)
