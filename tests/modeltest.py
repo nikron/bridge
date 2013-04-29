@@ -1,3 +1,6 @@
+"""
+Test the model.
+"""
 import unittest
 from bridge.services.model.model import Model
 from bridge.services.model.assets import BlankAsset
@@ -14,7 +17,6 @@ class TestModel(unittest.TestCase):
         asset = self.model.get_asset(uuid)
 
         self.assertIs(asset, self.asset)
-        #self.assertEqual(self.model.get_all_asset_names(), [""])
 
     def test_serializable(self):
         uuid = self.model.get_asset_uuid('upb', 'blah')

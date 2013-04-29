@@ -1,3 +1,6 @@
+"""
+Test creating a service using IOConfig
+"""
 import unittest
 from bridge.services.io.types import IOConfig
 from bridge.services.io.insteon.idiom import InsteonIdiom

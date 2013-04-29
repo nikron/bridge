@@ -1,3 +1,6 @@
+"""
+Test assets.
+"""
 import unittest
 from bridge.services.model.states import States, Trigger
 from bridge.services.model.assets import OnOffAsset
@@ -27,3 +30,6 @@ class TestAsset(unittest.TestCase):
     def test_trigger(self):
         self.asset.transition('main', True)
         self.assertTrue(self.trans)
+
+    def test_get_real_id(self):
+        self.assertEquals(self.asset.get_real_id(), 'hi')

@@ -1,3 +1,6 @@
+"""
+Test the model service.
+"""
 import unittest
 
 from bridge.services.model.service import ModelService

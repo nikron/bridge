@@ -1,3 +1,6 @@
+"""
+Test the cmds util mapping functionality.
+"""
 import unittest
 
 from insteon_protocol.command.command_bytes_util import CMDS, CommandBytesMap

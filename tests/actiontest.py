@@ -1,9 +1,13 @@
+"""
+Test actions, by making a class with it as a metaclass
+and performing the action.
+"""
 import unittest
 from bridge.services.model.actions import Actions, action, perform_action
 
 class TestActions(unittest.TestCase):
     def setUp(self):
-        class innerAction(metaclass=Actions):
+        class innerAction(metaclass = Actions):
             def __init__(self):
                 self.x = False
 

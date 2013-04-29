@@ -1,3 +1,7 @@
+"""
+Test loading a configuration, write one to a temp file and then
+attempt to parse it.
+"""
 import tempfile
 
 import unittest
@@ -29,7 +33,6 @@ file name = /dev/ttyUSB0
     def test_config(self):
         self.assertFalse(self.config.stderr)
         self.assertEqual(self.config.io_services, [('insteon', 'insteon','/dev/ttyUSB0')])
-
 
     def test_hub(self):
         self.assertIsNotNone(BridgeHub(self.config))

@@ -1,3 +1,6 @@
+"""
+Test the insteon idiom functionality.
+"""
 import unittest
 
 from bridge.services.io.insteon.idiom import InsteonIdiom
