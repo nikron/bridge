@@ -127,16 +127,6 @@ class InsteonIdiom(ModelIdiom):
         """
         return LINCMAPPING.product_names()
 
-LINCMAPPING = LincMap()
-LINCMAPPING.register_with_product('DimmerLinc V2', InsteonIdiom.create_dimmer)
-LINCMAPPING.register_with_command('DimmerLinc V2', TURNONLEVEL, byte_to_range)
-LINCMAPPING.register_with_command('DimmerLinc V2', LIGHTSTATUSREQUEST, bytes_to_range)
-
-LINCMAPPING.register_with_product('ApplianceLinc V2', InsteonIdiom.create_onoff)
-LINCMAPPING.register_with_command('ApplianceLinc V2', TURNONFAST, ('main', True))
-LINCMAPPING.register_with_command('ApplianceLinc V2', TURNOFF, ('main', False))
-LINCMAPPING.register_with_command('ApplianceLinc V2', LIGHTSTATUSREQUEST, bytes_to_bool)
-
 #Methods to convert variable responses to transistions.
 def byte_to_range(cmd2):
     """
@@ -167,3 +157,13 @@ def bytes_to_bool(cmd_bytes):
     else:
         return 'main', True
 
+#mapping of commands to asset transitions
+LINCMAPPING = LincMap()
+LINCMAPPING.register_with_product('DimmerLinc V2', InsteonIdiom.create_dimmer)
+LINCMAPPING.register_with_command('DimmerLinc V2', TURNONLEVEL, byte_to_range)
+LINCMAPPING.register_with_command('DimmerLinc V2', LIGHTSTATUSREQUEST, bytes_to_range)
+
+LINCMAPPING.register_with_product('ApplianceLinc V2', InsteonIdiom.create_onoff)
+LINCMAPPING.register_with_command('ApplianceLinc V2', TURNONFAST, ('main', True))
+LINCMAPPING.register_with_command('ApplianceLinc V2', TURNOFF, ('main', False))
+LINCMAPPING.register_with_command('ApplianceLinc V2', LIGHTSTATUSREQUEST, bytes_to_bool)
