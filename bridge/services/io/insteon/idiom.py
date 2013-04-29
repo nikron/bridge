@@ -128,17 +128,18 @@ class InsteonIdiom(ModelIdiom):
         return LINCMAPPING.names()
 
 LINCMAPPING = LincMap()
-LINCMAPPING.register_with_product('ApplianceLinc V2', InsteonIdiom.create_onoff)
 LINCMAPPING.register_with_product('DimmerLinc V2', InsteonIdiom.create_dimmer)
 
+def byte_to_range(cmd2):
+    return 'main', ord(cmd2)
 def bytes_to_range(cmd_bytes):
-    return 'main', int(cmd_bytes.cmd1)
+    return 'main', ord(cmd_bytes.cmd2)
+LINCMAPPING.register_with_command('DimmerLinc V2', TURNONLEVEL, byte_to_range)
+LINCMAPPING.register_with_command('DimmerLinc V2', LIGHTSTATUSREQUEST, bytes_to_range)
 
-LINCMAPPING.register_with_command('DimmerLinc V2', TURNONLEVEL, bytes_to_range)
-
+LINCMAPPING.register_with_product('ApplianceLinc V2', InsteonIdiom.create_onoff)
 LINCMAPPING.register_with_command('ApplianceLinc V2', TURNONFAST, ('main', True))
 LINCMAPPING.register_with_command('ApplianceLinc V2', TURNOFF, ('main', False))
-
 def bytes_to_bool(cmd_bytes):
     """
     LincMap will call this function on a range of command bytes.

@@ -74,7 +74,7 @@ class CommandBytesMap():
 
         else:
             cmd = CMDS(cmd1)
-            obj = self.objs[cmd1]
+            obj = self.objs[cmd]
 
             if self.call:
                 return obj(cmd2)

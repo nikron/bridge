@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 
 import org.jraf.android.backport.switchwidget.Switch;
+import android.widget.SeekBar;
 //import android.widget.Switch;
 
 import org.json.JSONException;
@@ -53,7 +54,7 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
         {
             case State.BINARY_TYPE:
                 layout = (RelativeLayout) LayoutInflater.from(context).inflate(binaryAsset, parent, false);
-                Switch mainSwitch = (Switch) layout.findViewById(controlResourceId);;
+                Switch mainSwitch = (Switch) layout.findViewById(controlResourceId);
                 mainSwitch.setEnabled(asset.isMainEnabled());
                 mainSwitch.setChecked(asset.getCurrentMainState());
                 mainSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -61,7 +62,23 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
                         String message = asset.setCurrentMainState(isChecked);
                         sendAssetPatch(asset.getURL(), message);
                 }});
+                break;
 
+            case State.RANGE_TYPE:
+                layout = (RelativeLayout) LayoutInflater.from(context).inflate(rangeAsset, parent, false);
+                SeekBar mainSeekBar = (SeekBar) layout.findViewById(controlResourceId);
+                mainSeekBar.setEnabled(asset.isMainEnabled());
+                mainSeekBar.setMax(255);
+                mainSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                        String message = asset.setCurrentMainState(progress);
+                        sendAssetPatch(asset.getURL(), message);
+                }
+                    public void onStartTrackingTouch(SeekBar seekBar) {
+                }
+                    public void onStopTrackingTouch(SeekBar seekBar) {
+                }
+                });
                 break;
 
             default:

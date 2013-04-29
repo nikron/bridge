@@ -33,7 +33,6 @@ public class AssetsFragment extends SherlockListFragment
         context = getSherlockActivity();
         assetsAdapter = new AssetsArrayAdapter(context);
         setListAdapter(assetsAdapter);
-
     }
 
     @Override

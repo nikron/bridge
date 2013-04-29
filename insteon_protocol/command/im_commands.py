@@ -65,7 +65,7 @@ def create_standard_im_command(name, cmd_bytes):
         _dict['__init__'] = __init__
     else:
         def __init__(self, address, cmd2):
-            IMInsteonCommand.__init__(self, address, False, False, False, False, 3, 3, cmd_bytes.cmd1, cmd_bytes.cmd2, b'')
+            IMInsteonCommand.__init__(self, address, False, False, False, False, 3, 3, cmd_bytes.cmd1, cmd2, b'')
         _dict['__init__'] = __init__
 
     _dict['__relative__'] = cmd_bytes.is_relative()

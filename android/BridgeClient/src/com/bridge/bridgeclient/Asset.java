@@ -98,6 +98,13 @@ public class Asset
         return patch;
     }
 
+    public String setCurrentMainState(int state)
+    {
+        State main = status.get("main");
+        String patch = main.setState(state);
+        return patch;
+    }
+
     public int numberOfCategories()
     {
         return status.size();

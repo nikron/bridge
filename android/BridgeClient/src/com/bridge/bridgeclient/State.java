@@ -37,6 +37,10 @@ public class State
         {
             currentBool = stateJSON.getBoolean("current");
         }
+        else if ( ! unknown && type == RANGE_TYPE)
+        {
+            currentInt = stateJSON.getInt("current");
+        }
     }
 
     public boolean getCurrent()
@@ -69,6 +73,14 @@ public class State
         currentBool = state;
 
         String patch = "[{ \"op\": \"replace\", \"path\": \"/state/" + category + "/current\", \"value\": " + Boolean.toString(currentBool) + " }]";
+        return patch;
+    }
+
+    public String setState(int state)
+    {
+        currentInt = state;
+
+        String patch = "[{ \"op\": \"replace\", \"path\": \"/state/" + category + "/current\", \"value\": " + Integer.toString(currentInt) + " }]";
         return patch;
     }
 }
