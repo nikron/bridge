@@ -12,8 +12,9 @@ class Actions(type):
     Metaclass that makes designated functions of a class into special `action` functions,
     essentially functions with more metadata.
     """
-    def __new__(mcls, names, bases, namespace):
-        cls = super().__new__(mcls, names, bases, namespace)
+
+    def __new__(mcs, names, bases, namespace):
+        cls = super().__new__(mcs, names, bases, namespace)
 
         actions = {name for name, value in namespace.items() if getattr(value, '__isaction__', False)}
 
@@ -28,6 +29,7 @@ class ActionError(Exception):
     """
     Simple error for actions.
     """
+
     def __init__(self, message):
         super().__init__()
         self.message = message

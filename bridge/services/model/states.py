@@ -138,7 +138,7 @@ class States():
         if category not in self.categories:
             return False
 
-        return self.categories[category].transition(state)
+        return self.categories[category].sudden_transition(state)
 
     def transition(self, category, state):
         """

@@ -15,3 +15,7 @@ class TestState(unittest.TestCase):
     def test_flip_from_transition(self):
         self.state.transition('bams', True)
         self.assertTrue(self.flipped)
+
+    def test_flip_from_sudden(self):
+        self.state.sudden_transition('bams', True)
+        self.assertFalse(self.flipped)
