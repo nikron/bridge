@@ -38,8 +38,8 @@ class BridgeConfiguration():
         config = configparser.ConfigParser()
         config.read(self.file)
 
-        self.log_file = config['general']['log'].format(this_dir=self.conf_dir)
-        self.data_dir = config['general']['dir'].format(this_dir=self.conf_dir)
+        self.log_file = config['general']['log'].format(this_dir = self.conf_dir)
+        self.data_dir = config['general']['dir'].format(this_dir = self.conf_dir)
 
         for io_service in config['io']['services'].split():
             name = config[io_service]['name']

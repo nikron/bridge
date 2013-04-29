@@ -8,6 +8,7 @@ import unittest
 
 from bridge.config import BridgeConfiguration
 from bridge.hub import BridgeHub
+import os
 
 class TestBridgeCore(unittest.TestCase):
 
@@ -36,3 +37,10 @@ file name = /dev/ttyUSB0
 
     def test_hub(self):
         self.assertIsNotNone(BridgeHub(self.config))
+
+    def test_model_path(self):
+        """
+        Tests model dir specification.
+        NOTE: requires linux implementation of tempfile with a tmp dir of /tmp/
+        """
+        self.assertEquals(self.config.model_dir(), '/tmp/.bridge/model')

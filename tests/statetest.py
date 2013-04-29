@@ -10,3 +10,7 @@ class TestState(unittest.TestCase):
     def test_default_control(self):
         self.assertTrue(self.state.get_control('bams', 45))
 
+    def test_serializable(self):
+        serial = self.state.serializable()
+
+        self.assertTrue(serial['bams']['controllable'])
