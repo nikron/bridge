@@ -6,17 +6,29 @@ from abc import ABCMeta, abstractmethod
 import bitstring #maybe get rid of this depedance but it makes things easier
 
 class Command(metaclass = ABCMeta):
+    """
+    Base class for all types of commands
+    """
+
     @abstractmethod
     def encode(self):
+        """
+        Encode a command object into a byte string.
+        """
         pass
 
     @classmethod
     @abstractmethod
     def decode(cls, buf):
+        """
+        Decode a byte string into a command object.
+        """
         pass
 
 class InsteonCommand(Command):
-    """Base class for all insteon commands."""
+    """
+    Base class for all insteon commands.
+    """
 
     def __init__(self, from_address, to_address, broadcast, group, ack, extended, cur_hops, max_hops, cmd1, cmd2, extended_data):
         self.from_address = from_address
@@ -36,7 +48,9 @@ class InsteonCommand(Command):
 
 
     def create_flag(self):
-        """Create the message flag byte."""
+        """
+        Create the message flag byte.
+        """
         flag_byte = bitstring.BitString(8)
         flag_byte[0] = self.broadcast
         flag_byte[1] = self.group
@@ -50,7 +64,9 @@ class InsteonCommand(Command):
         return flag
 
     def encode(self):
-        """Encode the command into a byte string."""
+        """
+        Encode the command into a byte string.
+        """
         msg_flag = self.create_flag()
 
         cmd = self.from_address + self.to_address + msg_flag + self.cmd_bytes + self.extended_data
@@ -59,7 +75,9 @@ class InsteonCommand(Command):
 
     @classmethod
     def decode(cls, buf):
-        """Decode a byte string into an InsteonCommand."""
+        """
+        Decode a byte string into an InsteonCommand.
+        """
         buf = buf[2:]
 
         fro = buf[0:3]

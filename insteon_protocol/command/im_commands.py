@@ -50,6 +50,9 @@ class IMInsteonCommand(InsteonCommand):
 
     @classmethod
     def is_relative(cls):
+        """
+        Whether the response to this IM command is relative to this one.
+        """
         return cls.__relative__
 
 
@@ -58,7 +61,6 @@ def create_standard_im_command(name, cmd_bytes):
     Create an InsteonIMCommand object out of a command bytes object.
     """
     _dict = {}
-
     if not cmd_bytes.is_variable():
         def __init__(self, address):
             IMInsteonCommand.__init__(self, address, False, False, False, False, 3, 3, cmd_bytes.cmd1, cmd_bytes.cmd2, b'')
@@ -71,14 +73,6 @@ def create_standard_im_command(name, cmd_bytes):
     _dict['__relative__'] = cmd_bytes.is_relative()
 
     return type(name, (IMInsteonCommand,), _dict)
-
-
-#create an extended command where the data is supplied
-def _create_direct_simple_extended_command(name, cmd1, cmd2):
-    def __init__(self, address, extended_data):
-        IMInsteonCommand.__init__(self, address, False, False, False, True, 3, 3, cmd1, cmd2, extended_data)
-
-    return type(name, (IMInsteonCommand,), {'__init__' : __init__})
 
 #The long wall of standard insteon commands, names should be self explinatory
 
@@ -107,6 +101,3 @@ TurnOff = create_standard_im_command('TurnOff', TURNOFF)
 TurnOffFast = create_standard_im_command('TurnOffFast', TURNOFFFAST)
 
 LightStatusRequest = create_standard_im_command('LightStatusRequest', LIGHTSTATUSREQUEST)
-
-#EXTENDED COMMANDS
-SetDeviceTextString =  _create_direct_simple_extended_command('SetDeviceTextString', b'\x03', b'\x03')

@@ -46,7 +46,9 @@ MODEM_COMMANDS = {
 
 
 def read_command(im):
-    """Read a command from an IM interface, needs to support read(number)"""
+    """
+    Read a command from an IM interface, needs to support :func:`read()`.
+    """
     buf = None
 
     rsp = im.read(1)
@@ -76,8 +78,9 @@ def read_command(im):
 
 
 def decode(buf):
-    """Decode a buf into a the corresponding object."""
-
+    """
+    Decode a buf into a the corresponding object.
+    """
     try:
         return MODEM_COMMANDS[buf[1:2]][1](buf)
     except TypeError:

@@ -1,3 +1,3 @@
 """Services of bridge."""
 
-MODEL='model'
+MODEL = 'model'
