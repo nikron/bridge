@@ -9,7 +9,10 @@ import uuid
 
 
 class Backing():
-    """Backing attributes of an Asset."""
+    """
+    Backing attributes of an Asset.
+    """
+
     def __init__(self, real_id, service, product_name, **message_args):
         self.real_id = real_id
         self.service = service
@@ -19,6 +22,9 @@ class Backing():
         self.add_messages(**message_args)
 
     def add_messages(self, **message_args):
+        """
+        Create a list of messages out of keyword arguments.
+        """
         for name in message_args:
             method, args = message_args[name]
             msg = BridgeMessage.create_async(self.service, method, self.real_id, *args)
@@ -38,37 +44,46 @@ class Asset(metaclass = Actions):
         self.uuid = uuid.uuid1()
         self.failed_transitions = []
 
-    def transition(self, category, state):
-        """Change the asset state to state."""
-        logging.debug("Going to state ({0},{1})".format(category, state))
-        return self.states.transition(category, state)
-
-    def add_trigger(self, trigger):
-        """Add trigger to on state change."""
-        self.states.add_trigger(trigger)
+    def get_control_message(self, category, state):
+        """
+        Get the control message for a category and state.
+        """
+        return self.states.get_control(category, state)
 
     def get_name(self):
+        """
+        Get the asset pretty name.
+        """
         return self.name
 
+    def get_product_name(self):
+        """
+        The product name of the asset ie ApplianceLinc V2
+        """
+        return self.backing.product_name
+
     def get_real_id(self):
-        """Real id of asset, (usually a str, definately a str for insteon (instead of bytes))"""
+        """
+        Real id of asset, (usually a str, definately a str for insteon (instead of bytes))
+        """
         return self.backing.real_id
 
     def get_service(self):
+        """
+        Get the service the asset belongs to.
+        """
         return self.backing.service
 
-    def get_product_name(self):
-        """The product name of the asset ie ApplianceLinc V2"""
-        return self.backing.product_name
-
-    def get_control_message(self, category, state):
-        return self.states.get_control(category, state)
-
-    def set_name(self, name):
-        self.name = name
+    def add_trigger(self, trigger):
+        """
+        Add trigger to on state change.
+        """
+        self.states.add_trigger(trigger)
 
     def serializable(self):
-        """Return a form of the class that is easy to serialize (with JSON etc)"""
+        """
+        Return a form of the class that is easy to serialize (with JSON etc)
+        """
         ser = {}
         ser['name'] = self.name
         ser['asset type'] = type(self).__name__
@@ -79,8 +94,24 @@ class Asset(metaclass = Actions):
 
         return ser
 
+    def set_name(self, name):
+        """
+        Set the name of the asset.
+        """
+        self.name = name
+
+    def transition(self, category, state):
+        """
+        Change the asset state to state.
+        """
+        logging.debug("Going to state ({0},{1})".format(category, state))
+        return self.states.transition(category, state)
+
     @action("Get Status")
     def get_status(self):
+        """
+        Uniform action of all assets, tries to get full status from IO.
+        """
         return self.backing.bridge_messages['get_status']
 
 class BlankAsset(Asset):
@@ -102,24 +133,26 @@ class OnOffAsset(Asset):
     A device that is either simply on or off.
     """
 
-    on_off_states = States(BinaryStateCategory('main'))
+    states = States(BinaryStateCategory('main'))
 
     def __init__(self, name, real_id, service, product_name):
         backing = Backing(real_id, service, product_name, on = ('turn_on', []), off = ('turn_off', []))
-        super().__init__(name, self.on_off_states, backing)
+        super().__init__(name, self.states, backing)
         self.states.set_control('main', True, self.backing.bridge_messages['on'])
         self.states.set_control('main', False, self.backing.bridge_messages['off'])
 
     @action("Turn On")
     def turn_on(self):
-        """Action to turn on the asset."""
-
+        """
+        Action to turn on the asset.
+        """
         return self.backing.bridge_messages['on']
 
     @action("Turn Off")
     def turn_off(self):
-        """Action to turn off the asset."""
-
+        """
+        Action to turn off the asset.
+        """
         return self.backing.bridge_messages['off']
 
 class DimmerAsset(Asset):

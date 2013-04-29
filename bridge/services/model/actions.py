@@ -25,7 +25,9 @@ class Actions(type):
         return cls
 
 class ActionError(Exception):
-    """Simple error for actions."""
+    """
+    Simple error for actions.
+    """
     def __init__(self, message):
         super().__init__()
         self.message = message
