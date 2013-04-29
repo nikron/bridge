@@ -1,7 +1,7 @@
 """
 An asset is the internal representation of a device.
 """
-from bridge.services.model.states import States, BinaryStateCategory, RangeCategory
+from bridge.services.model.states import States, BinaryStateCategory, RangeStateCategory
 from bridge.services.model.actions import Actions, action, get_actions
 from bridge.service import BridgeMessage
 import logging
@@ -156,7 +156,7 @@ class OnOffAsset(Asset):
         return self.backing.bridge_messages['off']
 
 class DimmerAsset(Asset):
-    states = States(RangeCategory('main', 0, 256))
+    states = States(RangeStateCategory('main', 0, 256))
 
     def __init__(self, name, real_id, service, product_name):
         backing = Backing(real_id, service, product_name)

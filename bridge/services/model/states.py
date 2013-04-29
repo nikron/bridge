@@ -359,7 +359,10 @@ class BinaryStateCategory(StateCategory):
     def __init__(self, category):
         super().__init__(category, [True, False], self.BINARY_TYPE)
 
-class RangeCategory(StateCategory):
+class RangeStateCategory(StateCategory):
+    """
+    Convience class for a range of states.
+    """
 
     RANGE_TYPE = 'range'
     def __init__(self, category, minimum, maximum, step = 1):
