@@ -21,3 +21,11 @@ class TestModelService(unittest.TestCase):
         self.assertTrue(self.serv.get_io_service_info('idiom')['online'])
 
         self.serv.storage.remove_files()
+
+    def test_create_asset(self):
+        """
+        Test creating an asset, and its error conditions.
+        """
+        self.assertFalse(self.serv.create_asset('name', '000000', 'blah', 'blah product')[0])
+        self.assertTrue(self.serv.create_asset('name', '000000', 'idiom', 'ApplianceLinc V2')[0])
+        self.assertFalse(self.serv.create_asset('name', '000000', 'idiom', 'ApplianceLinc V2')[0])
