@@ -188,7 +188,7 @@ class Model():
         :type name: str
         """
         asset = self.get_asset(uuid)
-        asset.set_name(name)
+        asset.name = name
 
     def transform_action_to_message(self, uuid, action, *args, **kwargs):
         """

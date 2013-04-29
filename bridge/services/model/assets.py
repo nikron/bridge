@@ -50,12 +50,6 @@ class Asset(metaclass = Actions):
         """
         return self.states.get_control(category, state)
 
-    def get_name(self):
-        """
-        Get the asset pretty name.
-        """
-        return self.name
-
     def get_product_name(self):
         """
         The product name of the asset ie ApplianceLinc V2
@@ -93,12 +87,6 @@ class Asset(metaclass = Actions):
         ser['state'] =  self.states.serializable()
 
         return ser
-
-    def set_name(self, name):
-        """
-        Set the name of the asset.
-        """
-        self.name = name
 
     def transition(self, category, state):
         """
@@ -156,6 +144,10 @@ class OnOffAsset(Asset):
         return self.backing.bridge_messages['off']
 
 class DimmerAsset(Asset):
+    """
+    Class that represents a dimmable device.
+    """
+
     states = States(RangeStateCategory('main', 0, 256))
 
     def __init__(self, name, real_id, service, product_name):

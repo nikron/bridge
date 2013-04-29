@@ -32,4 +32,4 @@ class TestAsset(unittest.TestCase):
         self.assertTrue(self.trans)
 
     def test_get_real_id(self):
-        self.assertEquals(self.asset.get_real_id(), 'hi')
+        self.assertEquals(self.asset.get_real_id(), 'null')

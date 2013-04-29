@@ -107,8 +107,8 @@ class ModelStorage():
             for asset_uuid in model.get_all_asset_uuids():
                 asset = model.get_asset(asset_uuid)
                 save_dict['assets'].append({
-                            'name' : asset.get_name(), 
-                            'uuid' : str(asset_uuid), 
+                            'name' : asset.name,
+                            'uuid' : str(asset_uuid),
                             'real id' : asset.get_real_id(),
                             'service' : asset.get_service(),
                             'product name' : asset.get_product_name()
@@ -133,7 +133,7 @@ class ModelStorage():
         if not os.path.exists(self.last):
             fd = open(self.last, "w")
             fd.close()
-            
+
     def _make_file_name(self, file_name):
         """
         Make the current file name file_name if it is not None.
