@@ -14,16 +14,19 @@ class TestStorage(unittest.TestCase):
         self.model.add_asset(self.idiom.create_asset('test', 'aaaaaa', 'ApplianceLinc V2'))
 
     def test_none(self):
-        self.assertIsInstance(self.store.read_model('none'), Model)
-        self.store.remove_files()
+        self.assertIsInstance(self.store.read_model({'test' : self.idiom}, 'none'), Model)
 
     def test_store(self):
         self.store.write_model(self.model, 'hmm')
         test = self.store.read_model({'test' : self.idiom}, 'hmm')
         self.assertEquals(test.get_asset(test.get_all_asset_uuids()[0]).get_service(), 'test')
-        self.store.remove_files()
+        files = self.store.get_files()
+        self.assertEquals(['hmm'], files)
 
     def test_remove(self):
         self.store.remove_files()
-        self.assertFalse(os.path.exists('none file'))
+        self.assertFalse(os.path.exists('none dir'))
 
+    def tearDown(self):
+        if os.path.exists('none dir'):
+            self.store.remove_files()

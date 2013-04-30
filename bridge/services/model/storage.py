@@ -40,7 +40,7 @@ class ModelStorage():
         :return:  All files inside the storage directory.
         :rtype: list
         """
-        return os.listdir(self.directory)
+        return os.listdir(self.data)
 
     def read_model(self, idioms, file_name = None):
         """

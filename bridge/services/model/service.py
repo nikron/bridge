@@ -277,7 +277,7 @@ class ModelService(BridgeService):
         """
         try:
             ret = self.storage.write_model(self.model, file_name)
-            return ret, ''
+            return ret, 'Model saved.'
 
         except AttributeError as ex:
             return False, ex.args[0]

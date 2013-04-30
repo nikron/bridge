@@ -755,7 +755,8 @@ class Bottle(object):
         return self._handle({'PATH_INFO': path, 'REQUEST_METHOD': method.upper()})
 
     def default_error_handler(self, error):
-        return json_dumps({ 'error' : error.body }, indent=4) + "\n"
+        response.content_type = "application/json"
+        return json_dumps({ 'message' : error.body }, indent=4) + "\n"
 
     #return tob(template(ERROR_PAGE_TEMPLATE, e=res))
 

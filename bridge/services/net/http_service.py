@@ -109,8 +109,8 @@ class HTTPAPIService(BridgeService):
 
     def bridge_information(self):
         """
-    Return a function listing api urls.
-    """
+        Return a function listing api urls.
+        """
         @accept_only_json
         def inner_bridge_information():
             """
@@ -148,7 +148,8 @@ class HTTPAPIService(BridgeService):
             success, message = self.remote_block_service_method(MODEL, 'save', file_name)
 
             if success:
-                return self._encode({ 'message' : message })
+                response.status = 204
+                return None
             else:
                 HTTPError(500, message)
 
