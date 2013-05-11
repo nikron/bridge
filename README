@@ -17,6 +17,11 @@ bridge --
     actually a collection of servies that communicate with each using
     pipes.  There are 4 main services: model, io, net, and event.
 
+    Orginally started as a group project for a class at University of Illinois.
+
+android --
+    Client to bridge, external libraries in repository for convience.
+
 insteon_protocol --
     The library that the bridge process uses to communicate with the device
 
