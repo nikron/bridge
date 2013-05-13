@@ -3,6 +3,8 @@ Types of io services, and their idioms.  Used for configuration.
 """
 from bridge.services.io.insteon.service import InsteonIMService
 from bridge.services.io.insteon.idiom import InsteonIdiom
+from bridge.services.io.onkyo.service import OnkyoReceiverService
+from bridge.services.io.onkyo.idiom import OnkyoIdiom
 
 class IOConfig():
     """
@@ -19,7 +21,8 @@ class IOConfig():
     """
 
     io_types = {
-        'insteon' : (InsteonIMService, InsteonIdiom)
+        'insteon' : (InsteonIMService, InsteonIdiom),
+        'onkyo' : (OnkyoReceiverService, OnkyoIdiom)
     }
 
     def __init__(self, name, protocol, file_name):

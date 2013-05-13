@@ -32,7 +32,6 @@ public class State
         else
             type = UNKNOWN_TYPE;
 
-
         if (! unknown && type == BINARY_TYPE)
         {
             currentBool = stateJSON.getBoolean("current");

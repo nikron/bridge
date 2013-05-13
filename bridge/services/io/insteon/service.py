@@ -56,7 +56,7 @@ class InsteonIMService(IOService):
 
     def read_io(self):
         """
-        Read from the IO.  Note that the IO's protocol is stateful, so we must
+        Read from the IO.  Note that the INSTEON protocol is stateful, so we must
         keep track of stateful commands that we send, and then deal with that
         here.
         """

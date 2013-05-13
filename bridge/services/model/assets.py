@@ -157,3 +157,18 @@ class DimmerAsset(Asset):
             return BridgeMessage.create_async(self.get_service(), 'go_to_level', self.get_real_id(), num)
 
         self.states.set_default_control('main', dim_level_to_message)
+
+class VolumeAsset(Asset):
+    """
+    Class that represents a dimmable device.
+    """
+
+    states = States(RangeStateCategory('main', 0, 101))
+
+    def __init__(self, name, real_id, service, product_name):
+        backing = Backing(real_id, service, product_name)
+        super().__init__(name, self.states, backing)
+        def volume_to_message(num):
+            return BridgeMessage.create_async(self.get_service(), 'set_volume', self.get_real_id(), num)
+
+        self.states.set_default_control('main', volume_to_message)
