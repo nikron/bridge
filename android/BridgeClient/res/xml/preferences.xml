@@ -6,7 +6,7 @@
             android:key="pref_server"
             android:title="@string/pref_server"
             android:summary="@string/pref_server_summary"
-            android:defaultValue="http://192.168.0.198" />
+            android:defaultValue="" />
         <EditTextPreference
             android:key="pref_port"
             android:title="@string/pref_port"

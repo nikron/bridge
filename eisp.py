@@ -117,7 +117,7 @@ MODES = {
     b"8E" : "Nueral THX Music",
     b"8F" : "Nueral THX Games",
     b"90" : "PLIIz Height",
-b"91" : "Neo:6 Cinema DTS Surround Sensation",
+    b"91" : "Neo:6 Cinema DTS Surround Sensation",
     b"92" : "Neo:6 Music DTS Surround Sensation",
     b"93" : "Neural Digital Music",
     b"94" : "PLIIz Height + THX Cinema",
@@ -149,7 +149,7 @@ def read_info(socket):
     body = socket.recv(body_size)
     packet = packet + body
 
-    logging.debug("Read {0} from EISP connection.".format(str(buf)))
+    logging.debug("Read {0} from EISP connection.".format(str(packet)))
     return deconstruct_packet(packet)
 
 
@@ -166,7 +166,10 @@ def deconstruct_packet(packet):
 
     info = {}
     if cmd == b'MVL':
-        info["mvl"] = int(packet[21:23], 16)
+        try:
+            info["mvl"] = int(packet[21:23], 16)
+        except ValueError:
+            pass
 
     if cmd == b'LMD':
         info["lmd"] = MODES[packet[21:23]]

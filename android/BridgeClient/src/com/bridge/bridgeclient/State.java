@@ -16,6 +16,8 @@ public class State
     private boolean currentBool;
     private int currentInt;
     private int type;
+    private int min;
+    private int max;
 
 
     public State(String category, JSONObject stateJSON) throws JSONException
@@ -28,7 +30,12 @@ public class State
         if (strType.equals("binary"))
             type = BINARY_TYPE;
         else if (strType.equals("range"))
+        {
             type = RANGE_TYPE;
+            JSONArray possible = stateJSON.getJSONArray("possible states");
+            min = possible.getInt(0);
+            max = possible.getInt(possible.length() - 1);
+        }
         else
             type = UNKNOWN_TYPE;
 
@@ -45,6 +52,21 @@ public class State
     public boolean getCurrent()
     {
         return currentBool;
+    }
+
+    public int getCurrent()
+    {
+        return currentInt;
+    }
+
+    public int getMin()
+    {
+        return min;
+    }
+
+    public int getMax()
+    {
+        return max;
     }
 
     public int getType()

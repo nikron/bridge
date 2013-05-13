@@ -48,42 +48,51 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
     public View getView (int position, View convertView, ViewGroup parent)
     {
         final Asset asset = getItem(position);
+        final State mainState = asset.getMainState();
         RelativeLayout layout;
 
-        switch (asset.getMainType())
+        if (mainState != null)
         {
-            case State.BINARY_TYPE:
-                layout = (RelativeLayout) LayoutInflater.from(context).inflate(binaryAsset, parent, false);
-                Switch mainSwitch = (Switch) layout.findViewById(controlResourceId);
-                mainSwitch.setEnabled(asset.isMainEnabled());
-                mainSwitch.setChecked(asset.getCurrentMainState());
-                mainSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        String message = asset.setCurrentMainState(isChecked);
-                        sendAssetPatch(asset.getURL(), message);
-                }});
-                break;
+            switch (mainState.getType())
+            {
+                case State.BINARY_TYPE:
+                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(binaryAsset, parent, false);
+                    Switch mainSwitch = (Switch) layout.findViewById(controlResourceId);
+                    mainSwitch.setEnabled(mainState.isEnabled());
+                    mainSwitch.setChecked(mainState.getCurrent());
+                    mainSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                            String message = mainState.setState(isChecked);
+                            sendAssetPatch(asset.getURL(), message);
+                        }});
+                    break;
 
-            case State.RANGE_TYPE:
-                layout = (RelativeLayout) LayoutInflater.from(context).inflate(rangeAsset, parent, false);
-                SeekBar mainSeekBar = (SeekBar) layout.findViewById(controlResourceId);
-                mainSeekBar.setEnabled(asset.isMainEnabled());
-                mainSeekBar.setMax(255);
-                mainSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        String message = asset.setCurrentMainState(progress);
-                        sendAssetPatch(asset.getURL(), message);
-                }
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-                }
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-                }
-                });
-                break;
+                case State.RANGE_TYPE:
+                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(rangeAsset, parent, false);
+                    SeekBar mainSeekBar = (SeekBar) layout.findViewById(controlResourceId);
+                    mainSeekBar.setEnabled(mainState.isEnabled());
+                    mainSeekBar.setMax(mainState.getMax() - mainState.getMin());
+                    mainSeekBar.setProgress(mainState.getCurrent());
+                    mainSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                            String message = mainState.setState(progress + mainState.getMin());
+                            sendAssetPatch(asset.getURL(), message);
+                        }
+                        public void onStartTrackingTouch(SeekBar seekBar) {
+                        }
+                        public void onStopTrackingTouch(SeekBar seekBar) {
+                        }
+                    });
+                    break;
 
-            default:
-                layout = (RelativeLayout) LayoutInflater.from(context).inflate(unknownAsset, parent, false);
-                break;
+                default:
+                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(unknownAsset, parent, false);
+                    break;
+            }
+        }
+        else
+        {
+            layout = (RelativeLayout) LayoutInflater.from(context).inflate(unknownAsset, parent, false);
         }
 
         TextView assetName = (TextView) layout.findViewById(textViewResourceId);

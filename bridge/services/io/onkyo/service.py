@@ -16,6 +16,9 @@ class OnkyoReceiverService(IOService):
         info = eisp.read_info(self.io_fd)
         self.update_model("1", info)
 
+    def set_volume(self, real_id, volume):
+        self.io_fd.send(eisp.EISPMessage(eisp.EISPMessage.VOLUME_LEVEL(volume)).encode())
+
     def _create_fd(self, filename):
         try:
             return socket.create_connection((filename, self.PORT))

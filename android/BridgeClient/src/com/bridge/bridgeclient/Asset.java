@@ -43,33 +43,10 @@ public class Asset
 
     }
 
-    public boolean isMainEnabled()
+    public State getMainState()
     {
-        State main = status.get("main");
-        if (main == null)
-            return false;
-        else
-            return main.isEnabled();
+        return status.get("main");
     }
-
-    public boolean getCurrentMainState()
-    {
-        State main = status.get("main");
-        if (main == null)
-            return false;
-        else
-            return main.getCurrent();
-    }
-
-    public int getMainType()
-    {
-        State main = status.get("main");
-        if (main == null)
-            return State.UNKNOWN_TYPE;
-        else
-            return main.getType();
-    }
-    
 
     public String getName()
     {
@@ -89,20 +66,6 @@ public class Asset
     public String getUUID()
     {
         return uuid;
-    }
-
-    public String setCurrentMainState(boolean state)
-    {
-        State main = status.get("main");
-        String patch = main.setState(state);
-        return patch;
-    }
-
-    public String setCurrentMainState(int state)
-    {
-        State main = status.get("main");
-        String patch = main.setState(state);
-        return patch;
     }
 
     public int numberOfCategories()
