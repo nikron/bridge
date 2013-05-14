@@ -72,7 +72,7 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
                     SeekBar mainSeekBar = (SeekBar) layout.findViewById(controlResourceId);
                     mainSeekBar.setEnabled(mainState.isEnabled());
                     mainSeekBar.setMax(mainState.getMax() - mainState.getMin());
-                    mainSeekBar.setProgress(mainState.getCurrent());
+                    mainSeekBar.setProgress(mainState.getCurrentInt());
                     mainSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                             String message = mainState.setState(progress + mainState.getMin());

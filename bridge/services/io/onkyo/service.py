@@ -1,4 +1,4 @@
-from bridge.services.io.service import IOService
+from bridge.services.io import IOService
 import eisp
 
 import socket

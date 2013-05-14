@@ -2,7 +2,7 @@
 Service to handle an Insteon IM.
 """
 
-from bridge.services.io.service import IOService
+from bridge.services.io import IOService
 
 from insteon_protocol import insteon_im_protocol
 from insteon_protocol.command import im_commands

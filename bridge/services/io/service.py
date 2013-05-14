@@ -4,8 +4,7 @@ The base class for io services.
 import logging
 from select import select
 
-from bridge.service import BridgeService
-from bridge.services import MODEL
+from bridge.services import BridgeService, MODEL
 
 class IOService(BridgeService):
     """
