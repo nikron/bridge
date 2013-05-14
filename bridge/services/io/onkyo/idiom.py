@@ -12,8 +12,8 @@ class OnkyoIdiom(ModelIdiom):
         return VolumeAsset(name, real_id, self.service, product_name)
 
     def change_state(self, asset, update):
-        if 'mvl' in update:
-            asset.transition('main', update['mvl'])
+        if 'volume' in update:
+            asset.transition('main', update['volume'])
 
     def guess_asset(self, real_id, update):
         return VolumeAsset("Receiver", real_id, self.service, "Receiver"), True
