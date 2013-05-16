@@ -105,7 +105,10 @@ class HTTPAPIService(BridgeService):
 
 
     def run(self):
-        run(app=self.bottle, host=self.addr, port=self.port, debug=True)
+        try:
+	    run(app=self.bottle, host=self.addr, port=self.port, debug=True)
+        except Error:
+            logging.exception("Net service errored out somehow.")
 
     def bridge_information(self):
         """
