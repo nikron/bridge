@@ -4,8 +4,7 @@ Service that keeps track of the device status and controls them.
 import logging
 from select import select
 
-from bridge.service import BridgeService
-from bridge.services import MODEL
+from bridge.services import BridgeService, MODEL
 from bridge.services.model.storage import ModelStorage
 from bridge.services.model.idiom import IdiomError
 from bridge.services.model.actions import ActionError

@@ -3,8 +3,7 @@ HTTP API for bridge, aims to be restful.
 Don't blame me for globals, blame the library.
 """
 
-from bridge.service import BridgeService
-from bridge.services import MODEL
+from bridge.services import BridgeService, HTTP_API, MODEL
 from external_libs.bottle import run, Bottle, request, response, HTTPError
 from external_libs import mimeparse, jsonpatch
 import json
@@ -82,7 +81,7 @@ class HTTPAPIService(BridgeService):
     """
 
     def __init__(self, hub_con, addr='0.0.0.0', port='8080', debug=True):
-        super().__init__('http_api', hub_con)
+        super().__init__(HTTP_API, hub_con)
 
         self.addr = addr
         self.port = port

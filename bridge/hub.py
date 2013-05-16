@@ -5,7 +5,7 @@ ensures communications and validity.
 import multiprocessing
 from select import select
 
-from bridge.service import CLOSE_MESSAGE
+from bridge.services import CLOSE_MESSAGE
 from bridge.logging_service import LoggingService, service_configure_logging
 
 from bridge.services.io.types import IOConfig

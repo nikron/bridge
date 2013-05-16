@@ -2,35 +2,19 @@ import struct
 import logging
 
 class EISPMessage():
-    VOLUME_UP = b"MVLUP"
-    VOLUME_DOWN = b"MVLDOWN"
-    VOLUME_LEVEL = lambda x : b"MVL" + bytes(hex(x)[2:], "utf-8")
-    VOLUME_QUERY = b"MVLQSTN"
-    MUTE_TOGGLE  = b"AMTTG"
-    MENU = b'OSDMENU'
-    UP = b'OSDUP'
-    DOWN = b'OSDDOWN'
-    LEFT = b'OSDLEFT'
-    RIGHT = b'OSDRIGHT'
-    EXIT = b'OSDEXIT'
-    ENTER = b'OSDENTER'
-    AUDIO = b'OSDAUDIO'
-    VIDEO = b'OSDVIDEO'
-    HOME = b'OSDHOME'
-    INPUT_BDDVD = b'SLI10'
-    INPUT_TVCD = b'SLI23'
+    ISCP_START = b'ISCP'
 
     def __init__(self, command):
         self.command = command
 
     def encode(self):
-        packet = b''
+        message = b''
         buf = []
 
-        buf.append(b'ISCP')
+        buf.append(EISPMessage.ISCP_START)
         buf.append(b'\x00\x00\x00\x10') #header size
 
-        total_size = bytes([len(self.command) + 19]) #don't understand magic
+        total_size = bytes([len(self.command) + 19]) #19 is size of rest of message besides command
         buf.append(b'\x00\x00\x00' + total_size)
 
         buf.append(b'\x01') #version
@@ -41,29 +25,105 @@ class EISPMessage():
         buf.append(self.command)
         buf.append(b'\r') #end (why does it need EOF and size)
 
-        packet = packet.join(buf)
+        message = message.join(buf)
 
-        return packet
+        return message
 
-    def __bytes__(self):
-        return self.encode()
+    def decipher(self):
+        """
+        Tries to split a command into useful parts.
+        """
+        info = {'command' : self.command}
 
-VolumeQuery = EISPMessage(EISPMessage.VOLUME_QUERY)
-VolumeUp = EISPMessage(EISPMessage.VOLUME_UP)
-VolumeDown = EISPMessage(EISPMessage.VOLUME_DOWN)
-MuteToggle = EISPMessage(EISPMessage.MUTE_TOGGLE)
-Menu = EISPMessage(EISPMessage.MENU)
-Up = EISPMessage(EISPMessage.UP)
-Right = EISPMessage(EISPMessage.RIGHT)
-Left = EISPMessage(EISPMessage.LEFT)
-Down = EISPMessage(EISPMessage.DOWN)
-Enter = EISPMessage(EISPMessage.ENTER)
-Exit = EISPMessage(EISPMessage.EXIT)
-Video = EISPMessage(EISPMessage.VIDEO)
-Audio = EISPMessage(EISPMessage.AUDIO)
-Home = EISPMessage(EISPMessage.HOME)
-SetSourceBDDVD = EISPMessage(EISPMessage.INPUT_BDDVD)
-SetSourceTVCD = EISPMessage(EISPMessage.INPUT_TVCD)
+        if b'MVL' in self.command:
+            try:
+                info['volume'] = int(self.command[4:6], 16)
+            except ValueError:
+                pass
+
+        return info
+
+
+    @classmethod
+    def decode(cls, message):
+        if message[0:4] != EISPMessage.ISCP_START:
+            return None
+
+        if message[4:8] != b'\x00\x00\x00\x10':
+            return None
+
+        start_of_cmd = message.find(b'!') + 1
+        return cls(message[start_of_cmd:-1])
+
+def read_message(socket):
+    """
+    Read a EISP message from a socket, waits on reads.
+
+    :param socket: Socket to read from.
+    :type socket: socket
+
+    :return: :class:`EISPMessage` with command property set to returned command
+    :rtype: :class:`EISPMessage`
+    """
+
+    packet = socket.recv(4) #read b'ISCP' hopefully
+    buf = socket.recv(12) #get the rest of the header
+    packet = packet + buf
+
+    if len(buf) != 12:
+        logging.error("Could not read the entire EISP header.")
+        return None
+
+    body_size = struct.unpack(">L", buf[4:8])[0]
+    body = socket.recv(body_size)
+    packet = packet + body
+
+    logging.debug("Read {0} from EISP connection.".format(str(packet)))
+
+    return EISPMessage.decode(packet)
+
+#
+# Some of the possible commands
+#
+
+VOLUME_UP_COMMAND = b"MVLUP"
+VOLUME_DOWN_COMMAND = b"MVLDOWN"
+VOLUME_LEVEL_COMMAND = lambda x : b"MVL" + bytes(hex(x)[2:], "utf-8")
+VOLUME_QUERY_COMMAND = b"MVLQSTN"
+MUTE_TOGGLE_COMMAND  = b"AMTTG"
+MENU_COMMAND = b'OSDMENU'
+UP_COMMAND = b'OSDUP'
+DOWN_COMMAND = b'OSDDOWN'
+LEFT_COMMAND = b'OSDLEFT'
+RIGHT_COMMAND = b'OSDRIGHT'
+EXIT_COMMAND = b'OSDEXIT'
+ENTER_COMMAND = b'OSDENTER'
+AUDIO_COMMAND = b'OSDAUDIO'
+VIDEO_COMMAND = b'OSDVIDEO'
+HOME_COMMAND = b'OSDHOME'
+INPUT_BDDVD_COMMAND = b'SLI10'
+INPUT_TVCD_COMMAND = b'SLI23'
+
+#
+# Precomputed messages
+#
+
+VOLUME_QUERY = EISPMessage(VOLUME_QUERY_COMMAND).encode()
+VOLUME_UP = EISPMessage(VOLUME_UP_COMMAND).encode()
+VOLUME_DOWN = EISPMessage(VOLUME_DOWN_COMMAND).encode()
+MUTE_TOGGLE = EISPMessage(MUTE_TOGGLE_COMMAND).encode()
+MENU = EISPMessage(MENU_COMMAND).encode()
+UP = EISPMessage(UP_COMMAND).encode()
+RIGHT = EISPMessage(RIGHT_COMMAND).encode()
+LEFT = EISPMessage(LEFT_COMMAND).encode()
+DOWN = EISPMessage(DOWN_COMMAND).encode()
+ENTER = EISPMessage(ENTER_COMMAND).encode()
+EXIT = EISPMessage(EXIT_COMMAND).encode()
+VIDEO = EISPMessage(VIDEO_COMMAND).encode()
+AUDIO = EISPMessage(AUDIO_COMMAND).encode()
+HOME = EISPMessage(HOME_COMMAND).encode()
+SETSOURCEBDDVD = EISPMessage(INPUT_BDDVD_COMMAND).encode()
+SETSOURCETVCD = EISPMessage(INPUT_TVCD_COMMAND).encode()
 
 
 MODES = {
@@ -92,7 +152,7 @@ MODES = {
     b"1F" : "Whole House Mode",
     b"40" : "Straight Decode",
     b"41" : "Dolby EX/DTS ES",
-    b"41" : "Dolby EX 2",
+    #b"41" : "Dolby EX 2", ensure which is correct
     b"42" : "THX Cinema",
     b"43" : "THX Surrond EX",
     b"44" : "THX Music",
@@ -136,42 +196,3 @@ MODES = {
     b"A6" : "Neural Digital Music + Audyssey DSX",
     b"A7" : "Dolby EX + Audyssey DSX"
 }
-
-def read_info(socket):
-    packet = socket.recv(4) #read b'ISCP' hopefully
-    buf = socket.recv(12) #get the rest of the header
-    packet = packet + buf
-
-    if len(buf) != 12:
-        logging.error("header not 12")
-
-    body_size = struct.unpack(">L", buf[4:8])[0]
-    body = socket.recv(body_size)
-    packet = packet + body
-
-    logging.debug("Read {0} from EISP connection.".format(str(packet)))
-    return deconstruct_packet(packet)
-
-
-def deconstruct_packet(packet):
-    #print(str(len(packet)) + " bytes: " + repr(packet))
-    if packet[0:4] != b'ISCP':
-        return None
-    if packet[4:8] != b'\x00\x00\x00\x10':
-        pass
-
-    body = struct.unpack(">L", packet[8:12])[0]
-    #print("body: " + repr(packet[16:16+body]))
-    cmd = packet[18:21]
-
-    info = {}
-    if cmd == b'MVL':
-        try:
-            info["mvl"] = int(packet[21:23], 16)
-        except ValueError:
-            pass
-
-    if cmd == b'LMD':
-        info["lmd"] = MODES[packet[21:23]]
-
-    return info

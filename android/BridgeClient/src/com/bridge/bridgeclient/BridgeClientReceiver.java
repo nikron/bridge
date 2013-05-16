@@ -16,7 +16,6 @@ public class BridgeClientReceiver extends ResultReceiver
     public interface Receiver
     {
         public void onReceiveResult(int resultCode, Bundle resultData);
-
     }
 
     public void setReceiver(Receiver receiver)

@@ -68,7 +68,7 @@ public class BridgeClientService extends IntentService
                     sendProgress(receiver, 2, 2);
 
                     Bundle bundle = new Bundle();
-                    bundle.putString(Intent.EXTRA_TEXT, info); 
+                    bundle.putString(Intent.EXTRA_TEXT, info);
                     receiver.send(STATUS_GET_BRIDGE_INFO_FINISHED, Bundle.EMPTY);
                 }
                 catch (Exception e)

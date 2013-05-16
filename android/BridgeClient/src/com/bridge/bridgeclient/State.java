@@ -54,7 +54,7 @@ public class State
         return currentBool;
     }
 
-    public int getCurrent()
+    public int getCurrentInt()
     {
         return currentInt;
     }

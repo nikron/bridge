@@ -28,19 +28,14 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
 {
     final SherlockFragmentActivity context;
     BridgeClientReceiver receiver;
-
-    static final int binaryAsset = R.xml.asset_binary;
-    static final int rangeAsset = R.xml.asset_range;
-    static final int unknownAsset = R.xml.asset_unknown;
-    static final int textViewResourceId = R.id.assetname;
-    static final int controlResourceId = R.id.assetcontrol;
+    private Handler handler;
 
     public AssetsArrayAdapter(SherlockFragmentActivity context)
     {
-        super(context, binaryAsset, textViewResourceId);
+        super(context, R.xml.asset_unknown, R.id.assetname);
         this.context = context;
-
-        receiver = new BridgeClientReceiver(new Handler());
+        handler = new Handler();
+        receiver = new BridgeClientReceiver(handler);
         receiver.setReceiver(this);
     }
 
@@ -56,8 +51,8 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
             switch (mainState.getType())
             {
                 case State.BINARY_TYPE:
-                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(binaryAsset, parent, false);
-                    Switch mainSwitch = (Switch) layout.findViewById(controlResourceId);
+                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(R.xml.asset_binary, parent, false);
+                    Switch mainSwitch = (Switch) layout.findViewById(R.id.assetcontrol);
                     mainSwitch.setEnabled(mainState.isEnabled());
                     mainSwitch.setChecked(mainState.getCurrent());
                     mainSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -68,11 +63,11 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
                     break;
 
                 case State.RANGE_TYPE:
-                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(rangeAsset, parent, false);
-                    SeekBar mainSeekBar = (SeekBar) layout.findViewById(controlResourceId);
+                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(R.xml.asset_range, parent, false);
+                    SeekBar mainSeekBar = (SeekBar) layout.findViewById(R.id.assetcontrol);
                     mainSeekBar.setEnabled(mainState.isEnabled());
                     mainSeekBar.setMax(mainState.getMax() - mainState.getMin());
-                    mainSeekBar.setProgress(mainState.getCurrent());
+                    mainSeekBar.setProgress(mainState.getCurrentInt());
                     mainSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                             String message = mainState.setState(progress + mainState.getMin());
@@ -86,16 +81,16 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
                     break;
 
                 default:
-                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(unknownAsset, parent, false);
+                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(R.xml.asset_unknown, parent, false);
                     break;
             }
         }
         else
         {
-            layout = (RelativeLayout) LayoutInflater.from(context).inflate(unknownAsset, parent, false);
+            layout = (RelativeLayout) LayoutInflater.from(context).inflate(R.xml.asset_unknown, parent, false);
         }
 
-        TextView assetName = (TextView) layout.findViewById(textViewResourceId);
+        TextView assetName = (TextView) layout.findViewById(R.id.assetname);
         assetName.setText(asset.toString());
 
         return layout;
@@ -140,6 +135,28 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
         context.startService(intent);
     }
 
+    public void start_recurring_refresh()
+    {
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                refresh();
+                start_recurring_refresh();
+            }
+        }, 2000);
+    }
+
+    public void stop_recurring_refresh()
+    {
+        handler.removeCallbacksAndMessages(null);
+    }
+
+    private void displayError(String message)
+    {
+        Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
+        toast.show();
+    }
+
+
     private void newAssetData(String[] assetsJSON)
     {
         clear();
@@ -167,11 +184,5 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
         intent.putExtra(BridgeClientService.PATCH_KEY, patch);
 
         context.startService(intent);
-    }
-
-    private void displayError(String message)
-    {
-        Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-        toast.show();
     }
 }

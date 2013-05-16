@@ -33,6 +33,14 @@ public class AssetsFragment extends SherlockListFragment
         context = getSherlockActivity();
         assetsAdapter = new AssetsArrayAdapter(context);
         setListAdapter(assetsAdapter);
+        assetsAdapter.start_recurring_refresh();
+        assetsAdapter.refresh();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
+    {
+        inflater.inflate(R.menu.assetsfragment, menu);
     }
 
     @Override
@@ -41,12 +49,6 @@ public class AssetsFragment extends SherlockListFragment
         View view = inflater.inflate(R.layout.assetsfragment, container);
 
         return view;
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater)
-    {
-        inflater.inflate(R.menu.assetsfragment, menu);
     }
 
     @Override
@@ -61,5 +63,17 @@ public class AssetsFragment extends SherlockListFragment
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onPause()
+    {
+        assetsAdapter.stop_recurring_refresh();
+    }
+
+    @Override
+    public void onResume()
+    {
+        assetsAdapter.start_recurring_refresh();
     }
 }

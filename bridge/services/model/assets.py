@@ -3,7 +3,7 @@ An asset is the internal representation of a device.
 """
 from bridge.services.model.states import States, BinaryStateCategory, RangeStateCategory
 from bridge.services.model.actions import Actions, action, get_actions
-from bridge.service import BridgeMessage
+from bridge.services import BridgeMessage
 import logging
 import uuid
 
