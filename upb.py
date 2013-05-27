@@ -34,6 +34,9 @@ class UPBMessage():
         self.dirty = True
         self.ascii_packet = b''
 
+        for kwarg in kwargs:
+            setattr(self, kwarg, kwargs[kwarg])
+
     def command(self):
         CTL = bitstring.BitArray(16)
 
@@ -53,10 +56,7 @@ class UPBMessage():
         return [CTL[0:8].uint, CTL[8:16].uint]
 
     def construct_header(self):
-        return self.command() + \
-                [self.network_id, \
-                self.destination_id, \
-                self.source_id]
+        return self.command() + [self.network_id, self.destination_id, self.source_id]
 
     def construct_message(self):
         raise NotImplementedError
@@ -85,46 +85,49 @@ class UPBMessage():
             self.ascii_packet = self.construct_packet()
             return self.ascii_packet
 
-#all the messages without agruements
-def UPBSimpleLinkMessage(name, command):
-    def __init__(self, dest_id):
-        UPBMessage.__init__(self)
-        self.destination_id = dest_id
-        self.link = True
+class UPBSimpleMessage(UPBMessage):
+    """
+    UPB message without any arguments.
+    """
+    MDID = 0x00 #All subclasses must put a real value
 
-    class_dict = {}
-    class_dict['MDID'] = command
-    class_dict['__init__'] = __init__
-    class_dict['construct_message'] = lambda self : [self.MDID]
+    def __init__(self, dest_id, **kwargs):
+        super().__init__(self, destination_id = dest_id, **kwargs)
 
-    return type(name, (UPBMessage,), class_dict)
+    def construct_message(self):
+        return [self.MDID]
 
-#UPBNull = UPBNoArguementMessage('UPBNull', 0x00)
-#
-#UPBWriteProtect = UPBNoArguementMessage('UPBWriteProtect', 0x02)
-#
-#UPBStopSetup = UPBNoArguementMessage('UPBStopSetup', 0x04)
-#
-#UPBGetSetupTime = UPBNoArguementMessage('UPBGetSetupTime', 0x05)
-#
-#UPBAutoAddress = UPBNoArguementMessage('UPBAutoAddress', 0x06)
-#
-#UPBGetDeviceStatus = UPBNoArguementMessage('UPBGetDeviceStatus', 0x07)
+class UPBSimpleLinkMessage(UPBSimpleMessage):
+    def __init__(self, dest_id, **kwargs):
+        super().__init__(self, destination_id = dest_id, link = True, **kwargs)
 
-UPBActivateLink = UPBSimpleLinkMessage('UPBActivateLink', 0x20)
-UPBDeactivateLink = UPBSimpleLinkMessage('UPBDeactivateLink', 0x21)
+class UPBSetRegisters(UPBMessage):
+    MDID = 0x11
+
+    def __init__(self, reg, values, **kwargs):
+        UPBMessage.__init__(self, **kwargs)
+        self.reg = reg
+        self.values = values
+        self.length += 1 + len(values)
+
+    def construct_message(self):
+        return [self.MDID, self.reg] + self.values
+
+class UPBActivateLink(UPBSimpleLinkMessage):
+    MDID = 0x20
+
+class UPBDeactivateLink(UPBSimpleLinkMessage):
+    MDID = 0x21
 
 class UPBGoToLevel(UPBMessage):
     MDID = 0x22
 
-    def __init__(self, dest_id, level, link, rate = None, channel = None):
-        UPBMessage.__init__(self)
-        self.destination_id = dest_id
+    def __init__(self, dest_id, level, rate = None, channel = None, **kwargs):
+        super().__init__(self, destination_id = dest_id, **kwargs)
+        self.length += 1
         self.level = level
-        self.link = link
         self.rate = rate
         self.channel = channel
-        self.length += 1
 
         if self.rate is not None:
             self.length += 1
@@ -141,21 +144,11 @@ class UPBGoToLevel(UPBMessage):
                 msg += [self.channel]
         return msg
 
-class UPBReportState(UPBMessage):
-    def __init__(self, dest_id):
-        UPBMessage.__init__(self)
-        self.destination_id = dest_id
-        self.link = False #report state will always be direct
-
-    def construct_message(self):
-        msg = [0x30]
-
-        return msg
-
 class UPBControlFadeStart(UPBMessage):
-    def __init__(self, level, rate = None, channel = None, **kwargs):
-        UPBMessage.__init__(self, **kwargs)
-        self.level = level
+    MDID = 0x23
+
+    def __init__(self, rate = None, channel = None, **kwargs):
+        super().__init__(self, **kwargs)
         self.rate = rate
         self.channel = channel
 
@@ -166,7 +159,6 @@ class UPBControlFadeStart(UPBMessage):
                 self.length += 1
 
     def construct_message(self):
-        msg = [0x23]
         if self.rate is not None:
             msg += [self.rate]
 
@@ -175,55 +167,30 @@ class UPBControlFadeStart(UPBMessage):
         return msg
 
 class UPBToggle(UPBMessage):
-    def __init__(self, dest_id, link, times, rate=None):
-        UPBMessage.__init__(self)
-        self.destination_id = dest_id
-        self.link = link
+    MDID = 0x27
+
+    def __init__(self, dest_id, times, rate=None, **kwargs):
+        super().__init__(self, destination_id = dest_id, **kwargs)
         self.toggle_times = times
         self.rate = rate
-        self.length += 1 # always will have toggle times
 
+        self.length += 1 # always will have toggle times
         if rate is not None:
             self.length += 1
 
     def construct_message(self):
-        msg = [0x27]
-
-        msg += [self.toggle_times]
+        msg = [self.MDID, self.toggle_times]
 
         if self.rate is not None:
             msg += [self.rate]
 
         return msg
 
-
-class UPBSetRegisters(UPBMessage):
-    def __init__(self, reg, values, **kwargs):
-        UPBMessage.__init__(self, **kwargs)
-        self.reg = reg
-        self.values = values
-        self.length += 1 + len(values)
-
-    def construct_message(self):
-        return [0x11, self.reg] + self.values
-
-def create_upb_set_register(name, register, func):
-    def __init__(self, data, **kwargs):
-        UPBSetRegisters.__init__(self, register, func(data), **kwargs)
-
-    return type(name, (UPBSetRegisters,), {'__init__' : __init__})
-
-strtoint = lambda string : list(string.encode())
-
-def inttopwd(x):
-    y = bitstring.BitArray(hex(x))
-    return [y[0:2].int, y[2,4].int]
-
-UPBSetNetworkName = create_upb_set_register('UPBSetNetworkName', 0x10, strtoint)
-UPBSetRoomName = create_upb_set_register('UPBSetRoomName', 0x20, strtoint)
-UPBSetDeviceName = create_upb_set_register('UPBSetDeviceName', 0x30, strtoint)
-UPBSetPassword = create_upb_set_register('UPBSetPassword', 0x02, inttopwd)
-
+class UPBReportState(UPBSimpleMessage):
+    """
+    Report state must always be direct.
+    """
+    MDID = 0x30
 
 def info_from_packet(packet):
     info = {}
