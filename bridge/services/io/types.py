@@ -1,7 +1,7 @@
 """
 Types of io services, and their idioms.  Used for configuration.
 """
-from bridge.services.io.insteon.service import InsteonIMService
+from bridge.services.io.insteon import InsteonIMService
 from bridge.services.io.insteon.idiom import InsteonIdiom
 from bridge.services.io.onkyo import OnkyoReceiverService
 from bridge.services.io.onkyo.idiom import OnkyoIdiom

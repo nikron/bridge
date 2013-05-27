@@ -29,7 +29,7 @@ public class State
 
         if (strType.equals("binary"))
             type = BINARY_TYPE;
-        else if (strType.equals("range"))
+        else if (strType.equals("integer range"))
         {
             type = RANGE_TYPE;
             JSONArray possible = stateJSON.getJSONArray("possible states");

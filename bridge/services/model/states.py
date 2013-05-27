@@ -359,17 +359,17 @@ class BinaryStateCategory(StateCategory):
     def __init__(self, category):
         super().__init__(category, [True, False], self.BINARY_TYPE)
 
-class RangeStateCategory(StateCategory):
+class IntegerRangeStateCategory(StateCategory):
     """
     Convience class for a range of states.
     """
 
-    RANGE_TYPE = 'range'
+    RANGE_TYPE = 'integer range'
     def __init__(self, category, minimum, maximum, step = 1):
-        super().__init__(category, range(minimum, maximum, step), self.RANGE_TYPE) 
+        super().__init__(category, range(minimum, maximum, step), self.RANGE_TYPE)
 
 class Trigger():
-    """ 
+    """
     Functions to be called when a state transitions.
     """
 

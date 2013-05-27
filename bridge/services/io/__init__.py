@@ -3,10 +3,11 @@ IO services of bridge.
 """
 import logging
 from select import select
+from abc import abstractmethod, ABCMeta
 
 from bridge.services import BridgeService, MODEL
 
-class IOService(BridgeService):
+class IOService(BridgeService, metaclass =ABCMeta):
     """
     An implementation abstraction of :class:`BridgeService`, meant to run IO
     on a particular interface module/device.
@@ -28,6 +29,7 @@ class IOService(BridgeService):
         self.read_list = [self.hub_connection]
         self.pending = []
 
+    @abstractmethod
     def asset_info(self, real_id):
         """
         Get more info about device (by querying the IO).
@@ -37,8 +39,9 @@ class IOService(BridgeService):
         :param real_id: Real ID to get asset information about.
         :type real_id: object
         """
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def asset_status(self, real_id):
         """
         Find the current status of an asset.
@@ -48,14 +51,15 @@ class IOService(BridgeService):
         :param real_id: Real ID to get state information about.
         :type real_id: object
         """
-        raise NotImplementedError
+        pass
 
 
+    @abstractmethod
     def read_io(self):
         """
         Read the file, each IO service must implement this.
         """
-        raise NotImplementedError
+        pass
 
     def run(self):
         self.mask_signals()
@@ -114,9 +118,10 @@ class IOService(BridgeService):
         """
         self.remote_async_service_method(MODEL, 'io_service_online', self.name)
 
+    @abstractmethod
     def _create_fd(self, file_name):
         """
         Create the file descriptor from the file name,
         each IO service should implement this.
         """
-        raise NotImplementedError
+        pass

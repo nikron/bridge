@@ -69,11 +69,13 @@ public class AssetsFragment extends SherlockListFragment
     public void onPause()
     {
         assetsAdapter.stop_recurring_refresh();
+        super.onPause();
     }
 
     @Override
     public void onResume()
     {
+        super.onResume();
         assetsAdapter.start_recurring_refresh();
     }
 }
