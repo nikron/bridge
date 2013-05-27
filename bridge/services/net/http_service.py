@@ -6,9 +6,9 @@ Don't blame me for globals, blame the library.
 from bridge.services import BridgeService, HTTP_API, MODEL
 from external_libs.bottle import run, Bottle, request, response, HTTPError
 from external_libs import mimeparse, jsonpatch
-import json
 import logging
-
+import json
+import time
 import uuid
 
 JSON_MIME = 'application/json'
@@ -108,7 +108,8 @@ class HTTPAPIService(BridgeService):
             try:
                 run(app=self.bottle, host=self.addr, port=self.port, debug=True)
             except Exception:
-                logging.exception("Net service errored out somehow.")
+                logging.exception("Net service errored out somehow.  Retrying in 5 seconds.")
+                time.sleep(5)
 
     def bridge_information(self):
         """

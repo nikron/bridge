@@ -14,7 +14,7 @@ def parse_opts(default):
     parser = argparse.ArgumentParser(description="Control your devices!")
     parser.add_argument("-s", "--stderr", help="Output log to stderr.", action="store_true")
     parser.add_argument("-c", "--configuration", help="File to read configuration from.", default=default)
-    parser.add_argument("-d", "--daemonize", help="Fork to the background.", action='store_false')
+    parser.add_argument("-d", "--daemonize", help="Fork to the background.", action='store_true')
 
     opts = parser.parse_args()
 
