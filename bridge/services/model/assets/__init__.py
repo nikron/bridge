@@ -1,7 +1,8 @@
 """
 An asset is the internal representation of a device.
+This file contains basic assets and the base class.
 """
-from bridge.services.model.states import States, BinaryStateCategory, RangeStateCategory
+from bridge.services.model.states import States, BinaryStateCategory, IntegerRangeStateCategory
 from bridge.services.model.actions import Actions, action, get_actions
 from bridge.services import BridgeMessage
 import logging
@@ -29,6 +30,9 @@ class Backing():
             method, args = message_args[name]
             msg = BridgeMessage.create_async(self.service, method, self.real_id, *args)
             self.bridge_messages[name] = msg
+
+    def get(self, message):
+        return self.bridge_messages[message]
 
 class Asset(metaclass = Actions):
     """
@@ -102,6 +106,15 @@ class Asset(metaclass = Actions):
         """
         return self.backing.bridge_messages['get_status']
 
+    def _set_control_passthrough(self, category, service_method):
+        """
+        Sets a control function to simply call a method on an IO
+        service named service_method.
+        """
+        func = lambda x : BridgeMessage.create_async(self.get_service(), service_method, self.get_real_id(), x)
+        self.states.set_default_control(category, func)
+
+
 class BlankAsset(Asset):
     """
     An asset placeholder for when you know something exists but you don't
@@ -126,49 +139,43 @@ class OnOffAsset(Asset):
     def __init__(self, name, real_id, service, product_name):
         backing = Backing(real_id, service, product_name, on = ('turn_on', []), off = ('turn_off', []))
         super().__init__(name, self.states, backing)
-        self.states.set_control('main', True, self.backing.bridge_messages['on'])
-        self.states.set_control('main', False, self.backing.bridge_messages['off'])
+        self.states.set_control('main', True, self.backing.get('on'))
+        self.states.set_control('main', False, self.backing.get('off'))
 
     @action("Turn On")
     def turn_on(self):
         """
         Action to turn on the asset.
         """
-        return self.backing.bridge_messages['on']
+        return self.backing.get('on')
 
     @action("Turn Off")
     def turn_off(self):
         """
         Action to turn off the asset.
         """
-        return self.backing.bridge_messages['off']
+        return self.backing.get('off')
 
 class DimmerAsset(Asset):
     """
     Class that represents a dimmable device.
     """
 
-    states = States(RangeStateCategory('main', 0, 256))
+    states = States(IntegerRangeStateCategory('main', 0, 256))
 
     def __init__(self, name, real_id, service, product_name):
         backing = Backing(real_id, service, product_name)
         super().__init__(name, self.states, backing)
-        def dim_level_to_message(num):
-            return BridgeMessage.create_async(self.get_service(), 'go_to_level', self.get_real_id(), num)
-
-        self.states.set_default_control('main', dim_level_to_message)
+        self._set_control_passthrough('main', 'set_light_level')
 
 class VolumeAsset(Asset):
     """
-    Class that represents a dimmable device.
+    Class that represents a devicec with volume.
     """
 
-    states = States(RangeStateCategory('main', 0, 101))
+    states = States(IntegerRangeStateCategory('main', 0, 101))
 
     def __init__(self, name, real_id, service, product_name):
         backing = Backing(real_id, service, product_name)
         super().__init__(name, self.states, backing)
-        def volume_to_message(num):
-            return BridgeMessage.create_async(self.get_service(), 'set_volume', self.get_real_id(), num)
-
-        self.states.set_default_control('main', volume_to_message)
+        self._set_control_passthrough('main', 'set_volume')

@@ -4,7 +4,7 @@ from bridge.services.model import states
 
 class TestState(unittest.TestCase):
     def setUp(self):
-        self.state = states.States(states.RangeStateCategory('bams', 0, 255))
+        self.state = states.States(states.IntegerRangeStateCategory('bams', 0, 255))
         self.state.set_default_control('bams', lambda x : True)
 
     def test_default_control(self):

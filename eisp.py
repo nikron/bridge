@@ -1,11 +1,10 @@
-import struct
-import logging
+from abc import ABCMeta, abstractmethod, abstractclassmethod
 
 class EISPMessage():
     ISCP_START = b'ISCP'
 
-    def __init__(self, command):
-        self.command = command
+    def __init__(self, encoded_command):
+        self.command = encoded_command
 
     def encode(self):
         message = b''
@@ -35,14 +34,9 @@ class EISPMessage():
         """
         info = {'command' : self.command}
 
-        if b'MVL' in self.command:
-            try:
-                info['volume'] = int(self.command[4:6], 16)
-            except ValueError:
-                pass
+        info['deciphered'] = COMMANDS.decode_command(self.command)
 
         return info
-
 
     @classmethod
     def decode(cls, message):
@@ -52,8 +46,9 @@ class EISPMessage():
         if message[4:8] != b'\x00\x00\x00\x10':
             return None
 
-        start_of_cmd = message.find(b'!') + 1
-        return cls(message[start_of_cmd:-1])
+        start_of_cmd = message.find(b'!') + 2 #skip past the product type, should always be 1
+        end_of_cmd = message.find(b'\x1a')
+        return cls(message[start_of_cmd:end_of_cmd])
 
 def read_message(socket):
     """
@@ -82,15 +77,89 @@ def read_message(socket):
 
     return EISPMessage.decode(packet)
 
+class TwoWayDict(dict):
+    def __setitem__(self, key, value):
+        dict.__setitem__(self, key, value)
+        dict.__setitem__(self, value, key)
+
+class Command():
+    def __init__(self, value, pretty, queryable = True, **kwargs):
+        self.value = value
+        self.pretty = pretty
+        self.keywords = TwoWayDict()
+        if queryable:
+            self.keywords['query'] = b'QSTN'
+
+        for decoded in kwargs:
+            self.keywords[decoded] = kwargs[decoded]
+
+    def encode(self, arg):
+        return self.value + self.keywords[arg]
+
+    def decode(self, arg):
+        return self.keywords[arg]
+
+class BinaryCommand(Command):
+    def encode(self, arg):
+        if arg is True:
+            return self.value + b'01'
+        elif arg is False:
+            return self.value + b'00'
+        else:
+            return super().encode(arg)
+
+    def decode(self, arg):
+        if arg == b'01':
+            return True
+        elif arg == b'00':
+            return False
+        else:
+            return super().encode(arg)
+
+class IntCommand(Command):
+    def encode(self, arg):
+        if type(arg) is int:
+            return self.value + format(arg, '02x').encode()
+        else:
+            return super().encode(arg)
+
+    def decode(self, arg):
+        try:
+            return int(arg, 16)
+        except ValueError:
+            return super().encode(arg)
+
+class Commands():
+    def __init__(self):
+        self.values = {}
+        self.pretties = {}
+
+    def add(self, command):
+        self.values[command.value] = command
+        self.pretties[command.pretty] = command
+
+    def get(self, pretty):
+        return self.pretties[pretty]
+
+    def decode_command(self, encoded_command):
+        command = self.values[encoded_command[0:3]]
+        return command.pretty, command.decode(command[3:])
+
+    def __getitem__(self, item):
+        return self.get(item)
+
+COMMANDS = Commands()
+COMMANDS.add(BinaryCommand(b'AMT', 'mute', toggle = b'TG'))
+COMMANDS.add(IntCommand(b'MVL', 'volume', up = b'UP', down = b'DOWN'))
+
 #
 # Some of the possible commands
 #
 
-VOLUME_UP_COMMAND = b"MVLUP"
-VOLUME_DOWN_COMMAND = b"MVLDOWN"
-VOLUME_LEVEL_COMMAND = lambda x : b"MVL" + bytes(hex(x)[2:], "utf-8")
-VOLUME_QUERY_COMMAND = b"MVLQSTN"
-MUTE_TOGGLE_COMMAND  = b"AMTTG"
+VOLUME_UP_COMMAND = b'MVLUP'
+VOLUME_DOWN_COMMAND = b'MVLDOWN'
+VOLUME_LEVEL_COMMAND = lambda x : b'MVL' + bytes([x])
+VOLUME_QUERY_COMMAND = b'MVLQSTN'
 MENU_COMMAND = b'OSDMENU'
 UP_COMMAND = b'OSDUP'
 DOWN_COMMAND = b'OSDDOWN'
@@ -103,15 +172,19 @@ VIDEO_COMMAND = b'OSDVIDEO'
 HOME_COMMAND = b'OSDHOME'
 INPUT_BDDVD_COMMAND = b'SLI10'
 INPUT_TVCD_COMMAND = b'SLI23'
+INPUT_QUERY_COMMAND = b'SLIQSTN'
 
 #
 # Precomputed messages
 #
 
-VOLUME_QUERY = EISPMessage(VOLUME_QUERY_COMMAND).encode()
-VOLUME_UP = EISPMessage(VOLUME_UP_COMMAND).encode()
-VOLUME_DOWN = EISPMessage(VOLUME_DOWN_COMMAND).encode()
-MUTE_TOGGLE = EISPMessage(MUTE_TOGGLE_COMMAND).encode()
+VOLUME_QUERY = EISPMessage(COMMANDS['volume'].encode('query')).encode()
+VOLUME_UP = EISPMessage(COMMANDS['volume'].encode('up')).encode()
+VOLUME_DOWN = EISPMessage(COMMANDS['volume'].encode('down')).encode()
+MUTE_ON = EISPMessage(COMMANDS['mute'].encode(True)).encode()
+MUTE_OFF = EISPMessage(COMMANDS['mute'].encode(False)).encode()
+MUTE_TOGGLE = EISPMessage(COMMANDS['mute'].encode('toggle')).encode()
+MUTE_QUERY = EISPMessage(COMMANDS['mute'].encode('query')).encode()
 MENU = EISPMessage(MENU_COMMAND).encode()
 UP = EISPMessage(UP_COMMAND).encode()
 RIGHT = EISPMessage(RIGHT_COMMAND).encode()
@@ -122,77 +195,78 @@ EXIT = EISPMessage(EXIT_COMMAND).encode()
 VIDEO = EISPMessage(VIDEO_COMMAND).encode()
 AUDIO = EISPMessage(AUDIO_COMMAND).encode()
 HOME = EISPMessage(HOME_COMMAND).encode()
-SETSOURCEBDDVD = EISPMessage(INPUT_BDDVD_COMMAND).encode()
-SETSOURCETVCD = EISPMessage(INPUT_TVCD_COMMAND).encode()
+SET_INPUT_BDDVD = EISPMessage(INPUT_BDDVD_COMMAND).encode()
+SET_INPUT_TVCD = EISPMessage(INPUT_TVCD_COMMAND).encode()
+INPUT_QUERY = EISPMessage(INPUT_QUERY_COMMAND).encode()
+
+MODES = TwoWayDict()
+MODES[b'00'] = 'Stereo'
+MODES[b'01'] = 'Direct'
+MODES[b'02'] = 'Surrond'
+MODES[b'03'] = 'Film'
+MODES[b'04'] = 'THX'
+MODES[b'05'] = 'Action'
+MODES[b'06'] = 'Musical'
+MODES[b'07'] = 'Mono Movie'
+MODES[b'08'] = 'Orchestra'
+MODES[b'09'] = 'Unplugged'
+MODES[b'0A'] = 'Studio-Mix'
+MODES[b'0B'] = 'TV Logic'
+MODES[b'0C'] = 'All Channel Stereo'
+MODES[b'0D'] = 'Theater - Dimensional'
+MODES[b'0E'] = 'Enhanced'
+MODES[b'0F'] = 'Mono'
+MODES[b'11'] = 'Pure Audio'
+MODES[b'12'] = 'Multiplex'
+MODES[b'13'] = 'Full Mono'
+MODES[b'14'] = 'Dolby Virtual'
+MODES[b'15'] = 'DTS Surrond Sensation'
+MODES[b'16'] = 'Audyessy DSX'
+MODES[b'1F'] = 'Whole House Mode'
+MODES[b'40'] = 'Straight Decode'
+MODES[b'41'] = 'Dolby EX/DTS ES'
+MODES[b'42'] = 'THX Cinema'
+MODES[b'43'] = 'THX Surrond EX'
+MODES[b'44'] = 'THX Music'
+MODES[b'45'] = 'THX Games'
+MODES[b'50'] = 'THX U2'
+MODES[b'51'] = 'THX Music'
+MODES[b'52'] = 'THX U2 Games'
+MODES[b'80'] = 'PLII/PLIIx Movie'
+MODES[b'81'] = 'PLII/PLIIx Music'
+MODES[b'82'] = 'Neo:6 Cinema'
+MODES[b'83'] = 'Neo:6 Music'
+MODES[b'84'] = 'PLII/PLIIx THX Cinema'
+MODES[b'85'] = 'Neo:6 THX Cinema'
+MODES[b'86'] = 'PLII/PLIIx Game'
+MODES[b'87'] = 'Nueral Surrond'
+MODES[b'88'] = 'Nueral THX Surrond'
+MODES[b'89'] = 'PLII/PLIIx THX Games'
+MODES[b'8A'] = 'Neo:6 THX Games'
+MODES[b'8B'] = 'PLII/PLIIx THX Music'
+MODES[b'8C'] = 'Neo:6 THX Music'
+MODES[b'8D'] = 'Nueral THX Cinema'
+MODES[b'8E'] = 'Nueral THX Music'
+MODES[b'8F'] = 'Nueral THX Games'
+MODES[b'90'] = 'PLIIz Height'
+MODES[b'91'] = 'Neo:6 Cinema DTS Surround Sensation'
+MODES[b'92'] = 'Neo:6 Music DTS Surround Sensation'
+MODES[b'93'] = 'Neural Digital Music'
+MODES[b'94'] = 'PLIIz Height + THX Cinema'
+MODES[b'95'] = 'PLIIz Height + THX Music'
+MODES[b'96'] = 'PLIIz Height + THX Games'
+MODES[b'97'] = 'PLIIz Height + THX U2/S2 Cinema'
+MODES[b'98'] = 'PLIIz Height + THX U2/S2 Music'
+MODES[b'99'] = 'PLIIz Height + THX U2/S2 Games'
+MODES[b'9A'] = 'Neo:X Game'
+MODES[b'A0'] = 'PLIIx/PLII Movie + Audyssey DSX'
+MODES[b'A1'] = 'PLIIx/PLII Music + Audyssey DSX'
+MODES[b'A2'] = 'PLIIx/PLII Game + Audyssey DSX'
+MODES[b'A3'] = 'Neo:6 Cinema + Audyssey DSX'
+MODES[b'A4'] = 'Neo:6 Music + Audyssey DSX'
+MODES[b'A5'] = 'Neural Surround + Audyssey DSX'
+MODES[b'A6'] = 'Neural Digital Music + Audyssey DSX'
+MODES[b'A7'] = 'Dolby EX + Audyssey DSX'
 
 
-MODES = {
-    b"00" : "Stereo",
-    b"01" : "Direct",
-    b"02" : "Surrond",
-    b"03" : "Film",
-    b"04" : "THX",
-    b"05" : "Action",
-    b"06" : "Musical",
-    b"07" : "Mono Movie",
-    b"08" : "Orchestra",
-    b"09" : "Unplugged",
-    b"0A" : "Studio-Mix",
-    b"0B" : "TV Logic",
-    b"0C" : "All Channel Stereo",
-    b"0D" : "Theater - Dimensional",
-    b"0E" : "Enhanced",
-    b"0F" : "Mono",
-    b"11" : "Pure Audio",
-    b"12" : "Multiplex",
-    b"13" : "Full Mono",
-    b"14" : "Dolby Virtual",
-    b"15" : "DTS Surrond Sensation",
-    b"16" : "Audyessy DSX",
-    b"1F" : "Whole House Mode",
-    b"40" : "Straight Decode",
-    b"41" : "Dolby EX/DTS ES",
-    #b"41" : "Dolby EX 2", ensure which is correct
-    b"42" : "THX Cinema",
-    b"43" : "THX Surrond EX",
-    b"44" : "THX Music",
-    b"45" : "THX Games",
-    b"50" : "THX U2",
-    b"51" : "THX Music",
-    b"52" : "THX U2 Games",
-    b"80" : "PLII/PLIIx Movie",
-    b"81" : "PLII/PLIIx Music",
-    b"82" : "Neo:6 Cinema",
-    b"83" : "Neo:6 Music",
-    b"84" : "PLII/PLIIx THX Cinema",
-    b"85" : "Neo:6 THX Cinema",
-    b"86" : "PLII/PLIIx Game",
-    b"87" : "Nueral Surrond",
-    b"88" : "Nueral THX Surrond",
-    b"89" : "PLII/PLIIx THX Games",
-    b"8A" : "Neo:6 THX Games",
-    b"8B" : "PLII/PLIIx THX Music",
-    b"8C" : "Neo:6 THX Music",
-    b"8D" : "Nueral THX Cinema",
-    b"8E" : "Nueral THX Music",
-    b"8F" : "Nueral THX Games",
-    b"90" : "PLIIz Height",
-    b"91" : "Neo:6 Cinema DTS Surround Sensation",
-    b"92" : "Neo:6 Music DTS Surround Sensation",
-    b"93" : "Neural Digital Music",
-    b"94" : "PLIIz Height + THX Cinema",
-    b"95" : "PLIIz Height + THX Music",
-    b"96" : "PLIIz Height + THX Games",
-    b"97" : "PLIIz Height + THX U2/S2 Cinema",
-    b"98" : "PLIIz Height + THX U2/S2 Music",
-    b"99" : "PLIIz Height + THX U2/S2 Games",
-    b"9A" : "Neo:X Game",
-    b"A0" : "PLIIx/PLII Movie + Audyssey DSX",
-    b"A1" : "PLIIx/PLII Music + Audyssey DSX",
-    b"A2" : "PLIIx/PLII Game + Audyssey DSX",
-    b"A3" : "Neo:6 Cinema + Audyssey DSX",
-    b"A4" : "Neo:6 Music + Audyssey DSX",
-    b"A5" : "Neural Surround + Audyssey DSX",
-    b"A6" : "Neural Digital Music + Audyssey DSX",
-    b"A7" : "Dolby EX + Audyssey DSX"
-}
+#MODES[b'41' : 'Dolby EX 2', ensure which is correct

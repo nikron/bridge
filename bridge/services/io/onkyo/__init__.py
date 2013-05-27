@@ -14,6 +14,14 @@ class OnkyoReceiverService(IOService):
     def asset_status(self, real_id):
         if real_id == "1":
             self.io_fd.send(eisp.VOLUME_QUERY)
+            self.io_fd.send(eisp.MUTE_QUERY)
+            self.io_fd.send(eisp.POWER_QUERY)
+
+    def asset_info(self, real_id):
+        """
+        Idiom already knows all the infos because this only supports one type of asset.
+        """
+        pass
 
     def read_io(self):
         logging.debug("Reading the interface of {0}.".format(self.name))

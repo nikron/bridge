@@ -48,7 +48,13 @@ class InsteonIMService(IOService):
 
         self.write_command(cmd)
 
-    def go_to_level(self, real_id, level):
+    def set_light_level(self, real_id, level):
+        """
+        Attempt to set the level of the light.
+
+        :param level: Level to go to must be [0, 255]
+        :type level: int
+        """
         real_id = unhexlify(real_id)
         cmd = im_commands.TurnOnLevel(real_id, bytes([level]))
 
