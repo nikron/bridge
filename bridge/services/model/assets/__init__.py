@@ -134,9 +134,8 @@ class OnOffAsset(Asset):
     A device that is either simply on or off.
     """
 
-    states = States(BinaryStateCategory('main'))
-
     def __init__(self, name, real_id, service, product_name):
+        states = States(BinaryStateCategory('main'))
         backing = Backing(real_id, service, product_name, on = ('turn_on', []), off = ('turn_off', []))
         super().__init__(name, self.states, backing)
         self.states.set_control('main', True, self.backing.get('on'))
@@ -161,9 +160,8 @@ class DimmerAsset(Asset):
     Class that represents a dimmable device.
     """
 
-    states = States(IntegerRangeStateCategory('main', 0, 256))
-
     def __init__(self, name, real_id, service, product_name):
+        states = States(IntegerRangeStateCategory('main', 0, 256))
         backing = Backing(real_id, service, product_name)
         super().__init__(name, self.states, backing)
         self._set_control_passthrough('main', 'set_light_level')
@@ -173,9 +171,8 @@ class VolumeAsset(Asset):
     Class that represents a devicec with volume.
     """
 
-    states = States(IntegerRangeStateCategory('main', 0, 101))
-
     def __init__(self, name, real_id, service, product_name):
+        states = States(IntegerRangeStateCategory('main', 0, 101))
         backing = Backing(real_id, service, product_name)
         super().__init__(name, self.states, backing)
         self._set_control_passthrough('main', 'set_volume')
