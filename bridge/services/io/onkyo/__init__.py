@@ -25,7 +25,9 @@ class OnkyoReceiverService(IOService):
 
     def _create_fd(self, filename):
         try:
-            return socket.create_connection((filename, self.PORT))
+            sock =  socket.create_connection((filename, self.PORT))
+            return sock
         except:
-            logging.debug("Could create socket to receiver.")
+            print('wtf')
+            logging.exception("Could create socket to receiver.")
             return None
