@@ -24,7 +24,7 @@ class IOConfig():
 
     io_types = {
         'insteon' : (InsteonIMService, InsteonIdiom),
-        'onkyo' : (OnkyoReceiverService, OnkyoIdiom)
+        'onkyo' : (OnkyoReceiverService, OnkyoIdiom),
         'upb' : (UPBService, UPBIdiom)
     }
 
