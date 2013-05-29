@@ -6,7 +6,7 @@ from bridge.services.io.insteon.idiom import InsteonIdiom
 from bridge.services.io.onkyo import OnkyoReceiverService
 from bridge.services.io.onkyo.idiom import OnkyoIdiom
 from bridge.services.io.upb import UPBService
-from bridge.services.io.upb.diom import UPBIdiom
+from bridge.services.io.upb.idiom import UPBIdiom
 
 class IOConfig():
     """
