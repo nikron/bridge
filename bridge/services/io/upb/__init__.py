@@ -1,6 +1,6 @@
 from bridge.services.io import IOService
-from upb import UPBMessage
-from upb.pim import read, PIMMessage
+from upb import UPBMessage, UPBGoToLevel
+from upb.pim import read, execute_message, PIMMessage
 
 import logging
 import serial
@@ -17,8 +17,18 @@ class UPBService(IOService):
     def read_io(self):
         message = read(self.io_fd)
         if message.type == PIMMessage.UPBMESSAGE:
-            upb_msg = UPBMessage.create_from_packet(message.packet)
-            self.update_model(str(upb_msg.source_id), upb_msg)
+            self._update_model_with_packet(message.packet)
+
+    def set_light_level(self, real_id, level):
+        _, packets, _ = execute_message(self.io_fd, UPBGoToLevel(real_id, level))
+        for packet in packets:
+            self._update_model_with_packet(packet)
+
+    def turn_off(self, real_id):
+        self.set_light_level(self, 0)
+
+    def turn_on(self, real_id):
+        self.set_light_level(self, 100)
 
     def _create_fd(self, filename):
         try:
@@ -28,3 +38,7 @@ class UPBService(IOService):
         except:
             logging.exception("Could not create the serial connection.")
             return None
+
+    def _update_model_with_packet(self, packet):
+        upb_msg = UPBMessage.create_from_packet(packet)
+        self.update_model(str(upb_msg.source_id), upb_msg)
