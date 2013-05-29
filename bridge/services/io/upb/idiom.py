@@ -23,6 +23,9 @@ class UPBIdiom(ModelIdiom):
 MDID_CHANGERS = [None for _ in range(0, 0x94)]
 
 def change_main_level(asset, update):
-    asset.transition('main', update.arguments[0])
+    if update.arguments[0] > 0:
+        asset.transition('main', True)
+    else:
+        asset.transition('main', False)
 
-MDID_CHANGERS[mdid.REPORT_STATE] = change_main_level
+MDID_CHANGERS[mdid.DEVICE_STATE] = change_main_level
