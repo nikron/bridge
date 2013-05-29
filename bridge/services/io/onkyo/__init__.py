@@ -15,7 +15,6 @@ class OnkyoReceiverService(IOService):
         if real_id == "1":
             self.io_fd.send(eisp.VOLUME_QUERY)
             self.io_fd.send(eisp.MUTE_QUERY)
-            self.io_fd.send(eisp.POWER_QUERY)
 
     def asset_info(self, real_id):
         """
@@ -36,6 +35,5 @@ class OnkyoReceiverService(IOService):
             sock =  socket.create_connection((filename, self.PORT))
             return sock
         except:
-            print('wtf')
             logging.exception("Could create socket to receiver.")
             return None
