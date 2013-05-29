@@ -29,3 +29,4 @@ def change_main_level(asset, update):
         asset.transition('main', False)
 
 MDID_CHANGERS[mdid.DEVICE_STATE] = change_main_level
+MDID_CHANGERS[mdid.GOTO] = change_main_level
