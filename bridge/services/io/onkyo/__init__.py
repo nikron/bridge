@@ -1,7 +1,6 @@
 """
 Handle Onkyo SR-609 receivers.
 """
-
 from bridge.services.io import IOService
 import eisp
 
@@ -35,5 +34,5 @@ class OnkyoReceiverService(IOService):
             sock =  socket.create_connection((filename, self.PORT))
             return sock
         except:
-            logging.exception("Could create socket to receiver.")
+            logging.exception("Could not create socket to receiver.")
             return None

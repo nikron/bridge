@@ -1,6 +1,8 @@
 import binascii
 import bitstring
 
+from upb import mdid
+
 class UPBMessage():
     GLOBAL_PACKET = 0
     DEFAULT_NETWORK_ID = 1
@@ -136,23 +138,23 @@ class UPBSimpleLinkMessage(UPBSimpleMessage):
         super().__init__(destination_id = dest_id, link = True, **kwargs)
 
 class UPBSetRegisters(UPBMessage):
-    MDID = 0x11
+    MDID = mdid.SET_REGISTER_VALUE
 
     def __init__(self, reg, values, **kwargs):
         super().__init__(arguments = [reg] + values, **kwargs)
 
 class UPBActivateLink(UPBSimpleLinkMessage):
-    MDID = 0x20
+    MDID = mdid.ACTIVATE_LINK
 
 class UPBDeactivateLink(UPBSimpleLinkMessage):
-    MDID = 0x21
+    MDID = mdid.DEACTIVATE_LINK
 
 class UPBGoToLevel(UPBMessage):
     """
     Going to a level on a specific channel DOES not work with
     links.
     """
-    MDID = 0x22
+    MDID = mdid.GOTO
 
     def __init__(self, dest_id, level, rate = None, channel = None, **kwargs):
         args = [level]
@@ -173,7 +175,7 @@ class UPBFadeStart(UPBMessage):
     Going to a level on a specific channel DOES not work with
     links.
     """
-    MDID = 0x22
+    MDID = mdid.FADE_START
 
     def __init__(self, dest_id, rate = None, channel = None, **kwargs):
         args = []
@@ -189,7 +191,7 @@ class UPBFadeStart(UPBMessage):
             self.length += 1
 
 class UPBToggle(UPBMessage):
-    MDID = 0x27
+    MDID = mdid.TOGGLE
 
     def __init__(self, dest_id, times, rate=None, **kwargs):
         args = [times]
@@ -204,4 +206,4 @@ class UPBReportState(UPBSimpleMessage):
     """
     Report state must always be direct.
     """
-    MDID = 0x30
+    MDID = mdid.REPORT_STATE

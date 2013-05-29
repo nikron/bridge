@@ -3,9 +3,6 @@ from bridge.services.model.assets.onkyo_assets import OnkyoTXNR609
 
 class OnkyoIdiom(ModelIdiom):
     def create_asset(self, name, real_id, product_name):
-        if real_id != "1":
-            raise IdiomError("Onkyo ID's are always 1.")
-
         if product_name != "Onkyo TX-NR609":
             raise IdiomError("Currently only support generic volume control.")
 
