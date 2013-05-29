@@ -104,9 +104,12 @@ class HTTPAPIService(BridgeService):
 
 
     def run(self):
-        while True:
+        failing = True
+        while failing:
             try:
                 run(app=self.bottle, host=self.addr, port=self.port, debug=True)
+                failing = False #run exited for a reasonable reason
+
             except Exception:
                 logging.exception("Net service errored out somehow.  Retrying in 5 seconds.")
                 time.sleep(5)
