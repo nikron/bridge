@@ -97,14 +97,14 @@ class UPBSimpleMessage(UPBMessage):
     MDID = 0x00 #All subclasses must put a real value
 
     def __init__(self, dest_id, **kwargs):
-        super().__init__(self, destination_id = dest_id, **kwargs)
+        super().__init__(destination_id = dest_id, **kwargs)
 
     def construct_message(self):
         return [self.MDID]
 
 class UPBSimpleLinkMessage(UPBSimpleMessage):
     def __init__(self, dest_id, **kwargs):
-        super().__init__(self, destination_id = dest_id, link = True, **kwargs)
+        super().__init__(destination_id = dest_id, link = True, **kwargs)
 
 class UPBSetRegisters(UPBMessage):
     MDID = 0x11
@@ -128,7 +128,7 @@ class UPBGoToLevel(UPBMessage):
     MDID = 0x22
 
     def __init__(self, dest_id, level, rate = None, channel = None, **kwargs):
-        super().__init__(self, destination_id = dest_id, **kwargs)
+        super().__init__(destination_id = dest_id, **kwargs)
         self.length += 1
         self.level = level
         self.rate = rate
@@ -153,7 +153,7 @@ class UPBControlFadeStart(UPBMessage):
     MDID = 0x23
 
     def __init__(self, rate = None, channel = None, **kwargs):
-        super().__init__(self, **kwargs)
+        super().__init__(**kwargs)
         self.rate = rate
         self.channel = channel
 
@@ -175,7 +175,7 @@ class UPBToggle(UPBMessage):
     MDID = 0x27
 
     def __init__(self, dest_id, times, rate=None, **kwargs):
-        super().__init__(self, destination_id = dest_id, **kwargs)
+        super().__init__(destination_id = dest_id, **kwargs)
         self.toggle_times = times
         self.rate = rate
 
