@@ -20,15 +20,15 @@ class UPBService(IOService):
             self._update_model_with_packet(message.packet)
 
     def set_light_level(self, real_id, level):
-        _, packets, _ = execute_message(self.io_fd, UPBGoToLevel(real_id, level))
+        _, packets, _ = execute_message(self.io_fd, UPBGoToLevel(int(real_id), level))
         for packet in packets:
             self._update_model_with_packet(packet)
 
     def turn_off(self, real_id):
-        self.set_light_level(self, 0)
+        self.set_light_level(real_id, 0)
 
     def turn_on(self, real_id):
-        self.set_light_level(self, 100)
+        self.set_light_level(real_id, 100)
 
     def _create_fd(self, filename):
         try:
