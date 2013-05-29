@@ -35,7 +35,7 @@ def execute_message(serial, message):
     while waiting:
         resp = read(serial)
         resp_type = resp.type
-        loggin.debug("Read in response of type {0}.".format(str(resp_type)))
+        logging.debug("Read in response of type {0}.".format(str(resp_type)))
 
         if resp_type == PIMMessage.ACK:
             successful = True
