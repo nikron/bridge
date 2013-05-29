@@ -117,7 +117,7 @@ class UPBMessage():
             args.append(int(st[i:i+2], 16))
 
         upb_msg = cls(network_id = net, destination_id = dest, source_id = source,
-                link = link, repeat = repeat, ack = ack, id_pulse = id_pulse,
+                link = link, repeat = repeat, ack = ack, id_pulse = id_pul,
                 ack_message = ack_msg, transmission_times = trans_times, arguments = args)
 
         upb_msg.MDID = MDID
