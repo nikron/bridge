@@ -137,7 +137,7 @@ class OnOffAsset(Asset):
     def __init__(self, name, real_id, service, product_name):
         states = States(BinaryStateCategory('main'))
         backing = Backing(real_id, service, product_name, on = ('turn_on', []), off = ('turn_off', []))
-        super().__init__(name, self.states, backing)
+        super().__init__(name, states, backing)
         self.states.set_control('main', True, self.backing.get('on'))
         self.states.set_control('main', False, self.backing.get('off'))
 
@@ -163,7 +163,7 @@ class DimmerAsset(Asset):
     def __init__(self, name, real_id, service, product_name):
         states = States(IntegerRangeStateCategory('main', 0, 256))
         backing = Backing(real_id, service, product_name)
-        super().__init__(name, self.states, backing)
+        super().__init__(name, states, backing)
         self._set_control_passthrough('main', 'set_light_level')
 
 class VolumeAsset(Asset):
@@ -174,5 +174,5 @@ class VolumeAsset(Asset):
     def __init__(self, name, real_id, service, product_name):
         states = States(IntegerRangeStateCategory('main', 0, 101))
         backing = Backing(real_id, service, product_name)
-        super().__init__(name, self.states, backing)
+        super().__init__(name, states, backing)
         self._set_control_passthrough('main', 'set_volume')
