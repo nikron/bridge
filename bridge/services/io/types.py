@@ -5,6 +5,8 @@ from bridge.services.io.insteon import InsteonIMService
 from bridge.services.io.insteon.idiom import InsteonIdiom
 from bridge.services.io.onkyo import OnkyoReceiverService
 from bridge.services.io.onkyo.idiom import OnkyoIdiom
+from bridge.services.io.upb import UPBService
+from bridge.services.io.upb.diom import UPBIdiom
 
 class IOConfig():
     """
@@ -23,6 +25,7 @@ class IOConfig():
     io_types = {
         'insteon' : (InsteonIMService, InsteonIdiom),
         'onkyo' : (OnkyoReceiverService, OnkyoIdiom)
+        'upb' : (UPBService, UPBIdiom)
     }
 
     def __init__(self, name, protocol, file_name):
