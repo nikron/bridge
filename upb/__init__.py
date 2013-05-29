@@ -96,6 +96,9 @@ class UPBMessage():
             self.ascii_packet = self.construct_packet()
             return self.ascii_packet
 
+    def __str__(self):
+        return str(vars(self))
+
     @classmethod
     def create_from_packet(cls, packet):
         st = packet.decode('ascii')
@@ -104,7 +107,7 @@ class UPBMessage():
         net = int(st[4:6], 16)
         dest = int(st[6:8], 16)
         source = int(st[8:10], 16)
-        MDID = int(st[10:12], 16)
+        _mdid = int(st[10:12], 16)
         link = ctl[0]
         repeat = ctl[1:3].uint
         ack = ctl[9]
@@ -122,7 +125,7 @@ class UPBMessage():
                 link = link, repeat = repeat, ack = ack, id_pulse = id_pul,
                 ack_message = ack_msg, transmission_times = trans_times, arguments = args)
 
-        upb_msg.MDID = MDID
+        upb_msg.MDID = _mdid
 
         return upb_msg
 
