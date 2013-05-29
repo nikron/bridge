@@ -1,3 +1,5 @@
+import logging
+
 def read(serial):
     """
     Read a response from the PIM.
@@ -32,7 +34,8 @@ def execute_message(serial, message):
 
     while waiting:
         resp = read(serial)
-        resp_type =  resp.type
+        resp_type = resp.type
+        loggin.debug("Read in response of type {0}.".format(str(resp_type)))
 
         if resp_type == PIMMessage.ACK:
             successful = True
@@ -45,7 +48,7 @@ def execute_message(serial, message):
             waiting = False
         elif resp_type == PIMMessage.UPBMESSAGE:
             tandem_messages.append(resp.packet)
-        else:
+        elif resp_type == PIMMessage.REGISTER_REPORT:
             tandem_reports.append(resp.packet)
 
     return successful, tandem_messages, tandem_reports
@@ -71,4 +74,3 @@ class PIMMessage():
     def validity_check(buf):
         if buf[0] != 80:
             raise ValueError("PIM most likely not in message mode.")
-

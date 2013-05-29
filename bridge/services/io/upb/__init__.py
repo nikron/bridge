@@ -20,9 +20,7 @@ class UPBService(IOService):
             self._update_model_with_packet(message.packet)
 
     def set_light_level(self, real_id, level):
-        _, packets, _ = execute_message(self.io_fd, UPBGoToLevel(int(real_id), level))
-        for packet in packets:
-            self._update_model_with_packet(packet)
+        self._execute_message(UPBGoToLevel(int(real_id), level))
 
     def turn_off(self, real_id):
         self.set_light_level(real_id, 0)
@@ -38,6 +36,12 @@ class UPBService(IOService):
         except:
             logging.exception("Could not create the serial connection.")
             return None
+
+    def _execute_message(self, message):
+        _, packets, _ = execute_message(self.io_fd, message)
+        logging.debug("Done executing UPBMessage {0}.".format(str(message)))
+        #for packet in packets:
+        #    self._update_model_with_packet(packet)
 
     def _update_model_with_packet(self, packet):
         upb_msg = UPBMessage.create_from_packet(packet)
