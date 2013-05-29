@@ -19,6 +19,8 @@ class UPBMessage():
     REPEAT_QUAD = '0b11'
     DEFAULT_REPEAT = REPEAT_Z
 
+    MDID = 0x00
+
     def __init__(self, **kwargs):
         self.network_id = UPBMessage.DEFAULT_NETWORK_ID
         self.destination_id = UPBMessage.DEFAULT_DESTINATION_ID
@@ -30,12 +32,14 @@ class UPBMessage():
         self.ack_msg = False
         self.repeat = UPBMessage.DEFAULT_REPEAT
         self.reply_repeat = False
-        self.length = 7
         self.dirty = True
         self.ascii_packet = b''
+        self.arguments = []
 
         for kwarg in kwargs:
             setattr(self, kwarg, kwargs[kwarg])
+
+        self.length = 7 + len(self.arguments)
 
     def command(self):
         CTL = bitstring.BitArray(16)
@@ -59,7 +63,7 @@ class UPBMessage():
         return self.command() + [self.network_id, self.destination_id, self.source_id]
 
     def construct_message(self):
-        raise NotImplementedError
+        return [self.MDID] + self.arguments
 
     def construct_checksum(self, body):
         j = sum(body)
@@ -90,17 +94,42 @@ class UPBMessage():
             self.ascii_packet = self.construct_packet()
             return self.ascii_packet
 
+    @classmethod
+    def create_from_packet(cls, packet):
+        st = packet.decode('ascii')
+        ctl = bitstring.Bits(hex=st[0:4])
+
+        net = int(st[4:6], 16)
+        dest = int(st[6:8], 16)
+        source = int(st[8:10], 16)
+        MDID = int(st[10:12], 16)
+        link = ctl[0]
+        repeat = ctl[1:3].uint
+        ack = ctl[9]
+        id_pul = ctl[10]
+        ack_msg = ctl[11]
+        trans_times = ctl[12:14].uint
+
+        #info['len'] = ctl[3:8].uint
+
+        args = []
+        for i in range(12, len(st) - 2, 2):
+            args.append(int(st[i:i+2], 16))
+
+        upb_msg = cls(network_id = net, destination_id = dest, source_id = source,
+                link = link, repeat = repeat, ack = ack, id_pulse = id_pulse,
+                ack_message = ack_msg, transmission_times = trans_times, arguments = args)
+
+        upb_msg.MDID = MDID
+
+        return upb_msg
+
 class UPBSimpleMessage(UPBMessage):
     """
     UPB message without any arguments.
     """
-    MDID = 0x00 #All subclasses must put a real value
-
     def __init__(self, dest_id, **kwargs):
         super().__init__(destination_id = dest_id, **kwargs)
-
-    def construct_message(self):
-        return [self.MDID]
 
 class UPBSimpleLinkMessage(UPBSimpleMessage):
     def __init__(self, dest_id, **kwargs):
@@ -110,13 +139,7 @@ class UPBSetRegisters(UPBMessage):
     MDID = 0x11
 
     def __init__(self, reg, values, **kwargs):
-        UPBMessage.__init__(self, **kwargs)
-        self.reg = reg
-        self.values = values
-        self.length += 1 + len(values)
-
-    def construct_message(self):
-        return [self.MDID, self.reg] + self.values
+        super().__init__(arguments = [reg] + values, **kwargs)
 
 class UPBActivateLink(UPBSimpleLinkMessage):
     MDID = 0x20
@@ -125,101 +148,60 @@ class UPBDeactivateLink(UPBSimpleLinkMessage):
     MDID = 0x21
 
 class UPBGoToLevel(UPBMessage):
+    """
+    Going to a level on a specific channel DOES not work with
+    links.
+    """
     MDID = 0x22
 
     def __init__(self, dest_id, level, rate = None, channel = None, **kwargs):
-        super().__init__(destination_id = dest_id, **kwargs)
-        self.length += 1
+        args = [level]
+        if rate is not None:
+            args.append(rate)
+
+        super().__init__(destination_id = dest_id, arguments = args, **kwargs)
         self.level = level
         self.rate = rate
         self.channel = channel
 
-        if self.rate is not None:
+        if not self.link and channel is not None:
+            self.arguments.append(channel)
             self.length += 1
 
-            if not self.link and channel is not None:
-                self.length += 1
+class UPBFadeStart(UPBMessage):
+    """
+    Going to a level on a specific channel DOES not work with
+    links.
+    """
+    MDID = 0x22
 
-    def construct_message(self):
-        msg = [self.MDID, self.level]
-        if self.rate is not None:
-            msg += [self.rate]
+    def __init__(self, dest_id, rate = None, channel = None, **kwargs):
+        args = []
+        if rate is not None:
+            args.append(rate)
 
-            if not self.link and self.channel is not None:
-                msg += [self.channel]
-        return msg
-
-class UPBControlFadeStart(UPBMessage):
-    MDID = 0x23
-
-    def __init__(self, rate = None, channel = None, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(destination_id = dest_id, arguments = args, **kwargs)
         self.rate = rate
         self.channel = channel
 
-        if self.rate is not None:
+        if not self.link and channel is not None:
+            self.arguments.append(channel)
             self.length += 1
-
-            if not self.link and channel is not None:
-                self.length += 1
-
-    def construct_message(self):
-        if self.rate is not None:
-            msg += [self.rate]
-
-            if not self.link and self.channel is not None:
-                msg += [self.channel]
-        return msg
 
 class UPBToggle(UPBMessage):
     MDID = 0x27
 
     def __init__(self, dest_id, times, rate=None, **kwargs):
-        super().__init__(destination_id = dest_id, **kwargs)
+        args = [times]
+        if rate is not None:
+            args.append(rate)
+
+        super().__init__(destination_id = dest_id, arguments = args, **kwargs)
         self.toggle_times = times
         self.rate = rate
-
-        self.length += 1 # always will have toggle times
-        if rate is not None:
-            self.length += 1
-
-    def construct_message(self):
-        msg = [self.MDID, self.toggle_times]
-
-        if self.rate is not None:
-            msg += [self.rate]
-
-        return msg
 
 class UPBReportState(UPBSimpleMessage):
     """
     Report state must always be direct.
     """
     MDID = 0x30
-
-def info_from_packet(packet):
-    info = {}
-
-    st = packet.decode('ascii')
-    ctl = bitstring.Bits(hex=st[0:4])
-
-    info['ctl'] = ctl
-    info['network id'] = int(st[4:6], 16)
-    info['destination id'] = int(st[6:8], 16)
-    info['source id'] = int(st[8:10], 16)
-    info['message id'] = int(st[10:12], 16)
-    info['link'] = ctl[0]
-    info['repeats'] = ctl[1:3].uint
-    info['len'] = ctl[3:8].uint
-    info['ack'] = ctl[9]
-    info['id pulse'] = ctl[10]
-    info['ack message'] = ctl[11]
-    info['transmission times'] = ctl[12:14].uint
-
-    arg_list = []
-    for i in range(12, len(st) - 2, 2):
-        arg_list.append(int(st[i:i+2], 16))
-
-    info['message args'] = arg_list
-
-    return info

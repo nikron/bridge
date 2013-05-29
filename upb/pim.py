@@ -1,4 +1,4 @@
-def read_from_pim(serial):
+def read(serial):
     """
     Read a response from the PIM.
     """
@@ -31,8 +31,8 @@ def execute_message(serial, message):
     write_message(serial, message)
 
     while waiting:
-        resp = read_from_pim(serial)
-        resp_type =  resp.response_type
+        resp = read(serial)
+        resp_type =  resp.type
 
         if resp_type == PIMMessage.ACK:
             successful = True
@@ -44,9 +44,9 @@ def execute_message(serial, message):
         elif resp_type == PIMMessage.BUSY:
             waiting = False
         elif resp_type == PIMMessage.UPBMESSAGE:
-            tandem_messages.append(resp.data)
+            tandem_messages.append(resp.packet)
         else:
-            tandem_reports.append(resp.data)
+            tandem_reports.append(resp.packet)
 
     return successful, tandem_messages, tandem_reports
 
@@ -63,9 +63,9 @@ class PIMMessage():
 
     def __init__(self, buf):
         self.validity_check(buf)
-        self.response_type = buf[1]
+        self.type = buf[1]
 
-        self.data = buf[2:-1]
+        self.packet = buf[2:-1]
 
     @staticmethod
     def validity_check(buf):
