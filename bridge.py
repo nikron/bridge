@@ -1,6 +1,6 @@
 #!/usr/bin/python3
-import os, sys
-
+import os
+import sys
 import argparse
 import logging
 
