@@ -16,6 +16,10 @@
     <string name="pref_user">Username</string>
     <string name="pref_password">Password</string>
 
+    <string name="pref_app_category">Application Settings</string>
+    <string name="pref_auto_refresh">Refresh Automatically</string>
+    <string name="pref_auto_refresh_interval">Miliseconds Between Refreshes</string>
+
     <string name="disconnected"></string>
 
     <string name="save_dialog_title">Save</string>

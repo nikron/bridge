@@ -21,7 +21,7 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
 {
     final SherlockFragmentActivity context;
     BridgeClientReceiver receiver;
-    private Handler handler;
+    Handler handler;
 
     public AssetsArrayAdapter(SherlockFragmentActivity context)
     {
@@ -35,8 +35,9 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
     @Override
     public View getView (int position, View convertView, ViewGroup parent)
     {
-        final Asset asset = getItem(position);
-        final State mainState = asset.getMainState();
+        //TODO: Use asset type rather than mainstate type
+        Asset asset = getItem(position);
+        State mainState = asset.getMainState();
 
         if (mainState != null)
         {
@@ -105,14 +106,15 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
         context.startService(intent);
     }
 
-    public void startRecurringRefresh()
+    public void startRecurringRefresh(int interval)
     {
+        final int inter = interval;
+        refresh();
         handler.postDelayed(new Runnable() {
             public void run() {
-                refresh();
-                startRecurringRefresh();
+                startRecurringRefresh(inter);
             }
-        }, 2000);
+        }, inter);
     }
 
     public void stopRecurringRefresh()

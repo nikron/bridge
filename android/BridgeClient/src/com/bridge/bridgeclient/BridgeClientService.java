@@ -141,7 +141,7 @@ public class BridgeClientService extends IntentService
     private void sendProgress(ResultReceiver receiver, int progress, int end)
     {
         Bundle bundle = new Bundle();
-        int shift = progress / end * Window.PROGRESS_END + Window.PROGRESS_START;
+        int shift = (int) ((float) progress / end * Window.PROGRESS_END) + Window.PROGRESS_START;
         bundle.putInt(PROGRESS_KEY,  shift);
         receiver.send(STATUS_PROGRESS, bundle);
     }

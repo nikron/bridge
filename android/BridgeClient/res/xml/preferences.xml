@@ -14,6 +14,18 @@
             android:numeric="integer" />
     </PreferenceCategory>
     <PreferenceCategory
+        android:title="@string/pref_app_category">
+        <CheckBoxPreference
+            android:key="pref_auto_refresh"
+            android:title="@string/pref_auto_refresh"
+            android:defaultValue="true" />
+        <EditTextPreference
+            android:key="pref_auto_refresh_interval"
+            android:title="@string/pref_auto_refresh_interval"
+            android:defaultValue="4000"
+            android:numeric="integer" />
+    </PreferenceCategory>
+    <PreferenceCategory
         android:title="@string/pref_user_category">
         <EditTextPreference
             android:key="pref_user"

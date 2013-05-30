@@ -1,23 +1,31 @@
 package com.bridge.bridgeclient;
 
+import android.content.SharedPreferences;
+
 import android.os.Bundle;
+
+import android.preference.PreferenceManager;
+
+import android.widget.ListView;
 
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.LayoutInflater;
-import android.widget.ListView;
 
-import com.actionbarsherlock.app.SherlockFragmentActivity;
-import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
+import com.actionbarsherlock.app.SherlockListFragment;
 
-public class AssetsFragment extends SherlockListFragment
+public class AssetsFragment extends SherlockListFragment implements SharedPreferences.OnSharedPreferenceChangeListener
 {
-    SherlockFragmentActivity context;
     AssetsArrayAdapter assetsAdapter;
     ListView devices;
+    SharedPreferences preferences;
+    SherlockFragmentActivity context;
+    boolean refreshing;
+    int refreshInterval;
 
     public AssetsFragment()
     {
@@ -33,8 +41,8 @@ public class AssetsFragment extends SherlockListFragment
         context = getSherlockActivity();
         assetsAdapter = new AssetsArrayAdapter(context);
         setListAdapter(assetsAdapter);
-        assetsAdapter.startRecurringRefresh();
-        assetsAdapter.refresh();
+        preferences = PreferenceManager.getDefaultSharedPreferences(context);
+
     }
 
     @Override
@@ -47,6 +55,13 @@ public class AssetsFragment extends SherlockListFragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View view = inflater.inflate(R.layout.assetsfragment, container);
+        refreshing = preferences.getBoolean("pref_auto_refresh", true);
+        refreshInterval = Integer.parseInt(preferences.getString("pref_auto_refresh_interval", "4000"));
+        if (refreshing)
+        {
+            assetsAdapter.startRecurringRefresh(refreshInterval);
+        }
+        preferences.registerOnSharedPreferenceChangeListener(this);
 
         return view;
     }
@@ -68,7 +83,11 @@ public class AssetsFragment extends SherlockListFragment
     @Override
     public void onPause()
     {
-        assetsAdapter.stopRecurringRefresh();
+        if (refreshing)
+        {
+            assetsAdapter.stopRecurringRefresh();
+        }
+        preferences.unregisterOnSharedPreferenceChangeListener(this);
         super.onPause();
     }
 
@@ -76,6 +95,38 @@ public class AssetsFragment extends SherlockListFragment
     public void onResume()
     {
         super.onResume();
-        assetsAdapter.startRecurringRefresh();
+        preferences.registerOnSharedPreferenceChangeListener(this);
+        if (refreshing)
+        {
+            assetsAdapter.startRecurringRefresh(refreshInterval);
+        }
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key)
+    {
+        if (key.equals("pref_auto_refresh_interval")) 
+        {
+            refreshInterval = Integer.parseInt(preferences.getString("pref_auto_refresh_interval", "4000"));
+
+            if (refreshing)
+            {
+                assetsAdapter.stopRecurringRefresh();
+                assetsAdapter.startRecurringRefresh(refreshInterval);
+            }
+        }
+        else if (key.equals("pref_auto_refresh"))
+        {
+            refreshing = preferences.getBoolean("pref_auto_refresh", true);
+            
+            if (refreshing)
+            {
+                assetsAdapter.startRecurringRefresh(refreshInterval);
+            }
+            else
+            {
+                assetsAdapter.stopRecurringRefresh();
+            }
+        }
     }
 }
