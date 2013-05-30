@@ -33,7 +33,7 @@ public class AssetsFragment extends SherlockListFragment
         context = getSherlockActivity();
         assetsAdapter = new AssetsArrayAdapter(context);
         setListAdapter(assetsAdapter);
-        assetsAdapter.start_recurring_refresh();
+        assetsAdapter.startRecurringRefresh();
         assetsAdapter.refresh();
     }
 
@@ -68,7 +68,7 @@ public class AssetsFragment extends SherlockListFragment
     @Override
     public void onPause()
     {
-        assetsAdapter.stop_recurring_refresh();
+        assetsAdapter.stopRecurringRefresh();
         super.onPause();
     }
 
@@ -76,6 +76,6 @@ public class AssetsFragment extends SherlockListFragment
     public void onResume()
     {
         super.onResume();
-        assetsAdapter.start_recurring_refresh();
+        assetsAdapter.startRecurringRefresh();
     }
 }

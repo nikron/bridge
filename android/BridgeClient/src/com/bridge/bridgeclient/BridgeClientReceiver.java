@@ -6,29 +6,29 @@ import android.os.Bundle;
 
 public class BridgeClientReceiver extends ResultReceiver
 {
-    private Receiver mReceiver;
+    private Receiver receiver;
 
     public BridgeClientReceiver(Handler handler)
     {
         super(handler);
     }
 
-    public interface Receiver
+    interface Receiver
     {
-        public void onReceiveResult(int resultCode, Bundle resultData);
+        void onReceiveResult(int resultCode, Bundle resultData);
     }
 
     public void setReceiver(Receiver receiver)
     {
-        mReceiver = receiver;
+        this.receiver = receiver;
     }
 
     @Override
     protected void onReceiveResult(int resultCode, Bundle resultData)
     {
-        if (mReceiver != null)
+        if (receiver != null)
         {
-            mReceiver.onReceiveResult(resultCode, resultData);
+            receiver.onReceiveResult(resultCode, resultData);
         }
     }
 }

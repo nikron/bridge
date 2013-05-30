@@ -6,25 +6,18 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 
-import org.jraf.android.backport.switchwidget.Switch;
-import android.widget.SeekBar;
-//import android.widget.Switch;
-
 import org.json.JSONException;
 
-public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeClientReceiver.Receiver
+public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeClientReceiver.Receiver, BriefAssetViewFactory.PatchHandler
 {
     final SherlockFragmentActivity context;
     BridgeClientReceiver receiver;
@@ -44,56 +37,22 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
     {
         final Asset asset = getItem(position);
         final State mainState = asset.getMainState();
-        RelativeLayout layout;
 
         if (mainState != null)
         {
             switch (mainState.getType())
             {
                 case State.BINARY_TYPE:
-                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(R.xml.asset_binary, parent, false);
-                    Switch mainSwitch = (Switch) layout.findViewById(R.id.assetcontrol);
-                    mainSwitch.setEnabled(mainState.isEnabled());
-                    mainSwitch.setChecked(mainState.getCurrent());
-                    mainSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                            String message = mainState.setState(isChecked);
-                            sendAssetPatch(asset.getURL(), message);
-                        }});
-                    break;
+                    return new BriefBinaryAssetViewFactory(context, asset, this).getView();
 
                 case State.RANGE_TYPE:
-                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(R.xml.asset_range, parent, false);
-                    SeekBar mainSeekBar = (SeekBar) layout.findViewById(R.id.assetcontrol);
-                    mainSeekBar.setEnabled(mainState.isEnabled());
-                    mainSeekBar.setMax(mainState.getMax() - mainState.getMin());
-                    mainSeekBar.setProgress(mainState.getCurrentInt());
-                    mainSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                            String message = mainState.setState(progress + mainState.getMin());
-                            sendAssetPatch(asset.getURL(), message);
-                        }
-                        public void onStartTrackingTouch(SeekBar seekBar) {
-                        }
-                        public void onStopTrackingTouch(SeekBar seekBar) {
-                        }
-                    });
-                    break;
+                    return new BriefRangeAssetViewFactory(context, asset, this).getView();
 
                 default:
-                    layout = (RelativeLayout) LayoutInflater.from(context).inflate(R.xml.asset_unknown, parent, false);
-                    break;
+                    return new BriefAssetViewFactory(context, asset, this).getView();
             }
         }
-        else
-        {
-            layout = (RelativeLayout) LayoutInflater.from(context).inflate(R.xml.asset_unknown, parent, false);
-        }
-
-        TextView assetName = (TextView) layout.findViewById(R.id.assetname);
-        assetName.setText(asset.toString());
-
-        return layout;
+        return new BriefAssetViewFactory(context, asset, this).getView();
     }
 
     @Override
@@ -135,17 +94,28 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
         context.startService(intent);
     }
 
-    public void start_recurring_refresh()
+    public void sendAssetPatch(String url, String patch)
+    {
+        final Intent intent = new Intent(Intent.ACTION_SYNC, null, context, BridgeClientService.class);
+        intent.putExtra(BridgeClientService.RECEIVER_KEY, receiver);
+        intent.putExtra(BridgeClientService.COMMAND_KEY, BridgeClientService.PATCH_ASSET_COMMAND);
+        intent.putExtra(BridgeClientService.URL_KEY, url);
+        intent.putExtra(BridgeClientService.PATCH_KEY, patch);
+
+        context.startService(intent);
+    }
+
+    public void startRecurringRefresh()
     {
         handler.postDelayed(new Runnable() {
             public void run() {
                 refresh();
-                start_recurring_refresh();
+                startRecurringRefresh();
             }
         }, 2000);
     }
 
-    public void stop_recurring_refresh()
+    public void stopRecurringRefresh()
     {
         handler.removeCallbacksAndMessages(null);
     }
@@ -173,16 +143,5 @@ public class AssetsArrayAdapter extends ArrayAdapter<Asset> implements BridgeCli
         }
 
         notifyDataSetChanged();
-    }
-
-    private void sendAssetPatch(String url, String patch)
-    {
-        final Intent intent = new Intent(Intent.ACTION_SYNC, null, context, BridgeClientService.class);
-        intent.putExtra(BridgeClientService.RECEIVER_KEY, receiver);
-        intent.putExtra(BridgeClientService.COMMAND_KEY, BridgeClientService.PATCH_ASSET_COMMAND);
-        intent.putExtra(BridgeClientService.URL_KEY, url);
-        intent.putExtra(BridgeClientService.PATCH_KEY, patch);
-
-        context.startService(intent);
     }
 }
