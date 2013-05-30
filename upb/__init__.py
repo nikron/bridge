@@ -19,7 +19,7 @@ class UPBMessage():
     REPEAT_ONCE = 1
     REPEAT_TWICE = 2
     REPEAT_QUAD = 3
-    DEFAULT_REPEAT = REPEAT_QUAD
+    DEFAULT_REPEAT = REPEAT_Z
 
     MDID = 0x00
 
