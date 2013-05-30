@@ -70,9 +70,7 @@ class UPBMessage():
     def construct_checksum(self, body):
         j = sum(body)
         k = (1 << int.bit_length(j)) - j
-        #chk = bytes([bitstring.Bits(uint=k, length=8).uint])
-        #chk = int.to_bytes(k, 1, 'little')
-        chk = bytes.fromhex(hex(k)[-2:])
+        chk = bytes([k & 255]) #truncate to 8 bits
         return chk
 
     def construct_packet(self):
