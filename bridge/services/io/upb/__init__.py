@@ -46,8 +46,8 @@ class UPBService(IOService):
         logging.debug(packets)
 
     def _update_model_with_packet(self, packet):
-        upb_msg = UPBMessage.create_from_packet(packet)
-        self.update_model(str(upb_msg.source_id), upb_msg)
+        message = UPBMessage.create_from_packet(packet)
+        self.update_model(str(message.source_id), message)
 
     def _update_model_with_message(self, message):
-        self.update_model(str(upb_msg.destination_id), upb_msg)
+        self.update_model(str(message.destination_id), message)
