@@ -22,7 +22,7 @@ def main():
     test_dir = os.path.join(os.path.abspath(this_dir), 'tests')
 
     if opts.coverage and coverage:
-        cov = coverage.coverage(source=['bridge', 'insteon_protocol'])
+        cov = coverage.coverage(source=['bridge', 'insteon_protocol', 'upb'])
         cov.start()
 
     suite = unittest.defaultTestLoader.discover(test_dir, pattern="*test.py")
