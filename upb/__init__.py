@@ -138,11 +138,22 @@ class UPBSimpleLinkMessage(UPBSimpleMessage):
     def __init__(self, dest_id, **kwargs):
         super().__init__(destination_id = dest_id, link = True, **kwargs)
 
-class UPBSetRegisters(UPBMessage):
+class UPBGetRegisters(UPBSimpleMessage):
+    """
+    :arg:`num` Cannot be greater than 0x10
+    :type:`num` byte
+    """
+    MDID = mdid.GET_REGISTER_VALUE
+
+    def __init__(self, dest_id, reg, num, **kwargs):
+        super().__init__(dest_id, arguments = [reg, num], **kwargs)
+
+
+class UPBSetRegisters(UPBSimpleMessage):
     MDID = mdid.SET_REGISTER_VALUE
 
-    def __init__(self, reg, values, **kwargs):
-        super().__init__(arguments = [reg] + values, **kwargs)
+    def __init__(self, dest_id, reg, values, **kwargs):
+        super().__init__(dest_id, arguments = [reg] + values, **kwargs)
 
 class UPBActivateLink(UPBSimpleLinkMessage):
     MDID = mdid.ACTIVATE_LINK
