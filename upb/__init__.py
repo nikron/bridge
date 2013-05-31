@@ -113,8 +113,6 @@ class UPBMessage():
         ack_msg = ctl[11]
         trans_times = ctl[12:14].uint
 
-        #info['len'] = ctl[3:8].uint
-
         args = []
         for i in range(12, len(st) - 2, 2):
             args.append(int(st[i:i+2], 16))
