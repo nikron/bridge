@@ -9,13 +9,15 @@ import serial
 class UPBService(IOService):
     BAUD = 4800
 
-    GetDeviceName = upb.registers.RegisterDescription(upb.registers.DNAME)
+    DeviceName = upb.registers.RegisterDescription(upb.registers.DNAME)
+    RoomName = upb.registers.RegisterDescription(upb.registers.RNAME)
 
     def asset_status(self, real_id):
         pass
 
     def asset_info(self, real_id):
-        self._execute_message(GetDeviceName.create_get_registers(int(real_id)), False)
+        self._execute_message(self.DeviceName.create_get_registers(int(real_id)), False)
+        self._execute_message(self.RoomName.create_get_registers(int(real_id)), False)
 
     def read_io(self):
         message = read(self.io_fd)
