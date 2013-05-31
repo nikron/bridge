@@ -2,8 +2,8 @@
 An asset is the internal representation of a device.
 This file contains basic assets and the base class.
 """
-from bridge.services.model.states import States, BinaryStateCategory, IntegerRangeStateCategory
-from bridge.services.model.actions import Actions, action, get_actions
+from bridge.model.states import States, BinaryStateCategory, IntegerRangeStateCategory
+from bridge.model.actions import Actions, action, get_actions
 from bridge.services import BridgeMessage
 import logging
 import uuid
@@ -31,8 +31,11 @@ class Backing():
             msg = BridgeMessage.create_async(self.service, method, self.real_id, *args)
             self.bridge_messages[name] = msg
 
-    def get(self, message):
-        return self.bridge_messages[message]
+    def get(self, name):
+        """
+        Get message of :arg:`name`.
+        """
+        return self.bridge_messages[name]
 
 class Asset(metaclass = Actions):
     """

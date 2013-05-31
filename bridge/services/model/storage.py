@@ -1,7 +1,7 @@
 """
 Read and write a model to disk.
 """
-from bridge.services.model.model import Model
+from bridge.model import Model
 
 import os
 import shutil

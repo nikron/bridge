@@ -2,7 +2,7 @@
 Idiom for model to communicate with insteon IO services.
 """
 from bridge.services.model.idiom import ModelIdiom, IdiomError
-from bridge.services.model.assets import BlankAsset, OnOffAsset, DimmerAsset
+from bridge.model.assets import BlankAsset, OnOffAsset, DimmerAsset
 
 from insteon_protocol.command.command_bytes import TURNONFAST, TURNOFF, LIGHTSTATUSREQUEST, TURNONLEVEL
 from insteon_protocol.linc.lincs import LincMap

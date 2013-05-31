@@ -1,5 +1,5 @@
-from bridge.services.model.assets import Asset, Backing
-from bridge.services.model.states import States, IntegerRangeStateCategory, BinaryStateCategory
+from bridge.model.assets import Asset, Backing
+from bridge.model.states import States, IntegerRangeStateCategory, BinaryStateCategory
 
 class OnkyoTXNR609(Asset):
 

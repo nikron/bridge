@@ -1,5 +1,5 @@
 from bridge.services.model.idiom import ModelIdiom, IdiomError
-from bridge.services.model.assets import OnOffAsset
+from bridge.model.assets import OnOffAsset
 
 from upb import mdid, registers, UPBMessage
 from upb.device_info import UPBDeviceInfo

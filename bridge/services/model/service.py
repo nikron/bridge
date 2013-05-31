@@ -7,7 +7,7 @@ from select import select
 from bridge.services import BridgeService, MODEL
 from bridge.services.model.storage import ModelStorage
 from bridge.services.model.idiom import IdiomError
-from bridge.services.model.actions import ActionError
+from bridge.model.actions import ActionError
 
 class ModelService(BridgeService):
     """

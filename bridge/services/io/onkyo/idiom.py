@@ -1,5 +1,5 @@
 from bridge.services.model.idiom import ModelIdiom, IdiomError
-from bridge.services.model.assets.onkyo_assets import OnkyoTXNR609
+from bridge.model.assets.onkyo_assets import OnkyoTXNR609
 
 class OnkyoIdiom(ModelIdiom):
     def create_asset(self, name, real_id, product_name):
