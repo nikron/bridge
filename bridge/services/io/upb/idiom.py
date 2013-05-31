@@ -29,10 +29,8 @@ def change_main_level(asset, update):
 DeviceName = registers.RegisterDescription(registers.DNAME)
 RoomName = registers.RegisterDescription(registers.RNAME)
 def set_information(asset, update):
-    if DeviceName.is_report(update):
-        asset.name = asset.name + DeviceName.make_string(update)
     if RoomName.is_report(update):
-        asset.name =  RoomName.make_string(update) + asset.name
+        asset.name =  RoomName.make_string(update)
 
 MDID_CHANGERS = [None for _ in range(0, 0x94)]
 MDID_CHANGERS[mdid.DEVICE_STATE] = change_main_level
