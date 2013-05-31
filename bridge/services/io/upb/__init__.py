@@ -1,6 +1,7 @@
 from bridge.services.io import IOService
 from upb import UPBMessage, UPBGoToLevel
 from upb.pim import read, execute_message, PIMMessage
+import upb.registers
 
 import logging
 import serial
@@ -8,11 +9,13 @@ import serial
 class UPBService(IOService):
     BAUD = 4800
 
+    GetDeviceName = upb.registers.RegisterDescription(upb.registers.DNAME)
+
     def asset_status(self, real_id):
         pass
 
     def asset_info(self, real_id):
-        pass
+        self._execute_message(GetDeviceName.create_get_registers(int(real_id)), False)
 
     def read_io(self):
         message = read(self.io_fd)
@@ -20,7 +23,7 @@ class UPBService(IOService):
             self._update_model_with_packet(message.packet)
 
     def set_light_level(self, real_id, level):
-        self._execute_message(UPBGoToLevel(int(real_id), level))
+        self._execute_message(UPBGoToLevel(int(real_id), level), True)
 
     def turn_off(self, real_id):
         self.set_light_level(real_id, 0)
@@ -37,11 +40,11 @@ class UPBService(IOService):
             logging.exception("Could not create the serial connection.")
             return None
 
-    def _execute_message(self, message):
+    def _execute_message(self, message, relay):
         success, packets, _ = execute_message(self.io_fd, message)
         logging.debug("Done executing UPBMessage {0}.".format(str(message)))
 
-        if success:
+        if success and relay:
             self._update_model_with_message(message)
         logging.debug(packets)
 
