@@ -80,7 +80,8 @@ class UPBMessage():
         chk = self.construct_checksum(body)
         packet = bytes(body) + chk
 
-        return binascii.hexlify(packet)
+        return packet
+
 
     def construct_ascii_packet(self):
         """
@@ -88,11 +89,8 @@ class UPBMessage():
         that the PIM takes in the packet in ASCII form, not the actual
         representation on the wire.
         """
-        if not self.dirty:
-            return self.ascii_packet
-        else:
-            self.ascii_packet = self.construct_packet()
-            return self.ascii_packet
+        self.ascii_packet = binascii.hexlify(self.construct_packet())
+        return self.ascii_packet
 
     def __str__(self):
         return str(vars(self))

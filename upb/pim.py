@@ -1,39 +1,44 @@
 import logging
 
-def read(serial):
+def read(ser):
     """
     Read a response from the PIM.
     """
     reading = True
+    timing_out = ser.getTimeout()
     buf = b''
 
     while reading:
-        byte = serial.read()
+        byte = ser.read()
+
         if byte == b'\r':
             reading = False
+        elif timing_out is not None and byte == b'':
+            return None
+
         buf += byte
 
     return PIMMessage(buf)
 
-def write_message(serial, message):
+def write_message(ser, message):
     """
     Write a UPBMessage to a PIM.
     """
     ascii_packet = message.construct_ascii_packet()
 
-    serial.write(b'\x14')
-    serial.write(ascii_packet)
-    serial.write(b'\r')
+    ser.write(b'\x14')
+    ser.write(ascii_packet)
+    ser.write(b'\r')
 
-def execute_message(serial, message):
+def execute_message(ser, message):
     tandem_messages = []
     tandem_reports = []
     successful = False
     waiting = True
-    write_message(serial, message)
+    write_message(ser, message)
 
     while waiting:
-        resp = read(serial)
+        resp = read(ser)
         resp_type = resp.type
         logging.debug("Read in response of type {0}.".format(str(resp_type)))
 

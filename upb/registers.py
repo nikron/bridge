@@ -1,4 +1,4 @@
-from upb import UPBSetRegisters, UPBGetRegisters
+from upb import UPBSetRegisters, UPBGetRegisters, mdid
 
 NID = (0x00, 1)
 UID = (0x01, 1)
@@ -18,24 +18,26 @@ class RegisterDescription():
         self.start = reg_tuple[0]
         self.amount = reg_tuple[1]
 
-    def create_set_registers(self, dest_id, _bytes):
+    def create_set_registers(self, dest_id, _bytes, **kwargs):
         if len(_bytes) > self.amount:
             raise ValueError("Can only set up to {1} bytes.".format(self.amount))
 
-        return UPBSetRegisters(dest_id, self.start, list(_bytes))
+        return UPBSetRegisters(dest_id, self.start, list(_bytes), **kwargs)
 
-    def create_get_registers(self, dest_id):
-        return UPBGetRegisters(dest_id, self.start, self.amount)
+    def create_get_registers(self, dest_id, **kwargs):
+        return UPBGetRegisters(dest_id, self.start, self.amount, **kwargs)
 
     def is_report(self, message):
+        if message.MDID != mdid.REGISTER_VALUES:
+            return False
+
         try:
             if message.arguments[0] == self.start and  len(message.arguments) -1 == self.amount:
                 return True
-
+            else:
+                return False
         except IndexError:
             return False
-
-        return False
 
     @staticmethod
     def make_string(message):
