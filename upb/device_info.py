@@ -3,7 +3,8 @@ Attempt to retrieve all information about a device
 into a nice object from the device.
 """
 
-from upb import pim, registers, UPBMessage, mdid
+from upb import pim, registers, UPBMessage
+import logging
 
 class UPBDeviceInfo():
     RETRY_TIME = 4
@@ -31,6 +32,7 @@ class UPBDeviceInfo():
         saved_timeout = ser.getTimeout()
         ser.setTimeout(cls.RETRY_TIME)
 
+        logging.debug("Retrieving first chunk for {0}.".format(str(device_id)))
         chunk = cls._retrieve_chunk(ser, device_id, 0x00)
         if chunk is None:
             return None
@@ -46,6 +48,7 @@ class UPBDeviceInfo():
         device_info.fwver = (chunk[10] << 8) + chunk[11]
         device_info.sernum = (chunk[12] << 24) + (chunk[13] << 16) + (chunk[14] << 8) + chunk[15]
 
+        logging.debug("Trying to get names for {0}.".format(str(device_id)))
         for name, (chunk, chunk_size) in zip(['nname', 'rname', 'dname'], [registers.NNAME, registers.RNAME, registers.DNAME]):
             chunk = cls._retrieve_chunk(ser, device_id, chunk, chunk_size)
             if chunk is None:
@@ -54,6 +57,8 @@ class UPBDeviceInfo():
                 setattr(device_info, name, bytes(chunk))
 
         ser.setTimeout(saved_timeout)
+
+        return device_info
 
     @staticmethod
     def _retrieve_chunk(ser, device_id, chunk_start, chunk_size = 16):
