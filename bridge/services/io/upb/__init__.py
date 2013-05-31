@@ -49,8 +49,8 @@ class UPBService(IOService):
         if success and relay:
             self._update_model_with_message(message)
 
-        for packet in packets:
-            self._update_model_with_message(UPBMessage.create_from_packet(packet))
+        #for packet in packets:
+        #    self._update_model_with_packet(packet)
 
     def _update_model_with_packet(self, packet):
         message = UPBMessage.create_from_packet(packet)
