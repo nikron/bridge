@@ -34,3 +34,4 @@ def set_information(asset, update):
 MDID_CHANGERS = [None for _ in range(0, 0x94)]
 MDID_CHANGERS[mdid.DEVICE_STATE] = change_main_level
 MDID_CHANGERS[mdid.GOTO] = change_main_level
+MDID_CHANGERS[mdid.REGISTER_VALUES] = set_information
