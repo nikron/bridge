@@ -66,9 +66,7 @@ class UPBDeviceInfo():
 
         tries = 0
         while tries < retry:
-            success, _, _  = pim.execute_message(ser, message)
-            if not success:
-                return None
+            pim.write_message(ser, message)
 
             pim_message = True
             while pim_message is not None:

@@ -29,9 +29,9 @@ class UPBMessage():
         self.link = False
         self.source_id = UPBMessage.DEFAULT_SOURCE_ID
         self.transmission_times = UPBMessage.DEFAULT_TRANSMISSION_TIMES
-        self.ack_pulse = True
+        self.ack_pulse = False
         self.id_pulse = False
-        self.ack_message = False
+        self.ack_message = True
         self.repeat = UPBMessage.REPEAT_Z
         self.ascii_packet = b''
         self.arguments = []
@@ -97,7 +97,6 @@ class UPBMessage():
     def create_from_packet(cls, packet):
         st = packet.decode('ascii')
         ctl = bitstring.Bits(hex=st[0:4])
-        print(ctl.bin)
 
         net = int(st[4:6], 16)
         dest = int(st[6:8], 16)
