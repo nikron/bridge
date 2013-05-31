@@ -1,6 +1,7 @@
 from bridge.services.io import IOService
 from upb import UPBMessage, UPBGoToLevel
 from upb.pim import read, execute_message, PIMMessage
+from upb.device_info import UPBDeviceInfo
 import upb.registers
 
 import logging
@@ -15,7 +16,10 @@ class UPBService(IOService):
         pass
 
     def asset_info(self, real_id):
-        self._execute_message(self.RoomName.create_get_registers(int(real_id)), False)
+        device_info = UPBDeviceInfo.retrieve_information(ser, int(real_id))
+        logging.debug(device_info)
+        if device_info is not None:
+            loggin.debug(str(vars(device_info)))
 
     def read_io(self):
         message = read(self.io_fd)
