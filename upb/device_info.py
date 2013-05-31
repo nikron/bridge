@@ -7,9 +7,6 @@ from upb import pim, registers, UPBMessage
 import logging
 
 class UPBDeviceInfo():
-    RETRY_TIME = 4
-    RETRY_NUM = 4
-
     def __init__(self, **kwargs):
         self.nid = None
         self.uid = None
@@ -28,13 +25,14 @@ class UPBDeviceInfo():
             setattr(self, kwarg, kwargs[kwarg])
 
     @classmethod
-    def retrieve_information(cls, ser, device_id):
+    def retrieve_information(cls, ser, device_id, timeout = 4, retry = 4):
         saved_timeout = ser.getTimeout()
-        ser.setTimeout(cls.RETRY_TIME)
+        ser.setTimeout(timeout)
 
         logging.debug("Retrieving first chunk for {0}.".format(str(device_id)))
-        chunk = cls._retrieve_chunk(ser, device_id, 0x00)
+        chunk = cls._retrieve_chunk(ser, device_id, 0x00, retry)
         if chunk is None:
+            ser.setTimeout(saved_timeout)
             return None
 
         device_info = cls()
@@ -50,8 +48,9 @@ class UPBDeviceInfo():
 
         logging.debug("Trying to get names for {0}.".format(str(device_id)))
         for name, (chunk, chunk_size) in zip(['nname', 'rname', 'dname'], [registers.NNAME, registers.RNAME, registers.DNAME]):
-            chunk = cls._retrieve_chunk(ser, device_id, chunk, chunk_size)
+            chunk = cls._retrieve_chunk(ser, device_id, chunk, retry, chunk_size)
             if chunk is None:
+                ser.setTimeout(saved_timeout)
                 return None
             else:
                 setattr(device_info, name, bytes(chunk))
@@ -61,12 +60,12 @@ class UPBDeviceInfo():
         return device_info
 
     @staticmethod
-    def _retrieve_chunk(ser, device_id, chunk_start, chunk_size = 16):
+    def _retrieve_chunk(ser, device_id, chunk_start, retry, chunk_size = 16):
         reg_des = registers.RegisterDescription((chunk_start, chunk_size))
         message = reg_des.create_get_registers(device_id)
 
         tries = 0
-        while tries < UPBDeviceInfo.RETRY_NUM:
+        while tries < retry:
             success, _, _  = pim.execute_message(ser, message)
             if not success:
                 return None
@@ -76,6 +75,7 @@ class UPBDeviceInfo():
                 pim_message = pim.read(ser)
                 if pim_message and pim_message.type == pim.PIMMessage.UPBMESSAGE:
                     message = UPBMessage.create_from_packet(pim_message.packet)
+                    logging.debug(str(message))
                     if reg_des.is_report(message):
                         return message.arguments[1:]
 

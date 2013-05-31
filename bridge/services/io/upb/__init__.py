@@ -10,16 +10,15 @@ import serial
 class UPBService(IOService):
     BAUD = 4800
 
-    RoomName = upb.registers.RegisterDescription(upb.registers.RNAME)
-
     def asset_status(self, real_id):
         pass
 
     def asset_info(self, real_id):
-        device_info = UPBDeviceInfo.retrieve_information(ser, int(real_id))
-        logging.debug(device_info)
+        device_info = UPBDeviceInfo.retrieve_information(self.io_fd, int(real_id))
         if device_info is not None:
-            loggin.debug(str(vars(device_info)))
+            self.update_model(real_id, device_info)
+        else:
+            logging.debug("Could not retrieve info from {0}.".format(real_id))
 
     def read_io(self):
         message = read(self.io_fd)

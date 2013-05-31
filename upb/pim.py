@@ -40,7 +40,7 @@ def execute_message(ser, message):
     while waiting:
         resp = read(ser)
         resp_type = resp.type
-        logging.debug("Read in response of type {0}.".format(str(resp_type)))
+        logging.debug("Read in response of type {0}.".format(str(bytes([resp_type]))))
 
         if resp_type == PIMMessage.ACK:
             successful = True

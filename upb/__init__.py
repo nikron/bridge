@@ -31,9 +31,8 @@ class UPBMessage():
         self.transmission_times = UPBMessage.DEFAULT_TRANSMISSION_TIMES
         self.ack = True
         self.id_pulse = False
-        self.ack_msg = False
-        self.repeat = UPBMessage.DEFAULT_REPEAT
-        self.reply_repeat = False
+        self.ack_msg = True
+        self.repeat = UPBMessage.REPEAT_Z
         self.dirty = True
         self.ascii_packet = b''
         self.arguments = []
