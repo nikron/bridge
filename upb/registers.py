@@ -39,5 +39,5 @@ class RegisterDescription():
 
     @staticmethod
     def make_string(message):
-        return bytes(message.arguments[1:]).decode().trim()
+        return bytes(message.arguments[1:]).decode().strip()
 

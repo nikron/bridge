@@ -15,7 +15,7 @@ class UPBService(IOService):
         pass
 
     def asset_info(self, real_id):
-        self._execute_message(GetDeviceName.create_get_registers(int(real_id)), False)
+        self._execute_message(self.GetDeviceName.create_get_registers(int(real_id)), False)
 
     def read_io(self):
         message = read(self.io_fd)
