@@ -2,9 +2,9 @@
 Test assets.
 """
 import unittest
-from bridge.services.model.states import States, Trigger
-from bridge.services.model.assets import OnOffAsset
-from bridge.services.model.actions import perform_action
+from bridge.model.states import States, Trigger
+from bridge.model.assets import OnOffAsset
+from bridge.model.actions import perform_action
 
 class TestAsset(unittest.TestCase):
     def setUp(self):

@@ -1,5 +1,5 @@
 import unittest
-from bridge.services.model.states import States, BinaryStateCategory, Trigger
+from bridge.model.states import States, BinaryStateCategory, Trigger
 
 class TestState(unittest.TestCase):
     def setUp(self):

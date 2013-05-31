@@ -2,8 +2,8 @@
 Test the model.
 """
 import unittest
-from bridge.services.model.model import Model
-from bridge.services.model.assets import BlankAsset
+from bridge.model import Model
+from bridge.model.assets import BlankAsset
 
 class TestModel(unittest.TestCase):
     def setUp(self):

@@ -1,6 +1,6 @@
 import unittest
 
-from bridge.services.model import states
+from bridge.model import states
 
 class TestState(unittest.TestCase):
     def setUp(self):

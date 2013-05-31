@@ -4,7 +4,7 @@ Test the insteon idiom functionality.
 import unittest
 
 from bridge.services.io.insteon.idiom import InsteonIdiom
-from bridge.services.model.actions import perform_action
+from bridge.model.actions import perform_action
 
 class TestInsteonIdiom(unittest.TestCase):
     def setUp(self):

@@ -3,7 +3,7 @@ Test actions, by making a class with it as a metaclass
 and performing the action.
 """
 import unittest
-from bridge.services.model.actions import Actions, action, perform_action, get_actions, get_action_information
+from bridge.model.actions import Actions, action, perform_action, get_actions, get_action_information
 
 class TestActions(unittest.TestCase):
     def setUp(self):
