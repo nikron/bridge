@@ -29,11 +29,10 @@ class UPBMessage():
         self.link = False
         self.source_id = UPBMessage.DEFAULT_SOURCE_ID
         self.transmission_times = UPBMessage.DEFAULT_TRANSMISSION_TIMES
-        self.ack = True
+        self.ack_pulse = True
         self.id_pulse = False
-        self.ack_msg = True
+        self.ack_message = False
         self.repeat = UPBMessage.REPEAT_Z
-        self.dirty = True
         self.ascii_packet = b''
         self.arguments = []
 
@@ -51,9 +50,9 @@ class UPBMessage():
         j = 3 + (5 - int.bit_length(self.length))
         CTL[j:8] = bin(self.length)
 
-        CTL[9] = self.ack_msg
+        CTL[9] = self.ack_pulse
         CTL[10] = self.id_pulse
-        CTL[11] = self.ack
+        CTL[11] = self.ack_message
         CTL[12:14] = self.transmission_times
         CTL[14] = False
         CTL[15] = False
@@ -98,6 +97,7 @@ class UPBMessage():
     def create_from_packet(cls, packet):
         st = packet.decode('ascii')
         ctl = bitstring.Bits(hex=st[0:4])
+        print(ctl.bin)
 
         net = int(st[4:6], 16)
         dest = int(st[6:8], 16)
@@ -115,7 +115,7 @@ class UPBMessage():
             args.append(int(st[i:i+2], 16))
 
         upb_msg = cls(network_id = net, destination_id = dest, source_id = source,
-                link = link, repeat = repeat, ack = ack, id_pulse = id_pul,
+                link = link, repeat = repeat, ack_pulse = ack, id_pulse = id_pul,
                 ack_message = ack_msg, transmission_times = trans_times, arguments = args)
 
         upb_msg.MDID = _mdid
