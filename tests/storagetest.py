@@ -4,7 +4,7 @@ import os
 from bridge.model import Model
 from bridge.services.io.insteon.idiom import InsteonIdiom
 from bridge.services.model.storage import ModelStorage
-from bridge.model.assets import BlankAsset, OnOffAsset
+from bridge.model.assets.basic_assets import BlankAsset, OnOffAsset
 
 class TestStorage(unittest.TestCase):
     def setUp(self):

@@ -13,7 +13,7 @@ class OnkyoIdiom(ModelIdiom):
         The eisp driver is not general, it just sends update tuples
         in a way that translates into a transition.
         """
-        asset.transition(*update)
+        asset.change(*update)
 
     def guess_asset(self, real_id, update):
         return OnkyoTXNR609("Receiver", real_id, self.service, "Onkyo TX-NR609"), True

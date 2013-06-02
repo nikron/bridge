@@ -3,7 +3,7 @@ Test the model.
 """
 import unittest
 from bridge.model import Model
-from bridge.model.assets import BlankAsset
+from bridge.model.assets.basic_assets import BlankAsset
 
 class TestModel(unittest.TestCase):
     def setUp(self):

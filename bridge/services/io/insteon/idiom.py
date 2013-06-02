@@ -2,7 +2,7 @@
 Idiom for model to communicate with insteon IO services.
 """
 from bridge.services.model.idiom import ModelIdiom, IdiomError
-from bridge.model.assets import BlankAsset, OnOffAsset, DimmerAsset
+from bridge.model.assets.basic_assets import BlankAsset, OnOffAsset, DimmerAsset
 
 from insteon_protocol.command.command_bytes import TURNONFAST, TURNOFF, LIGHTSTATUSREQUEST, TURNONLEVEL
 from insteon_protocol.linc.lincs import LincMap
@@ -98,7 +98,7 @@ class InsteonIdiom(ModelIdiom):
         """
         try:
             category, state = LINCMAPPING.get_with_command(asset.get_product_name(), update.command, update.relative)
-            asset.transition(category, state)
+            asset.change(category, state)
 
         except KeyError:
             raise IdiomError("Update not implemented.")
@@ -130,14 +130,14 @@ class InsteonIdiom(ModelIdiom):
 #Methods to convert variable responses to transistions.
 def byte_to_range(cmd2):
     """
-    Convert a byte to range transition.
+    Convert a byte to range change.
     """
     return 'main', ord(cmd2)
 
 def bytes_to_range(cmd_bytes):
     """
     Convert a cmds_bytes (from a relative light status request)
-    to a range transition.
+    to a range change.
     """
     return 'main', ord(cmd_bytes.cmd2)
 
@@ -145,10 +145,10 @@ def bytes_to_bool(cmd_bytes):
     """
     LincMap will call this function on a range of command bytes.
 
-    :param cmd_bytes: Bytes object to find a state transition from
+    :param cmd_bytes: Bytes object to find a attribute change from
     :type cmd_byts: CMDS
 
-    :return: A tuple representing a state transition
+    :return: A tuple representing a attribute change.
     :rtype: (str, bool)
     """
     logging.debug("Using the to figure out status requests.")
@@ -157,7 +157,7 @@ def bytes_to_bool(cmd_bytes):
     else:
         return 'main', True
 
-#mapping of commands to asset transitions
+#mapping of commands to asset change
 LINCMAPPING = LincMap()
 LINCMAPPING.register_with_product('DimmerLinc V2', InsteonIdiom.create_dimmer)
 LINCMAPPING.register_with_command('DimmerLinc V2', TURNONLEVEL, byte_to_range)

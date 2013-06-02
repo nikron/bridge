@@ -1,21 +1,15 @@
 import unittest
-from bridge.model.states import States, BinaryStateCategory, Trigger
+from bridge.model.attributes import Attributes, BinaryAttribute
 
 class TestState(unittest.TestCase):
     def setUp(self):
-        self.flipped = False
+        def flip(attribute):
+            return lambda : attribute.change('bams', True)
 
-        def flip():
-            self.flipped = True
+        self.attributes = Attributes(BinaryAttribute('bams'))
+        self.attributes.set_control('bams', True, flip(self.attributes))
 
-        trigger = Trigger('bams', True, flip)
-        self.state = States(BinaryStateCategory('bams'))
-        self.state.add_trigger(trigger)
-
-    def test_flip_from_transition(self):
-        self.state.transition('bams', True)
-        self.assertTrue(self.flipped)
-
-    def test_flip_from_sudden(self):
-        self.state.sudden_transition('bams', True)
-        self.assertFalse(self.flipped)
+    def test_flip_from_control(self):
+        control = self.attributes.get_control('bams', True)
+        control()
+        self.assertTrue(self.attributes.attributes['bams'].current_state)

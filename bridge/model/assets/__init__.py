@@ -2,16 +2,15 @@
 An asset is the internal representation of a device.
 This file contains basic assets and the base class.
 """
-from bridge.model.states import States, BinaryStateCategory, IntegerRangeStateCategory
+from bridge.model.attributes import Attributes
 from bridge.model.actions import Actions, action, get_actions
 from bridge.services import BridgeMessage
 import logging
 import uuid
 
-
 class Backing():
     """
-    Backing attributes of an Asset.
+    Backing strings and :class:`BridgeMessage`s of an Asset.
     """
 
     def __init__(self, real_id, service, product_name, **message_args):
@@ -42,20 +41,20 @@ class Asset(metaclass = Actions):
     Represent a physical device, such as a Keypadlinc.
     """
 
-    def __init__(self, name, states, backing):
-        self.states = states
+    def __init__(self, name, attributes, backing):
         self.name = name
+        self.attributes = attributes
         self.backing = backing
         self.backing.add_messages(get_status = ('asset_info', []))
 
         self.uuid = uuid.uuid1()
-        self.failed_transitions = []
+        self.failed_changes = []
 
-    def get_control_message(self, category, state):
+    def get_control_message(self, attribute, state):
         """
-        Get the control message for a category and state.
+        Get the control message for a attribute and state.
         """
-        return self.states.get_control(category, state)
+        return self.attributes.get_control(attribute, state)
 
     def get_product_name(self):
         """
@@ -75,12 +74,6 @@ class Asset(metaclass = Actions):
         """
         return self.backing.service
 
-    def add_trigger(self, trigger):
-        """
-        Add trigger to on state change.
-        """
-        self.states.add_trigger(trigger)
-
     def serializable(self):
         """
         Return a form of the class that is easy to serialize (with JSON etc)
@@ -91,16 +84,16 @@ class Asset(metaclass = Actions):
         ser['uuid'] = self.uuid
         ser['real id'] = self.get_real_id()
         ser['actions'] = get_actions(self)
-        ser['state'] =  self.states.serializable()
+        ser['state'] =  self.attributes.serializable()
 
         return ser
 
-    def transition(self, category, state):
+    def change(self, attribute, state):
         """
-        Change the asset state to state.
+        Change the state of an attribute to a state.
         """
-        logging.debug("Going to state ({0},{1})".format(category, state))
-        return self.states.transition(category, state)
+        logging.debug("Going to state ({0}, {1})".format(attribute, state))
+        return self.attributes.change(attribute, state)
 
     @action("Get Status")
     def get_status(self):
@@ -109,73 +102,10 @@ class Asset(metaclass = Actions):
         """
         return self.backing.bridge_messages['get_status']
 
-    def _set_control_passthrough(self, category, service_method):
+    def _set_control_passthrough(self, attribute, service_method):
         """
         Sets a control function to simply call a method on an IO
         service named service_method.
         """
         func = lambda x : BridgeMessage.create_async(self.get_service(), service_method, self.get_real_id(), x)
-        self.states.set_default_control(category, func)
-
-
-class BlankAsset(Asset):
-    """
-    An asset placeholder for when you know something exists but you don't
-    know what it is.
-    """
-
-    def __init__(self, real_id, service):
-        super().__init__("", States(), Backing(real_id, service, ""))
-
-    def transition(self, category, state):
-        self.failed_transitions.append((category, state))
-
-        return False
-
-class OnOffAsset(Asset):
-    """
-    A device that is either simply on or off.
-    """
-
-    def __init__(self, name, real_id, service, product_name):
-        states = States(BinaryStateCategory('main'))
-        backing = Backing(real_id, service, product_name, on = ('turn_on', []), off = ('turn_off', []))
-        super().__init__(name, states, backing)
-        self.states.set_control('main', True, self.backing.get('on'))
-        self.states.set_control('main', False, self.backing.get('off'))
-
-    @action("Turn On")
-    def turn_on(self):
-        """
-        Action to turn on the asset.
-        """
-        return self.backing.get('on')
-
-    @action("Turn Off")
-    def turn_off(self):
-        """
-        Action to turn off the asset.
-        """
-        return self.backing.get('off')
-
-class DimmerAsset(Asset):
-    """
-    Class that represents a dimmable device.
-    """
-
-    def __init__(self, name, real_id, service, product_name):
-        states = States(IntegerRangeStateCategory('main', 0, 256))
-        backing = Backing(real_id, service, product_name)
-        super().__init__(name, states, backing)
-        self._set_control_passthrough('main', 'set_light_level')
-
-class VolumeAsset(Asset):
-    """
-    Class that represents a devicec with volume.
-    """
-
-    def __init__(self, name, real_id, service, product_name):
-        states = States(IntegerRangeStateCategory('main', 0, 101))
-        backing = Backing(real_id, service, product_name)
-        super().__init__(name, states, backing)
-        self._set_control_passthrough('main', 'set_volume')
+        self.attributes.set_default_control(attribute, func)
