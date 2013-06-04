@@ -4,7 +4,7 @@ Test the model service.
 import unittest
 
 from bridge.services.model.service import ModelService
-from bridge.services.io.insteon.idiom import InsteonIdiom
+from bridge.insteon.idiom import InsteonIdiom
 from multiprocessing import Pipe
 
 class TestModelService(unittest.TestCase):

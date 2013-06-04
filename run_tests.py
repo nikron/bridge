@@ -2,6 +2,7 @@
 import os.path
 import unittest
 import argparse
+import logging
 try:
     import coverage
 except ImportError:
@@ -20,6 +21,9 @@ def main():
 
     this_dir = os.path.dirname(__file__)
     test_dir = os.path.join(os.path.abspath(this_dir), 'tests')
+
+    root = logging.getLogger()
+    root.setLevel(logging.CRITICAL)
 
     if opts.coverage and coverage:
         cov = coverage.coverage(source=['bridge', 'insteon_protocol', 'upb'])

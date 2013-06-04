@@ -3,7 +3,7 @@ Test the insteon idiom functionality.
 """
 import unittest
 
-from bridge.services.io.insteon.idiom import InsteonIdiom
+from bridge.insteon.idiom import InsteonIdiom
 from bridge.model.actions import perform_action
 
 class TestInsteonIdiom(unittest.TestCase):

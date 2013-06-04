@@ -30,9 +30,9 @@ class UPBIdiom(ModelIdiom):
 
 def change_main_level(asset, update):
     if update.arguments[0] > 0:
-        asset.transition('main', True)
+        asset.change('main', True)
     else:
-        asset.transition('main', False)
+        asset.change('main', False)
 
 MDID_CHANGERS = [None for _ in range(0, 0x94)]
 MDID_CHANGERS[mdid.DEVICE_STATE] = change_main_level

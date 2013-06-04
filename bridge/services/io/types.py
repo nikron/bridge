@@ -1,12 +1,12 @@
 """
 Types of io services, and their idioms.  Used for configuration.
 """
-from bridge.services.io.insteon import InsteonIMService
-from bridge.services.io.insteon.idiom import InsteonIdiom
-from bridge.services.io.onkyo import OnkyoReceiverService
-from bridge.services.io.onkyo.idiom import OnkyoIdiom
-from bridge.services.io.upb import UPBService
-from bridge.services.io.upb.idiom import UPBIdiom
+from bridge.insteon.service import InsteonIMService
+from bridge.insteon.idiom import InsteonIdiom
+from bridge.onkyo.service import OnkyoReceiverService
+from bridge.onkyo.idiom import OnkyoIdiom
+from bridge.upb.service import UPBService
+from bridge.upb.idiom import UPBIdiom
 
 class IOConfig():
     """
