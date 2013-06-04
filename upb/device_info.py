@@ -7,9 +7,9 @@ from upb import pim, registers, UPBMessage
 import logging
 
 class UPBDeviceInfo():
-    def __init__(self, **kwargs):
+    def __init__(self, uid, **kwargs):
         self.nid = None
-        self.uid = None
+        self.uid = uid
         self.npw = None
         self.ubop = None
         self.upbver = None
@@ -24,40 +24,30 @@ class UPBDeviceInfo():
         for kwarg in kwargs:
             setattr(self, kwarg, kwargs[kwarg])
 
-    @classmethod
-    def retrieve_information(cls, ser, device_id, timeout = 4, retry = 4):
+    def retrieve_information(self, ser, timeout = 4, retry = 4):
         saved_timeout = ser.getTimeout()
         ser.setTimeout(timeout)
 
         logging.debug("Retrieving first chunk for {0}.".format(str(device_id)))
-        chunk = cls._retrieve_chunk(ser, device_id, 0x00, retry)
-        if chunk is None:
-            ser.setTimeout(saved_timeout)
-            return None
-
-        device_info = cls()
-        device_info.nid = chunk[0]
-        device_info.uid = chunk[1]
-        device_info.npw = chunk[2:4]
-        device_info.ubop = chunk[4]
-        device_info.upbver = chunk[5]
-        device_info.mid = (chunk[6] << 8) + chunk[7]
-        device_info.pid = (chunk[8] << 8) + chunk[9]
-        device_info.fwver = (chunk[10] << 8) + chunk[11]
-        device_info.sernum = (chunk[12] << 24) + (chunk[13] << 16) + (chunk[14] << 8) + chunk[15]
+        chunk = self._retrieve_chunk(ser, self.uid, 0x00, retry)
+        if chunk is not None:
+            self.nid = chunk[0]
+            self.uid = chunk[1]
+            self.npw = chunk[2:4]
+            self.ubop = chunk[4]
+            self.upbver = chunk[5]
+            self.mid = (chunk[6] << 8) + chunk[7]
+            self.pid = (chunk[8] << 8) + chunk[9]
+            self.fwver = (chunk[10] << 8) + chunk[11]
+            self.sernum = (chunk[12] << 24) + (chunk[13] << 16) + (chunk[14] << 8) + chunk[15]
 
         logging.debug("Trying to get names for {0}.".format(str(device_id)))
         for name, (chunk, chunk_size) in zip(['nname', 'rname', 'dname'], [registers.NNAME, registers.RNAME, registers.DNAME]):
-            chunk = cls._retrieve_chunk(ser, device_id, chunk, retry, chunk_size)
-            if chunk is None:
-                ser.setTimeout(saved_timeout)
-                return None
-            else:
+            chunk = cls._retrieve_chunk(ser, self.uid, chunk, retry, chunk_size)
+            if chunk is not None:
                 setattr(device_info, name, bytes(chunk))
 
         ser.setTimeout(saved_timeout)
-
-        return device_info
 
     @staticmethod
     def _retrieve_chunk(ser, device_id, chunk_start, retry, chunk_size = 16):

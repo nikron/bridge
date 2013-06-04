@@ -14,7 +14,8 @@ class UPBService(IOService):
         pass
 
     def asset_info(self, real_id):
-        device_info = UPBDeviceInfo.retrieve_information(self.io_fd, int(real_id))
+        device_info = UPBDeviceInfo(int(real_id))
+        device_info.retrieve_info(self.io_fd)
         if device_info is not None:
             self.update_model(real_id, device_info)
         else:
