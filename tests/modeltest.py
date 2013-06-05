@@ -22,5 +22,5 @@ class TestModel(unittest.TestCase):
         uuid = self.model.get_asset_uuid('upb', 'blah')
         info = self.model.serializable_asset_info(uuid)
 
-        self.assertEqual(info['asset type'], 'BlankAsset')
+        self.assertEqual(info['product'], '')
         self.assertEqual(info['name'], '')

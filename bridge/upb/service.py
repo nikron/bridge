@@ -56,7 +56,27 @@ class UPBService(IOService):
 
     def _update_model_with_packet(self, packet):
         message = UPBMessage.create_from_packet(packet)
-        self.update_model(str(message.source_id), message)
+        self._update_model_with_message(message)
 
     def _update_model_with_message(self, message):
-        self.update_model(str(message.destination_id), message)
+        self.update_model(_upb_id_to_real_id(message.network_id, message.destination_id), message)
+
+def _real_id_to_upb_id(real_id):
+    ids = real_id.split('.')
+    return int(ids[0]), int(ids[1])
+
+def _upb_id_to_real_id(network_id, destination_id):
+    return network_id + '.' + destination_id
+
+def _check_real_id(real_id):
+    if type(real_id) is not str:
+        return False
+    try:
+        net, dest = _real_id_to_upb_id(real_id)
+        if 0 <= net < 256 and 0 <= dest < 256:
+            return True
+        else:
+            return False
+
+    except (ValueError, IndexError):
+        return False

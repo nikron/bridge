@@ -80,11 +80,11 @@ class Asset(metaclass = Actions):
         """
         ser = {}
         ser['name'] = self.name
-        ser['asset type'] = type(self).__name__
+        ser['product'] = self.backing.product_name
         ser['uuid'] = self.uuid
         ser['real id'] = self.get_real_id()
         ser['actions'] = get_actions(self)
-        ser['state'] =  self.attributes.serializable()
+        ser['attributes'] =  self.attributes.serializable()
 
         return ser
 
