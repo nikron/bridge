@@ -3,6 +3,7 @@ from bridge.model.assets.basic_assets import OnOffAsset
 
 from upb import mdid, registers, UPBMessage
 from upb.device_info import UPBDeviceInfo
+import logging
 
 PLACEHOLDER = "upb"
 
@@ -16,7 +17,8 @@ class UPBIdiom(ModelIdiom):
             if changer is not None:
                 changer(asset, update)
         elif type(update) is UPBDeviceInfo:
-            asset.name = update.rname.strip().decode() + ' ' + update.dname.strip().decode()
+            if update.rname and update.dname:
+                asset.name = update.rname.strip().decode() + ' ' + update.dname.strip().decode()
         else:
             logging.debug("Didn't recognize update.")
 

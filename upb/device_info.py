@@ -28,8 +28,8 @@ class UPBDeviceInfo():
         saved_timeout = ser.getTimeout()
         ser.setTimeout(timeout)
 
-        logging.debug("Retrieving first chunk for {0}.".format(str(device_id)))
-        chunk = self._retrieve_chunk(ser, self.uid, 0x00, retry)
+        logging.debug("Retrieving first chunk for {0}.".format(self.uid))
+        chunk = self._retrieve_chunk(ser, 0x00, retry)
         if chunk is not None:
             self.nid = chunk[0]
             self.uid = chunk[1]
@@ -41,18 +41,17 @@ class UPBDeviceInfo():
             self.fwver = (chunk[10] << 8) + chunk[11]
             self.sernum = (chunk[12] << 24) + (chunk[13] << 16) + (chunk[14] << 8) + chunk[15]
 
-        logging.debug("Trying to get names for {0}.".format(str(device_id)))
+        logging.debug("Trying to get names for {0}.".format(self.uid))
         for name, (chunk, chunk_size) in zip(['nname', 'rname', 'dname'], [registers.NNAME, registers.RNAME, registers.DNAME]):
-            chunk = cls._retrieve_chunk(ser, self.uid, chunk, retry, chunk_size)
+            chunk = self._retrieve_chunk(ser, chunk, retry, chunk_size)
             if chunk is not None:
-                setattr(device_info, name, bytes(chunk))
+                setattr(self, name, bytes(chunk))
 
         ser.setTimeout(saved_timeout)
 
-    @staticmethod
-    def _retrieve_chunk(ser, device_id, chunk_start, retry, chunk_size = 16):
+    def _retrieve_chunk(self, ser, chunk_start, retry, chunk_size = 16):
         reg_des = registers.RegisterDescription((chunk_start, chunk_size))
-        message = reg_des.create_get_registers(device_id)
+        message = reg_des.create_get_registers(self.uid)
 
         tries = 0
         while tries < retry:
