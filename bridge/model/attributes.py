@@ -233,9 +233,9 @@ class Attribute(metaclass = ABCMeta):
     def get_possible_representation(self):
         pass
 
-    @abstractmethod
     @staticmethod
-    def validiate_serialized_state(possible_rep, state):
+    @abstractmethod
+    def validate_serialized_state(possible_rep, state):
         pass
 
     def _check_controllable(self):
@@ -294,7 +294,7 @@ class IntegerRangeAttribute(Attribute):
         return list(self.states)
 
     @staticmethod
-    def valdiate_serialized_state(possible_rep, state):
+    def validate_serialized_state(possible_rep, state):
         if state in possible_rep:
             return True
         else:
