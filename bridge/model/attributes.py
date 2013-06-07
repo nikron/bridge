@@ -4,6 +4,8 @@ change on a device and should be controlled is considered a state. Examples:
 lighting, volume, and status of LED buttons.
 """
 
+from abc import ABCMeta, abstractmethod
+
 class Attributes():
     """
     A collection of independent :class:`Attributes`s.  A attribute is meant to
@@ -100,7 +102,7 @@ class Attributes():
 
         return self.attributes[attribute].change(state)
 
-class Attribute():
+class Attribute(metaclass = ABCMeta):
     """
     A category of states, keeps track of various attributes of state, most
     of important of which are whether it is "controllable", and whether the
@@ -109,7 +111,7 @@ class Attribute():
     :param name: The name of the attribute
     :type name: str
 
-    :param states: An iterable representing all possible states of an object.
+    :param states: An object with the __contains__ method defined.
     :type states: object
 
     :param _type: The type of category it is, intended for clients to know
@@ -170,7 +172,7 @@ class Attribute():
         ser['type'] = self.type
         ser['controllable'] = self.controllable
         ser['unknown'] = self.unknown
-        ser['possible states'] = list(self.states) #Should the itertable not be expanded?
+        ser['possible'] = self.get_possible_representation()
 
         return ser
 
@@ -227,6 +229,15 @@ class Attribute():
 
         else: return False
 
+    @abstractmethod
+    def get_possible_representation(self):
+        pass
+
+    @abstractmethod
+    @staticmethod
+    def validiate_serialized_state(possible_rep, state):
+        pass
+
     def _check_controllable(self):
         """
         Check if all the possible states have a control object associated with
@@ -258,15 +269,46 @@ class BinaryAttribute(Attribute):
     Convience class for binary states.
     """
 
-    BINARY_TYPE = 'binary'
     def __init__(self, category):
-        super().__init__(category, [True, False], self.BINARY_TYPE)
+        super().__init__(category, [True, False], BINARY_TYPE)
+
+    def get_possible_representation(self):
+        return self.states
+
+    @staticmethod
+    def validate_serialized_state(possible_rep, state):
+        if type(state) is bool:
+            return True
+        else:
+            return False
 
 class IntegerRangeAttribute(Attribute):
     """
     Convience class for a range of states.
     """
 
-    RANGE_TYPE = 'integer range'
     def __init__(self, category, minimum, maximum, step = 1):
-        super().__init__(category, range(minimum, maximum, step), self.RANGE_TYPE)
+        super().__init__(category, range(minimum, maximum, step), INT_RANGE_TYPE)
+
+    def get_possible_representation(self):
+        return list(self.states)
+
+    @staticmethod
+    def valdiate_serialized_state(possible_rep, state):
+        if state in possible_rep:
+            return True
+        else:
+            return False
+
+BINARY_TYPE = 'binary'
+INT_RANGE_TYPE = 'integer range'
+
+ATTRIBUTE_TYPES = {
+        BINARY_TYPE : BinaryAttribute,
+        INT_RANGE_TYPE : IntegerRangeAttribute
+        }
+
+def verify_state(attr_serializable, state):
+    cls = ATTRIBUTE_TYPES[attr_serializable['type']]
+    possible_rep = attr_serializable['possible']
+    cls.validate_serialized_state(possible_rep, state)

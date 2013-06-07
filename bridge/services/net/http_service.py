@@ -4,6 +4,7 @@ Don't blame me for globals, blame the library.
 """
 
 from bridge.services import BridgeService, HTTP_API, MODEL
+from bridge.model.attributes import verify_state
 from external_libs.bottle import run, Bottle, request, response, HTTPError
 from external_libs import mimeparse, jsonpatch
 import logging
@@ -248,7 +249,7 @@ class HTTPAPIService(BridgeService):
             except jsonpatch.JsonPatchException:
                 raise HTTPError(400, "Not a correct json-patch.")
 
-            changed = self._report_keys_changed(asset_json, result, {'name', 'state'})
+            changed = self._report_keys_changed(asset_json, result, {'name', 'attributes'})
 
             if 'name' in changed:
                 if type(result['name']) == str:
@@ -256,29 +257,15 @@ class HTTPAPIService(BridgeService):
                 else:
                     raise HTTPError(422, "Name must be a string.")
 
-            #check if state is changed in a valid way, it's a bit of a doozy
-            #can't think of better way to do it (except with like a state_url so this makes
-            #sense in its own method
-            if 'state' in changed:
-                state_json = asset_json['state']
-                allowable = {category for category in state_json if state_json[category]['controllable']}
-                categories_changed = self._report_keys_changed(state_json, result['state'], allowable)
-
-                for category in categories_changed:
-                    self._report_keys_changed(state_json[category], result['state'][category], {'current'})
-                    current_state = result['state'][category]['current']
-
-                    if current_state in result['state'][category]['possible states']:
-                        state_changes.append((category, current_state))
-                    else:
-                        raise HTTPError(422, "Current must be a string.")
+            if 'attributes' in changed:
+                attribute_changes = self._find_attribute_changes(asset_json, result)
 
             if change_name:
                 logging.debug("Attempting to change name")
                 self.remote_async_service_method(MODEL, 'set_asset_name', asset_uuid, changed['name'])
-            for state_change in state_changes:
+            for category, state in attribute_changes:
                 logging.debug("Attempting to control")
-                self.remote_async_service_method(MODEL, 'control_asset', asset_uuid, state_change[0], state_change[1])
+                self.remote_async_service_method(MODEL, 'control_asset', asset_uuid, category, state)
 
             response.status = 204
             return None
@@ -415,43 +402,6 @@ class HTTPAPIService(BridgeService):
         else:
             raise HTTPError(404, "Asset not found.")
 
-    @staticmethod
-    def _make_uuid(asset):
-        """
-        Check if uuid `asset` is valid, raise HTTPerror if it isn't.
-        """
-        try:
-            asset_uuid = uuid.UUID(asset)
-        except ValueError:
-            raise HTTPError(404, "Asset not found/not valid UUID.")
-
-        return asset_uuid
-
-    @staticmethod
-    def _report_keys_changed(first, second, allowable):
-        """
-        Find the which keys between the first and secondary dictionaries, and error if
-        some of the keys are not in the allowable set.
-
-        :param first: First dictionary
-        :type first: dict
-
-        :param second: Second dictionary
-        :type second: dict
-
-        :param allowable: Set of keys that can change
-        type allowable: set
-        """
-        first_set = set(first.keys())
-        second_set = set(second.keys())
-        changed = {key for key in first_set.intersection(second_set) if first[key] != second[key]}
-        changed.union(first_set.symmetric_difference(second_set))
-
-        if changed.issubset(allowable):
-            HTTPError(422, "Patching something that can't be patched.")
-
-        return changed
-
     def _transform_to_urls(self, container, **kwargs):
         """
         Transform a list to one appended with the current request.url, or a dict item
@@ -486,3 +436,58 @@ class HTTPAPIService(BridgeService):
             return [prefix + str(item) for item in container]
         else:
             return prefix + str(container)
+
+    def _find_attribute_changes(self, orginal, new):
+        attribute_json = orginal['attributes']
+        new = new['attributes']
+
+        allowable = {category for category in attribute_json if attribute_json[category]['controllable']}
+        categories_changed = self._report_keys_changed(attribute_json, new, allowable)
+
+        changes = []
+
+        for category in categories_changed:
+            self._report_keys_changed(attribute_json[category], new[category], {'current'})
+            current_state = new[category]['current']
+
+            if verify_state(attribute_json[category], current_state):
+                changes.append((category, current_state))
+            else:
+                raise HTTPError(422, "Current must be a string.")
+
+    @staticmethod
+    def _make_uuid(asset):
+        """
+        Check if uuid `asset` is valid, raise HTTPerror if it isn't.
+        """
+        try:
+            asset_uuid = uuid.UUID(asset)
+        except ValueError:
+            raise HTTPError(404, "Asset not found/not valid UUID.")
+
+        return asset_uuid
+
+    @staticmethod
+    def _report_keys_changed(first, second, allowable):
+        """
+        Find the which keys between the first and secondary dictionaries, and error if
+        some of the keys are not in the allowable set.
+
+        :param first: First dictionary
+        :type first: dict
+
+        :param second: Second dictionary
+        :type second: dict
+
+        :param allowable: Set of keys that can change
+        :type allowable: set
+        """
+        first_set = set(first.keys())
+        second_set = set(second.keys())
+        changed = {key for key in first_set.intersection(second_set) if first[key] != second[key]}
+        changed.union(first_set.symmetric_difference(second_set))
+
+        if not changed.issubset(allowable):
+            raise HTTPError(422, "Patching something that can't be patched.")
+
+        return changed
