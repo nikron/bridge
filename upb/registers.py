@@ -9,6 +9,7 @@ MID = (0x06, 2)
 PID = (0x07, 2)
 FWVER = (0x08, 2)
 SERNUM = (0x0C, 4)
+SETUP = (0x00, 16)
 NNAME = (0x10, 16)
 RNAME = (0x20, 16)
 DNAME = (0x30, 16)
@@ -18,14 +19,15 @@ class RegisterDescription():
         self.start = reg_tuple[0]
         self.amount = reg_tuple[1]
 
-    def create_set_registers(self, dest_id, _bytes, **kwargs):
+    def create_set_registers(self, _bytes, **kwargs):
         if len(_bytes) > self.amount:
-            raise ValueError("Can only set up to {1} bytes.".format(self.amount))
+            raise ValueError("Can only set up to {0} bytes.".format(self.amount))
 
-        return UPBSetRegisters(dest_id, self.start, list(_bytes), **kwargs)
+        return UPBSetRegisters(self.start, list(_bytes), **kwargs)
 
-    def create_get_registers(self, dest_id, **kwargs):
-        return UPBGetRegisters(dest_id, self.start, self.amount, **kwargs)
+    def create_get_registers(self, **kwargs):
+        return UPBGetRegisters(self.start, self.amount, **kwargs)
+
 
     def is_report(self, message):
         if message.MDID != mdid.REGISTER_VALUES:
@@ -42,4 +44,3 @@ class RegisterDescription():
     @staticmethod
     def make_string(message):
         return bytes(message.arguments[1:]).decode().strip()
-

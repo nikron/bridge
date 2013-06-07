@@ -6,7 +6,7 @@ import unittest
 from multiprocessing import Pipe
 from bridge.services.net.http_service import HTTPAPIService
 from bridge.services import BridgeMessage
-from external_libs.bottle import HTTPError, response 
+from external_libs.bottle import HTTPError, response
 
 import uuid
 
@@ -43,3 +43,8 @@ class TestHTTPService(unittest.TestCase):
         report = self.serv._report_keys_changed(first, second, allowable)
         self.assertEquals(report, allowable)
 
+    def test_error_report_keys(self):
+        first = {1 : 2, 3 : 4, 6 : 8}
+        second = {1 : 2, 3 : 4, 6 : 9}
+        allowable = {1}
+        self.assertRaises(HTTPError, self.serv._report_keys_changed, first, second, allowable)

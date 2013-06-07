@@ -121,38 +121,31 @@ class UPBMessage():
 
         return upb_msg
 
-class UPBSimpleMessage(UPBMessage):
-    """
-    UPB message without any arguments.
-    """
-    def __init__(self, dest_id, **kwargs):
-        super().__init__(destination_id = dest_id, **kwargs)
+class UPBLinkMessage(UPBMessage):
+    def __init__(self, **kwargs):
+        super().__init__(link = True, **kwargs)
 
-class UPBSimpleLinkMessage(UPBSimpleMessage):
-    def __init__(self, dest_id, **kwargs):
-        super().__init__(destination_id = dest_id, link = True, **kwargs)
-
-class UPBGetRegisters(UPBSimpleMessage):
+class UPBGetRegisters(UPBMessage):
     """
     :arg:`num` Cannot be greater than 0x10
     :type:`num` byte
     """
     MDID = mdid.GET_REGISTER_VALUE
 
-    def __init__(self, dest_id, reg, num, **kwargs):
-        super().__init__(dest_id, arguments = [reg, num], **kwargs)
+    def __init__(self, reg, num, **kwargs):
+        super().__init__(arguments = [reg, num], **kwargs)
 
 
-class UPBSetRegisters(UPBSimpleMessage):
+class UPBSetRegisters(UPBMessage):
     MDID = mdid.SET_REGISTER_VALUE
 
-    def __init__(self, dest_id, reg, values, **kwargs):
-        super().__init__(dest_id, arguments = [reg] + values, **kwargs)
+    def __init__(self, reg, values, **kwargs):
+        super().__init__(rguments = [reg] + values, **kwargs)
 
-class UPBActivateLink(UPBSimpleLinkMessage):
+class UPBActivateLink(UPBLinkMessage):
     MDID = mdid.ACTIVATE_LINK
 
-class UPBDeactivateLink(UPBSimpleLinkMessage):
+class UPBDeactivateLink(UPBLinkMessage):
     MDID = mdid.DEACTIVATE_LINK
 
 class UPBGoToLevel(UPBMessage):
@@ -162,12 +155,12 @@ class UPBGoToLevel(UPBMessage):
     """
     MDID = mdid.GOTO
 
-    def __init__(self, dest_id, level, rate = None, channel = None, **kwargs):
+    def __init__(self, level, rate = None, channel = None, **kwargs):
         args = [level]
         if rate is not None:
             args.append(rate)
 
-        super().__init__(destination_id = dest_id, arguments = args, **kwargs)
+        super().__init__(arguments = args, **kwargs)
         self.level = level
         self.rate = rate
         self.channel = channel
@@ -183,12 +176,12 @@ class UPBFadeStart(UPBMessage):
     """
     MDID = mdid.FADE_START
 
-    def __init__(self, dest_id, rate = None, channel = None, **kwargs):
+    def __init__(self, rate = None, channel = None, **kwargs):
         args = []
         if rate is not None:
             args.append(rate)
 
-        super().__init__(destination_id = dest_id, arguments = args, **kwargs)
+        super().__init__(arguments = args, **kwargs)
         self.rate = rate
         self.channel = channel
 
@@ -199,16 +192,16 @@ class UPBFadeStart(UPBMessage):
 class UPBToggle(UPBMessage):
     MDID = mdid.TOGGLE
 
-    def __init__(self, dest_id, times, rate=None, **kwargs):
+    def __init__(self, times, rate=None, **kwargs):
         args = [times]
         if rate is not None:
             args.append(rate)
 
-        super().__init__(destination_id = dest_id, arguments = args, **kwargs)
+        super().__init__(arguments = args, **kwargs)
         self.toggle_times = times
         self.rate = rate
 
-class UPBReportState(UPBSimpleMessage):
+class UPBReportState(UPBMessage):
     """
     Report state must always be direct.
     """

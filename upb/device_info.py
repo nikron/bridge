@@ -7,8 +7,8 @@ from upb import pim, registers, UPBMessage
 import logging
 
 class UPBDeviceInfo():
-    def __init__(self, uid, **kwargs):
-        self.nid = None
+    def __init__(self, nid, uid, **kwargs):
+        self.nid = nid
         self.uid = uid
         self.npw = None
         self.ubop = None
@@ -51,7 +51,7 @@ class UPBDeviceInfo():
 
     def _retrieve_chunk(self, ser, chunk_start, retry, chunk_size = 16):
         reg_des = registers.RegisterDescription((chunk_start, chunk_size))
-        message = reg_des.create_get_registers(self.uid)
+        message = reg_des.create_get_registers(networkd_id = self.nid, destination_id = self.uid)
 
         tries = 0
         while tries < retry:
