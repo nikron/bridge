@@ -23,7 +23,7 @@ class UPBIdiom(ModelIdiom):
             logging.debug("Didn't recognize update.")
 
     def guess_asset(self, real_id, update):
-        new_asset = GenericUPBAsset("", real_id, self.service, PLACEHOLDER)
+        new_asset = GenericUPBAsset("", real_id, self.service)
         self.change_state(new_asset, update)
         return new_asset, False
 

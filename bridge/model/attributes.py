@@ -188,14 +188,14 @@ class Attribute():
         ser['type'] = self.type
         ser['controllable'] = self.controllable
         ser['unknown'] = self.unknown
-        ser['possible'] = self.serialize_possibile_states()
+        ser['possible'] = self.serialize_possible_states()
 
         return ser
 
     def serialize_current_state(self):
         return self.current_state
 
-    def serialize_possibile_states(self):
+    def serialize_possible_states(self):
         return self.states
 
     def set_control(self, state, control):
@@ -324,7 +324,7 @@ class ASCIIAttribute(Attribute):
             return self.current_state
 
     def serialize_possible_states(self):
-        return self.states
+        return self.states.max
 
     @staticmethod
     def deserialize_current_state(possible_rep, state):

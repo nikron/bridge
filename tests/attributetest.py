@@ -1,4 +1,5 @@
 import unittest
+import json
 
 from bridge.model import attributes
 
@@ -19,6 +20,8 @@ class TestState(unittest.TestCase):
 
     def test_serializable(self):
         serial = self.attributes.serializable()
+        serial = json.dumps(serial)
+        serial = json.loads(serial)
 
         self.assertTrue(serial['bams']['controllable'])
 
