@@ -80,7 +80,6 @@ class UPBMessage():
 
         return packet
 
-
     def construct_ascii_packet(self):
         """
         Construct the packet to be sent to the PIM.  Note
@@ -89,6 +88,9 @@ class UPBMessage():
         """
         self.ascii_packet = binascii.hexlify(self.construct_packet())
         return self.ascii_packet
+
+    def is_report_message(self):
+        return mdid.is_core_report_set(self.MDID)
 
     def __str__(self):
         return str(vars(self))

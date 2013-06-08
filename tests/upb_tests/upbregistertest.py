@@ -14,3 +14,9 @@ class TestAsset(unittest.TestCase):
         reg_msg = UPBMessage.create_from_packet(reg_report)
 
         self.assertTrue(self.setup.is_report(reg_msg))
+
+
+    def test_correct_dest(self):
+        msg = self.setup.create_get_registers(network_id = 1, destination_id = 52)
+        self.assertEquals(msg.destination_id, 52)
+

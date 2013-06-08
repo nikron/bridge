@@ -28,13 +28,12 @@ class RegisterDescription():
     def create_get_registers(self, **kwargs):
         return UPBGetRegisters(self.start, self.amount, **kwargs)
 
-
     def is_report(self, message):
         if message.MDID != mdid.REGISTER_VALUES:
             return False
 
         try:
-            if message.arguments[0] == self.start and  len(message.arguments) -1 == self.amount:
+            if message.arguments[0] == self.start and  len(message.arguments) - 1 == self.amount:
                 return True
             else:
                 return False

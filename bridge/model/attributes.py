@@ -328,4 +328,4 @@ ATTRIBUTE_TYPES = {
 def verify_state(attr_serializable, state):
     cls = ATTRIBUTE_TYPES[attr_serializable['type']]
     possible_rep = attr_serializable['possible']
-    return deserialize_current_state()
+    return cls.deserialize_current_state()
