@@ -336,7 +336,7 @@ class ASCIIAttribute(Attribute):
         return None
 
 BINARY_TYPE = 'binary'
-INT_TYPE = 'integer range'
+INT_TYPE = 'integer'
 ASCII_TYPE = 'ascii'
 
 ATTRIBUTE_TYPES = {
