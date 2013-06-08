@@ -16,9 +16,9 @@ class UPBIdiom(ModelIdiom):
             changer = MDID_CHANGERS[update.MDID]
             if changer is not None:
                 changer(asset, update)
-        elif type(update) is UPBDeviceInfo:
-            if update.rname and update.dname:
-                asset.name = update.rname.strip().decode() + ' ' + update.dname.strip().decode()
+        elif isinstance(update, UPBDeviceInfo):
+            self._change_with_device_info(asset, update)
+
         else:
             logging.debug("Didn't recognize update.")
 
@@ -29,6 +29,11 @@ class UPBIdiom(ModelIdiom):
 
     def product_names(self):
         return [PLACEHOLDER]
+
+    @staticmethod
+    def _change_with_device_info(asset, device_info):
+        for attr in vars(device_info):
+            asset.change(attr, getattr(device_info, attr))
 
 def change_main_level(asset, update):
     if update.arguments[0] > 0:
