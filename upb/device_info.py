@@ -33,7 +33,7 @@ class UPBDeviceInfo():
         if chunk is not None:
             self.nid = chunk[0]
             self.uid = chunk[1]
-            self.npw = chunk[2:4]
+            self.npw = bytes(chunk[2:4])
             self.ubop = chunk[4]
             self.upbver = chunk[5]
             self.mid = (chunk[6] << 8) + chunk[7]
