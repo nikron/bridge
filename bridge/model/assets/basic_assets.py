@@ -1,6 +1,6 @@
 from bridge.model.assets import Asset, Backing
 from bridge.model.actions import action
-from bridge.model.attributes import Attributes, BinaryAttribute, IntegerRangeAttribute
+from bridge.model.attributes import Attributes, BinaryAttribute, IntegerAttribute
 
 class BlankAsset(Asset):
     """
@@ -49,7 +49,7 @@ class DimmerAsset(Asset):
     """
 
     def __init__(self, name, real_id, service, product_name):
-        attributes = Attributes(IntegerRangeAttribute('main', 0, 256))
+        attributes = Attributes(IntegerAttribute('main', 0, 256))
         backing = Backing(real_id, service, product_name)
         super().__init__(name, attributes, backing)
         self._set_control_passthrough('main', 'set_light_level')
@@ -60,7 +60,7 @@ class VolumeAsset(Asset):
     """
 
     def __init__(self, name, real_id, service, product_name):
-        attributes = Attributes(IntegerRangeAttribute('main', 0, 101))
+        attributes = Attributes(IntegerAttribute('main', 0, 101))
         backing = Backing(real_id, service, product_name)
         super().__init__(name, attributes, backing)
         self._set_control_passthrough('main', 'set_volume')

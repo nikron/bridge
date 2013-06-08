@@ -1,11 +1,11 @@
 from bridge.services.model.idiom import ModelIdiom, IdiomError
-from bridge.model.assets.basic_assets import OnOffAsset
+from bridge.upb.assets import GenericUPBAsset
 
 from upb import mdid, registers, UPBMessage
 from upb.device_info import UPBDeviceInfo
 import logging
 
-PLACEHOLDER = "upb"
+PLACEHOLDER = "generic"
 
 class UPBIdiom(ModelIdiom):
     def create_asset(self, name, real_id, product_name):
@@ -23,7 +23,7 @@ class UPBIdiom(ModelIdiom):
             logging.debug("Didn't recognize update.")
 
     def guess_asset(self, real_id, update):
-        new_asset = OnOffAsset("", real_id, self.service, PLACEHOLDER)
+        new_asset = GenericUPBAsset("", real_id, self.service, PLACEHOLDER)
         self.change_state(new_asset, update)
         return new_asset, False
 

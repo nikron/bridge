@@ -12,4 +12,4 @@ class TestState(unittest.TestCase):
     def test_flip_from_control(self):
         control = self.attributes.get_control('bams', True)
         control()
-        self.assertTrue(self.attributes.attributes['bams'].current_state)
+        self.assertTrue(self.attributes['bams'].current_state)

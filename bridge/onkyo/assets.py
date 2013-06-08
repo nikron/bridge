@@ -1,11 +1,11 @@
 from bridge.model.assets import Asset, Backing
-from bridge.model.attributes import Attributes, IntegerRangeAttribute, BinaryAttribute
+from bridge.model.attributes import Attributes, IntegerAttribute, BinaryAttribute
 
 class OnkyoTXNR609(Asset):
 
     def __init__(self, name, real_id, service, product_name):
-        attributes = attributes(BinaryAttribute('main'),
-                IntegerRangeAttribute('volume', 0, 101),
+        attributes = Attributes(BinaryAttribute('main'),
+                IntegerAttribute('volume', 0, 101),
                 BinaryAttribute('mute'))
         backing = Backing(real_id, service, product_name)
         super().__init__(name, attributes, backing)

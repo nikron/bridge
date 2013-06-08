@@ -4,7 +4,7 @@ change on a device and should be controlled is considered a state. Examples:
 lighting, volume, and status of LED buttons.
 """
 
-class Attributes():
+class Attributes(dict):
     """
     A collection of independent :class:`Attributes`s.  A attribute is meant to
     be changed by transition of a category of attribute to another state.
@@ -16,9 +16,30 @@ class Attributes():
     :type *states: [:class:`Attribute`]
     """
     def __init__(self, *attributes):
-        self.attributes = {}
+        super().__init__()
+        self.add(*attributes)
+
+    def add(self, *attributes):
         for attribute in attributes:
-            self.attributes[attribute.get_name()] = attribute
+            self[attribute.name] = attribute
+
+    def change(self, attribute, state):
+        """
+        Attempt to transition a attribute to a particular state.
+
+        :param attribute: The category name to change.
+        :type attribute: str
+
+        :param state: The state to transition to.
+        :type state: str
+
+        :return: Whether the transition was successful.
+        :rtype: bool
+        """
+        if attribute not in self:
+            return False
+
+        return self[attribute].change(state)
 
     def get_control(self, attribute, state):
         """
@@ -34,7 +55,7 @@ class Attributes():
         :return: The control object associated with changing to a state.
         :rtype: object
         """
-        return self.attributes[attribute].get_control(state)
+        return self[attribute].get_control(state)
 
     def serializable(self):
         """
@@ -46,8 +67,8 @@ class Attributes():
         """
         ser = {}
 
-        for attribute in self.attributes:
-            ser[str(attribute)] = self.attributes[attribute].serializable()
+        for attribute in self.keys():
+            ser[attribute] = self[attribute].serializable()
 
         return ser
 
@@ -63,7 +84,7 @@ class Attributes():
         :param param: The control object
         :type object:
         """
-        self.attributes[attribute].set_default_control(control)
+        self[attribute].set_default_control(control)
 
     def set_control(self, attribute, state, control):
         """
@@ -80,25 +101,7 @@ class Attributes():
         :param param: The control object
         :type object:
         """
-        self.attributes[attribute].set_control(state, control)
-
-    def change(self, attribute, state):
-        """
-        Attempt to transition a attribute to a particular state.
-
-        :param attribute: The category name to change.
-        :type attribute: str
-
-        :param state: The state to transition to.
-        :type state: str
-
-        :return: Whether the transition was successful.
-        :rtype: bool
-        """
-        if attribute not in self.attributes:
-            return False
-
-        return self.attributes[attribute].change(state)
+        self[attribute].set_control(state, control)
 
 class Attribute():
     """
@@ -261,7 +264,7 @@ class Attribute():
         return self.name.__eq__(other.name)
 
     def __hash__(self):
-        return self.name.__hash__()
+        return hash(self.name)
 
     def __str__(self):
         return self.name
@@ -274,40 +277,58 @@ class BinaryAttribute(Attribute):
     def __init__(self, category):
         super().__init__(category, [True, False], BINARY_TYPE)
 
-class IntegerRangeAttribute(Attribute):
+class IntegerAttribute(Attribute):
     """
     Convience class for a range of states.
     """
 
     def __init__(self, category, minimum, maximum, step = 1):
-        super().__init__(category, list(range(minimum, maximum, step)), INT_RANGE_TYPE)
+        super().__init__(category, range(minimum, maximum, step), INT_TYPE)
+
+    def serialize_possible_states(self):
+        return '{0}:{1}:{2}'.format(self.states.start, self.states.stop, self.states.step)
+
+    @staticmethod
+    def deserialize_current_state(possible_rep, state):
+        start, stop, step = [int(num) for num in possible_rep.split(':')]
+        if state in range(start, stop, step):
+            return state
+        else:
+            return None
+
+class ByteAttribute(IntegerAttribute):
+    def __init__(self, category):
+        super().__init__(category, 0, 256)
 
 class BytesWrapper():
     def __init__(self, max_length):
         self.max = max_length
 
     def serializable(self):
-        return max_length
+        return self.max
 
     def __contains__(self, obj):
-        if type(obj) is bytes and len(obj) <= max_length:
+        if isinstance(obj, bytes) and len(obj) <= self.max:
             return True
         else:
             return False
 
-class BytesAttribute(Attribute):
+class ASCIIAttribute(Attribute):
     def __init__(self, category, length):
-        super().__init__(category, BytesWrapper(length), BYTES_TYPE)
+        super().__init__(category, BytesWrapper(length), ASCII_TYPE)
 
     def serialize_current_state(self):
-        return self.current_state.decode()
+        if self.current_state:
+            return self.current_state.decode()
+        else:
+            return self.current_state
 
     def serialize_possible_states(self):
         return self.states
 
     @staticmethod
     def deserialize_current_state(possible_rep, state):
-        if type(state) is str:
+        if isinstance(state, str):
             bytes_string = state.encode()
             if len(bytes_string) <= possible_rep:
                 return bytes_string
@@ -315,13 +336,13 @@ class BytesAttribute(Attribute):
         return None
 
 BINARY_TYPE = 'binary'
-INT_RANGE_TYPE = 'integer range'
-BYTES_TYPE = 'bytes'
+INT_TYPE = 'integer range'
+ASCII_TYPE = 'ascii'
 
 ATTRIBUTE_TYPES = {
         BINARY_TYPE : BinaryAttribute,
-        INT_RANGE_TYPE : IntegerRangeAttribute,
-        BYTES_TYPE :  BytesAttribute
+        INT_TYPE : IntegerAttribute,
+        ASCII_TYPE :  ASCIIAttribute
         }
 
 def verify_state(attr_serializable, state):
