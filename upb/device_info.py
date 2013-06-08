@@ -28,7 +28,7 @@ class UPBDeviceInfo():
         saved_timeout = ser.getTimeout()
         ser.setTimeout(timeout)
 
-        logging.debug("Retrieving first chunk for {0}.".format(self.uid))
+        logging.debug("Retrieving first chunk for {0}.{1}.".format(self.nid, self.uid))
         chunk = self._retrieve_chunk(ser, 0x00, retry)
         if chunk is not None:
             self.nid = chunk[0]
@@ -51,7 +51,7 @@ class UPBDeviceInfo():
 
     def _retrieve_chunk(self, ser, chunk_start, retry, chunk_size = 16):
         reg_des = registers.RegisterDescription((chunk_start, chunk_size))
-        message = reg_des.create_get_registers(networkd_id = self.nid, destination_id = self.uid)
+        message = reg_des.create_get_registers(network_id = self.nid, destination_id = self.uid)
 
         tries = 0
         while tries < retry:

@@ -83,3 +83,11 @@ HEARTBEAT = 0x93
 #
 # 0x94 - 0x9F Unused
 #
+
+def is_core_report_set(mdid):
+        if mdid & 0xC0 == 192:
+            return True
+        elif mdid & 0x80 == 128:
+            return True
+        else:
+            return False

@@ -246,7 +246,7 @@ class HTTPAPIService(BridgeService):
             patch = request.body.read(request.MEMFILE_MAX).decode()
             try:
                 result = jsonpatch.apply_patch(asset_json, patch)
-            except jsonpatch.JsonPatchException:
+            except:
                 raise HTTPError(400, "Not a correct json-patch.")
 
             changed = self._report_keys_changed(asset_json, result, {'name', 'attributes'})
@@ -453,7 +453,10 @@ class HTTPAPIService(BridgeService):
             if verify_state(attribute_json[category], current_state):
                 changes.append((category, current_state))
             else:
-                raise HTTPError(422, "Current must be a string.")
+                logging.debug("{0}.".format(current_state))
+                raise HTTPError(422, "Current was not a possible state.")
+
+        return changes
 
     @staticmethod
     def _make_uuid(asset):

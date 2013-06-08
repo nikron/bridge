@@ -2,8 +2,8 @@ def real_id_to_upb_id(real_id):
     ids = real_id.split('.')
     return int(ids[0]), int(ids[1])
 
-def upb_id_to_real_id(network_id, destination_id):
-    return str(network_id) + '.' + str(destination_id)
+def upb_id_to_real_id(network_id, device_id):
+    return '{0}.{1}'.format(network_id, device_id)
 
 def check_real_id(real_id):
     if type(real_id) is not str:

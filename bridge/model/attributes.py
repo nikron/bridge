@@ -311,4 +311,4 @@ ATTRIBUTE_TYPES = {
 def verify_state(attr_serializable, state):
     cls = ATTRIBUTE_TYPES[attr_serializable['type']]
     possible_rep = attr_serializable['possible']
-    cls.validate_serialized_state(possible_rep, state)
+    return cls.validate_serialized_state(possible_rep, state)
