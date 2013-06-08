@@ -130,6 +130,21 @@ class Attribute(metaclass = ABCMeta):
 
         self.controls = {}
 
+    def change(self, state):
+        """
+        Makes the current state to be another state.
+
+        :param state: State to transition to.
+        :type state: str
+        """
+        if state in self.states:
+            self.current_state = state
+
+            self.set_unknown(False)
+            return True
+
+        else: return False
+
     def get_name(self):
         """
         :return: The name of states that this object represents.
@@ -168,13 +183,19 @@ class Attribute(metaclass = ABCMeta):
         :rtype: dict
         """
         ser = {}
-        ser['current'] = self.current_state
+        ser['current'] = self.seralize_current_state()
         ser['type'] = self.type
         ser['controllable'] = self.controllable
         ser['unknown'] = self.unknown
-        ser['possible'] = self.get_possible_representation()
+        ser['possible'] = self.serialize_possibile_states()
 
         return ser
+
+    def serialize_current_state(self):
+        return self.current_state
+
+    def serialize_possibile_states(self):
+        return self.states
 
     def set_control(self, state, control):
         """
@@ -214,29 +235,12 @@ class Attribute(metaclass = ABCMeta):
 
         self.unknown = unknown
 
-    def change(self, state):
-        """
-        Makes the current state to be another state.
-
-        :param state: State to transition to.
-        :type state: str
-        """
-        if state in self.states:
-            self.current_state = state
-
-            self.set_unknown(False)
-            return True
-
-        else: return False
-
-    @abstractmethod
-    def get_possible_representation(self):
-        pass
-
     @staticmethod
-    @abstractmethod
-    def validate_serialized_state(possible_rep, state):
-        pass
+    def deserialize_current_state(possible_rep, state):
+        if state in possible_rep:
+            return state
+        else:
+            return None
 
     def _check_controllable(self):
         """
@@ -272,43 +276,56 @@ class BinaryAttribute(Attribute):
     def __init__(self, category):
         super().__init__(category, [True, False], BINARY_TYPE)
 
-    def get_possible_representation(self):
-        return self.states
-
-    @staticmethod
-    def validate_serialized_state(possible_rep, state):
-        if type(state) is bool:
-            return True
-        else:
-            return False
-
 class IntegerRangeAttribute(Attribute):
     """
     Convience class for a range of states.
     """
 
     def __init__(self, category, minimum, maximum, step = 1):
-        super().__init__(category, range(minimum, maximum, step), INT_RANGE_TYPE)
+        super().__init__(category, list(range(minimum, maximum, step)), INT_RANGE_TYPE)
 
-    def get_possible_representation(self):
-        return list(self.states)
+class BytesWrapper():
+    def __init__(self, max_length):
+        self.max = max_length
 
-    @staticmethod
-    def validate_serialized_state(possible_rep, state):
-        if state in possible_rep:
+    def serializable(self):
+        return max_length
+
+    def __contains__(self, obj):
+        if type(obj) is bytes and len(obj) <= max_length:
             return True
         else:
             return False
+
+class BytesAttribute(Attribute):
+    def __init__(self, category, length):
+        super().__init__(category, BytesWrapper(length), BYTES_TYPE)
+
+    def serialize_current_state(self):
+        return self.current_state.decode()
+
+    def serialize_possible_states(self):
+        return self.states
+
+    @staticmethod
+    def deserialize_current_state(possible_rep, state):
+        if type(state) is str:
+            bytes_string = state.encode()
+            if len(bytes_string) <= possible_rep:
+                return bytes_string
+
+        return None
 
 BINARY_TYPE = 'binary'
 INT_RANGE_TYPE = 'integer range'
 
 ATTRIBUTE_TYPES = {
         BINARY_TYPE : BinaryAttribute,
-        INT_RANGE_TYPE : IntegerRangeAttribute
+        INT_RANGE_TYPE : IntegerRangeAttribute,
+        BYTES_TYPE :  BytesAttribute
         }
 
 def verify_state(attr_serializable, state):
     cls = ATTRIBUTE_TYPES[attr_serializable['type']]
     possible_rep = attr_serializable['possible']
-    cls.validate_serialized_state(possible_rep, state)
+    return deserialize_current_state()
