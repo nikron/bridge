@@ -1,12 +1,11 @@
 #send a command over the serial port
 #and print out resposne
 import serial
-from upb.pim import read
-from upb import UPBMessage
+from upb.pim import write_message
+import upb
 
 ser = serial.Serial('/dev/ttyUSB0', '4800')
-buf = b''
+msg = upb.UPBGoToLevel(0)
+msg.destination_id = 5
 
-while True:
-    msg = UPBMessage.create_from_packet(read(ser).packet)
-    print(vars(msg))
+write_message(ser, msg)

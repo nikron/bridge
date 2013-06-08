@@ -4,8 +4,6 @@ change on a device and should be controlled is considered a state. Examples:
 lighting, volume, and status of LED buttons.
 """
 
-from abc import ABCMeta, abstractmethod
-
 class Attributes():
     """
     A collection of independent :class:`Attributes`s.  A attribute is meant to
@@ -102,9 +100,9 @@ class Attributes():
 
         return self.attributes[attribute].change(state)
 
-class Attribute(metaclass = ABCMeta):
+class Attribute(:
     """
-    A category of states, keeps track of various attributes of state, most
+    Aategory of states, keeps track of various attributes of state, most
     of important of which are whether it is "controllable", and whether the
     current state is "known".
 
