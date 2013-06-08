@@ -450,7 +450,7 @@ class HTTPAPIService(BridgeService):
             self._report_keys_changed(attribute_json[category], new[category], {'current'})
             current_state = new[category]['current']
 
-            current_state = verify_state(attribute_json[category], current_state):
+            current_state = verify_state(attribute_json[category], current_state)
             if current_state is not None:
                 changes.append((category, current_state))
             else:

@@ -60,6 +60,7 @@ class UPBService(IOService):
         self._update_model_with_message(message)
 
     def _update_model_with_message(self, message):
+        if message.link: return
         if message.is_report_message():
             self.update_model(upb_id_to_real_id(message.network_id, message.source_id), message)
         else:

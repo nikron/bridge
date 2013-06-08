@@ -100,7 +100,7 @@ class Attributes():
 
         return self.attributes[attribute].change(state)
 
-class Attribute(:
+class Attribute():
     """
     Aategory of states, keeps track of various attributes of state, most
     of important of which are whether it is "controllable", and whether the
@@ -181,7 +181,7 @@ class Attribute(:
         :rtype: dict
         """
         ser = {}
-        ser['current'] = self.seralize_current_state()
+        ser['current'] = self.serialize_current_state()
         ser['type'] = self.type
         ser['controllable'] = self.controllable
         ser['unknown'] = self.unknown
@@ -316,6 +316,7 @@ class BytesAttribute(Attribute):
 
 BINARY_TYPE = 'binary'
 INT_RANGE_TYPE = 'integer range'
+BYTES_TYPE = 'bytes'
 
 ATTRIBUTE_TYPES = {
         BINARY_TYPE : BinaryAttribute,
@@ -326,4 +327,4 @@ ATTRIBUTE_TYPES = {
 def verify_state(attr_serializable, state):
     cls = ATTRIBUTE_TYPES[attr_serializable['type']]
     possible_rep = attr_serializable['possible']
-    return cls.deserialize_current_state()
+    return cls.deserialize_current_state(possible_rep, state)
