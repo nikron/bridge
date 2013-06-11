@@ -252,10 +252,13 @@ class Attribute():
             self.controllable = True
         else:
             self.controllable = True
-            for state in self.states:
-                if state not in self.controls:
-                    self.controllable = False
-                    return
+            try:
+                for state in self.states:
+                    if state not in self.controls:
+                        self.controllable = False
+                        return
+            except TypeError:
+                self.controllable = False
 
     def __contains__(self, state):
         return state in self.states
