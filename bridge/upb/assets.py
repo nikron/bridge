@@ -5,7 +5,6 @@ class GenericUPBAsset(OnOffAsset):
     def __init__(self, name, real_id, service):
         super().__init__(name, real_id, service, "Generic UPB Device")
         self.attributes.add(
-                BinaryAttribute('main'),
                 IntegerAttribute('level', 0, 101),
                 ByteAttribute('nid'),
                 ByteAttribute('uid'),
