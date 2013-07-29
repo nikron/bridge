@@ -24,6 +24,7 @@ class IOService(BridgeService, metaclass =ABCMeta):
 
     def __init__(self, name, config, hub_connection):
         super().__init__(name, config, hub_connection)
+        print(config.io_services[name][1])
         self.io_fd = self._create_fd(config.io_services[name][1])
 
         self.read_list = [self.hub_connection]

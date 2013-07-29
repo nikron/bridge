@@ -36,7 +36,7 @@ class UPBIdiom(ModelIdiom):
         asset.change("Unit ID", device_info.uid)
         asset.change("Network Password", device_info.npw)
         asset.change("UBP Options", device_info.ubop)
-        asset.change("UBP Version", device_info.ubver)
+        asset.change("UBP Version", device_info.upbver)
         asset.change("Manufacture ID", device_info.mid)
         asset.change("Product ID", device_info.pid)
         asset.change("Firmware Version", device_info.fwver)
