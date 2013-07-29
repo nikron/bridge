@@ -32,14 +32,24 @@ class UPBIdiom(ModelIdiom):
 
     @staticmethod
     def _change_with_device_info(asset, device_info):
-        for attr in vars(device_info):
-            asset.change(attr, getattr(device_info, attr))
+        asset.change("Network ID", device_info.nid)
+        asset.change("Unit ID", device_info.uid)
+        asset.change("Network Password", device_info.npw)
+        asset.change("UBP Options", device_info.ubop)
+        asset.change("UBP Version", device_info.ubver)
+        asset.change("Manufacture ID", device_info.mid)
+        asset.change("Product ID", device_info.pid)
+        asset.change("Firmware Version", device_info.fwver)
+        asset.change("Serial Number", device_info.sernum)
+        asset.change("Network Name", device_info.nname)
+        asset.change("Room Name", device_info.rname)
+        asset.change("Device Name", device_info.dname)
 
 def change_main_level(asset, update):
-    if update.arguments[0] > 0:
-        asset.change('main', True)
-    else:
-        asset.change('main', False)
+    level = update.arguments[0]
+    asset.change("main", level > 0)
+    asset.change("Level", level)
+
 
 MDID_CHANGERS = [None for _ in range(0, 0x94)]
 MDID_CHANGERS[mdid.DEVICE_STATE] = change_main_level
