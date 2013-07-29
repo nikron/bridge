@@ -22,9 +22,9 @@ class IOService(BridgeService, metaclass =ABCMeta):
     :type hub_connection: :class:`Pipe`
     """
 
-    def __init__(self, name, file_name, hub_connection):
-        super().__init__(name, hub_connection)
-        self.io_fd = self._create_fd(file_name)
+    def __init__(self, name, config, hub_connection):
+        super().__init__(name, config, hub_connection)
+        self.io_fd = self._create_fd(config.io_services[name][1])
 
         self.read_list = [self.hub_connection]
         self.pending = []

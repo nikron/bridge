@@ -29,7 +29,6 @@ class BridgeHub():
         self.configuration = configuration
         self.connections = []
         self.services = {}
-        self.io_idioms = {} #to pass to the model later
 
     def create_connection(self):
         """
@@ -85,7 +84,7 @@ class BridgeHub():
         Initialize and fork the http service.
         """
         its_conn, ours_conn = self.create_connection()
-        service = HTTPAPIService(its_conn)
+        service = HTTPAPIService(its_conn, self.configuration)
         self._add_service(ours_conn, service)
 
         service.start()
@@ -94,12 +93,11 @@ class BridgeHub():
         """
         Intilialize and fork off IO services.
         """
-        for io_config_args in self.configuration.io_services:
+        for name in self.configuration.io_services:
             its_conn, ours_conn = self.create_connection()
-            io_config = IOConfig(*io_config_args)
+            io_config = IOConfig(self.configuration, name)
             io_service = io_config.create_service(its_conn)
             self._add_service(ours_conn, io_service)
-            self.io_idioms[io_service.name] = io_config.model_idiom()
 
             io_service.start()
 
@@ -108,7 +106,7 @@ class BridgeHub():
         Initialize and fork the model service.
         """
         its_conn, ours_conn = self.create_connection()
-        service = ModelService(self.io_idioms, self.configuration.model_dir(), its_conn)
+        service = ModelService(self.configuration, its_conn)
         self._add_service(ours_conn, service)
 
         service.start()

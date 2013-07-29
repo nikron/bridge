@@ -2,9 +2,11 @@
 Service that keeps track of the device status and controls them.
 """
 import logging
+import os
 from select import select
 
 from bridge.services import BridgeService, MODEL
+from bridge.services.io.types import IOConfig
 from bridge.services.model.storage import ModelStorage
 from bridge.services.model.idiom import IdiomError
 from bridge.model.actions import ActionError
@@ -23,11 +25,18 @@ class ModelService(BridgeService):
     :type hub_connection: :class:`Pipe`
     """
 
-    def __init__(self, io_idioms, directory, hub_connection):
-        super().__init__(MODEL, hub_connection)
+    def __init__(self, config, hub_connection):
+        super().__init__(MODEL, config, hub_connection)
         self.read_list = [self.hub_connection]
 
-        self.storage = ModelStorage(directory)
+
+        self.model_dir = os.path.abspath(os.path.join(config.data_dir, 'model'))
+        self.storage = ModelStorage(self.model_dir)
+
+        io_idioms = {}
+        for name in config.io_services:
+            io_idioms[name] = IOConfig.model_idiom(config.io_services[name][0], name)
+
         self.model = self.storage.read_model(io_idioms)
         self.io_idioms = io_idioms
         self.dirty = False

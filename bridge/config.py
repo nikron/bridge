@@ -25,7 +25,7 @@ class BridgeConfiguration():
         self.conf_dir = os.path.dirname(self.file)
 
         self.data_dir = ''
-        self.io_services = []
+        self.io_services = {}
         self.log_file = ''
 
         if self.file is not None:
@@ -46,11 +46,4 @@ class BridgeConfiguration():
             protocol = config[io_service]['protocol']
             file_name = config[io_service]['file name']
 
-            self.io_services.append((name, protocol, file_name))
-
-    def model_dir(self):
-        """
-        :return: The absolute path name of the directory the model service should use.
-        :rtype: str
-        """
-        return os.path.abspath(os.path.join(self.data_dir, 'model'))
+            self.io_services[name] = (protocol, file_name)

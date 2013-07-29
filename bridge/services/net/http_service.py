@@ -81,8 +81,8 @@ class HTTPAPIService(BridgeService):
     :type debug: bool
     """
 
-    def __init__(self, hub_con, addr='0.0.0.0', port='8080', debug=True):
-        super().__init__(HTTP_API, hub_con)
+    def __init__(self, config, hub_con, addr='0.0.0.0', port='8080', debug=True):
+        super().__init__(HTTP_API, config, hub_con)
 
         self.addr = addr
         self.port = port

@@ -119,9 +119,10 @@ class BridgeService(Process):
     :param hub_connection: Connection to the hub to pass messages to and from.
     :type hub_connection: :class:`Pipe`
     """
-    def __init__(self, name, hub_connection):
+    def __init__(self, name, config, hub_connection):
         Process.__init__(self, name=name)
         self.hub_connection = hub_connection
+        self.config = config
 
         #most services will spin on a select loop
         self.spinning = False

@@ -33,7 +33,7 @@ file name = /dev/ttyUSB0
 
     def test_config(self):
         self.assertFalse(self.config.stderr)
-        self.assertEqual(self.config.io_services, [('insteon', 'insteon','/dev/ttyUSB0')])
+        self.assertEqual(self.config.io_services, {'insteon': ('insteon', '/dev/ttyUSB0')})
 
     def test_hub(self):
         self.assertIsNotNone(BridgeHub(self.config))
@@ -43,4 +43,4 @@ file name = /dev/ttyUSB0
         Tests model dir specification.
         NOTE: requires linux implementation of tempfile with a tmp dir of /tmp/
         """
-        self.assertEquals(self.config.model_dir(), '/tmp/.bridge/model')
+        self.assertEquals(self.config.data_dir, '/tmp/.bridge')
