@@ -152,6 +152,7 @@ class ModelService(BridgeService):
         :param name: Thew new name of an asset.
         :type name: str
         """
+        logging.debug("Setting asset {0} name to {1}.".format(uuid, name))
         self.model.set_asset_name(uuid, name)
 
     def get_info(self):
