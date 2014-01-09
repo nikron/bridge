@@ -3,7 +3,7 @@ Test the cmds util mapping functionality.
 """
 import unittest
 
-from insteon_protocol.command.command_bytes_util import CMDS, CommandBytesMap
+from insteon.command.command_bytes_util import CMDS, CommandBytesMap
 
 class TestCommandBytesUtil(unittest.TestCase):
     def setUp(self):

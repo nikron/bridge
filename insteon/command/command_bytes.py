@@ -1,7 +1,7 @@
 """
 Constants for cmd1 and cmd2 bytes.
 """
-from insteon_protocol.command.command_bytes_util import CMDS
+from insteon.command.command_bytes_util import CMDS
 
 ASSIGNTOALLLINKGROUP = CMDS(b'\x01')
 DELETEFROMALLLINKGROUP = CMDS(b'\x02')

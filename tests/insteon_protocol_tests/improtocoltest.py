@@ -1,7 +1,7 @@
 import io
 import unittest
 
-from insteon_protocol.insteon_im_protocol import read_command, decode
+from insteon.insteon_im_protocol import read_command, decode
 
 class TestIMProtocol(unittest.TestCase):
     def setUp(self):

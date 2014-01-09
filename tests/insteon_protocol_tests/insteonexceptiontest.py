@@ -1,6 +1,6 @@
 import unittest
 
-from insteon_protocol.insteon_exception import InsteonException
+from insteon.insteon_exception import InsteonException
 
 class TestInsteonCommand(unittest.TestCase):
     def test_command(self):

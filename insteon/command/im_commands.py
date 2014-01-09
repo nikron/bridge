@@ -1,8 +1,8 @@
 """
 Commands used to communicate to the insteon IM.
 """
-from insteon_protocol.command.commands import InsteonCommand
-from insteon_protocol.command.command_bytes import *
+from insteon.command.commands import InsteonCommand
+from insteon.command.command_bytes import *
 
 import bitstring
 

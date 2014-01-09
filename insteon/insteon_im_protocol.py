@@ -4,8 +4,8 @@ Decode messages from an Insteon PLM.
 
 import logging
 import bitstring
-from insteon_protocol.command.commands import InsteonCommand
-from insteon_protocol.command.im_commands import IMInsteonCommand
+from insteon.command.commands import InsteonCommand
+from insteon.command.im_commands import IMInsteonCommand
 
 #you can only know how many bytes to read after you read a byte
 #from the device, so here is a dict that tells you how much you

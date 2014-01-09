@@ -4,9 +4,9 @@ Idiom for model to communicate with insteon IO services.
 from bridge.services.model.idiom import ModelIdiom, IdiomError
 from bridge.model.assets.basic_assets import BlankAsset, OnOffAsset, DimmerAsset
 
-from insteon_protocol.command.command_bytes import TURNONFAST, TURNOFF, LIGHTSTATUSREQUEST, TURNONLEVEL
-from insteon_protocol.linc.lincs import LincMap
-from insteon_protocol.utils import check_insteon_id
+from insteon.command.command_bytes import TURNONFAST, TURNOFF, LIGHTSTATUSREQUEST, TURNONLEVEL
+from insteon.linc.lincs import LincMap
+from insteon.utils import check_insteon_id
 
 import logging
 from binascii import unhexlify

@@ -1,7 +1,7 @@
 """
 Convience way to set objects with INSTEON command bytes and products.
 """
-from insteon_protocol.command.command_bytes_util import CommandBytesMap
+from insteon.command.command_bytes_util import CommandBytesMap
 
 from collections import defaultdict
 

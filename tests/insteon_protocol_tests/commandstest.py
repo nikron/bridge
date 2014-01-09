@@ -1,6 +1,6 @@
 import unittest
 
-from insteon_protocol.command.commands import InsteonCommand
+from insteon.command.commands import InsteonCommand
 
 class TestInsteonCommand(unittest.TestCase):
     def test_command(self):

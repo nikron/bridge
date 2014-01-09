@@ -4,8 +4,8 @@ Insteon io service and its idiom.
 
 from bridge.services.io import IOService
 
-from insteon_protocol import insteon_im_protocol
-from insteon_protocol.command import im_commands
+from insteon import insteon_im_protocol
+from insteon.command import im_commands
 
 from binascii import hexlify, unhexlify
 import logging
