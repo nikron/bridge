@@ -41,7 +41,7 @@ import inspect
 import json
 import sys
 
-from jsonpointer import JsonPointer, JsonPointerException
+from external_libs.jsonpointer import JsonPointer, JsonPointerException
 
 # Will be parsed by setup.py to determine package metadata
 __author__ = 'Stefan Kögl <stefan@skoegl.net>'
