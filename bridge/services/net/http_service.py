@@ -262,7 +262,7 @@ class HTTPAPIService(BridgeService):
 
             if change_name:
                 logging.debug("Attempting to change name")
-                self.remote_async_service_method(MODEL, 'set_asset_name', asset_uuid, changed['name'])
+                self.remote_async_service_method(MODEL, 'set_asset_name', asset_uuid, result['name'])
             for category, state in attribute_changes:
                 logging.debug("Attempting to control")
                 self.remote_async_service_method(MODEL, 'control_asset', asset_uuid, category, state)
