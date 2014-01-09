@@ -241,7 +241,7 @@ class HTTPAPIService(BridgeService):
             asset_json = self._get_asset_json(asset_uuid)
 
             change_name = False #it's only correct to do patch changes
-            state_changes = [] #if the full patch is accepted
+            attribute_changes = [] #if the full patch is accepted
 
             patch = request.body.read(request.MEMFILE_MAX).decode()
             try:

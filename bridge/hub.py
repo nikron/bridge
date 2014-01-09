@@ -11,9 +11,9 @@ from bridge.logging_service import LoggingService, service_configure_logging
 from bridge.services.io.types import IOConfig
 from bridge.services.model.service import ModelService
 from bridge.services.net.http_service import HTTPAPIService
+from bridge.services.event import EventService
 
 from collections import namedtuple
-
 ServiceInformation = namedtuple('ServiceInformation', ['connection', 'process'])
 
 class BridgeHub():
@@ -55,6 +55,7 @@ class BridgeHub():
         self.start_io_services()
         self.start_model()
         self.start_http_service()
+        self.start_event()
 
         self.main_loop()
 
@@ -84,7 +85,7 @@ class BridgeHub():
         Initialize and fork the http service.
         """
         its_conn, ours_conn = self.create_connection()
-        service = HTTPAPIService(its_conn, self.configuration)
+        service = HTTPAPIService(self.configuration, its_conn)
         self._add_service(ours_conn, service)
 
         service.start()
@@ -107,6 +108,13 @@ class BridgeHub():
         """
         its_conn, ours_conn = self.create_connection()
         service = ModelService(self.configuration, its_conn)
+        self._add_service(ours_conn, service)
+
+        service.start()
+
+    def start_event(self):
+        its_conn, ours_conn = self.create_connection()
+        service = EventService(self.configuration, its_conn)
         self._add_service(ours_conn, service)
 
         service.start()
