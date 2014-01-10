@@ -3,6 +3,7 @@ Basically the main of the bridge, starts all subprocesses and then
 ensures communications and validity.
 """
 import multiprocessing
+from multiprocessing.connection import Listener
 from select import select
 
 from bridge.services import CLOSE_MESSAGE
@@ -14,7 +15,10 @@ from bridge.services.net.http_service import HTTPAPIService
 from bridge.services.event import EventService
 
 from collections import namedtuple
+
 ServiceInformation = namedtuple('ServiceInformation', ['connection', 'process'])
+address = ("localhost", 10000)
+
 
 class BridgeHub():
     """
@@ -56,6 +60,7 @@ class BridgeHub():
         self.start_model()
         self.start_http_service()
         self.start_event()
+        self.start_api()
 
         self.main_loop()
 
@@ -70,6 +75,8 @@ class BridgeHub():
             try:
                 (read, _, _) = select(self.connections, [], [])
                 for ready in read:
+                    if ready is self.api_listener:
+                        self.handle_api_connection(ready)
                     msg = ready.recv()
                     to = msg.to
                     self.services[to].connection.send(msg)
@@ -80,12 +87,18 @@ class BridgeHub():
 
                 spinning = False
 
-    def start_http_service(self):
-        """
-        Initialize and fork the http service.
-        """
+    def handle_api_connection(connection):
+        self.api_connections.append(connection)
+        self.connections.append(connection)
+
+    def start_api(self):
+        self.api_listener = Listener(address)
+        self.connections.append(self.api_listener)
+        self.api_connections = []
+
+    def start_event(self):
         its_conn, ours_conn = self.create_connection()
-        service = HTTPAPIService(self.configuration, its_conn)
+        service = EventService(self.configuration, its_conn)
         self._add_service(ours_conn, service)
 
         service.start()
@@ -102,19 +115,22 @@ class BridgeHub():
 
             io_service.start()
 
+    def start_http_service(self):
+        """
+        Initialize and fork the http service.
+        """
+        its_conn, ours_conn = self.create_connection()
+        service = HTTPAPIService(self.configuration, its_conn)
+        self._add_service(ours_conn, service)
+
+        service.start()
+
     def start_model(self):
         """
         Initialize and fork the model service.
         """
         its_conn, ours_conn = self.create_connection()
         service = ModelService(self.configuration, its_conn)
-        self._add_service(ours_conn, service)
-
-        service.start()
-
-    def start_event(self):
-        its_conn, ours_conn = self.create_connection()
-        service = EventService(self.configuration, its_conn)
         self._add_service(ours_conn, service)
 
         service.start()
